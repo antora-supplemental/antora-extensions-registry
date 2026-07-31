@@ -1,22 +1,135 @@
-= SolidStart + AuthJS
+= Antora Extensions Registry
 
-== Setup a Discord app
+image:https://img.shields.io/badge/site-registry.antora--supplemental.org-0ea5e9[Live site,link=https://registry.antora-supplemental.org]
+image:https://img.shields.io/badge/docs-docs.antora--supplemental.org-22c55e[Supplemental docs,link=https://docs.antora-supplemental.org/registry/ROOT/index.html]
+image:https://img.shields.io/github/actions/workflow/status/antora-supplemental/antora-extensions-registry/netlify-deploy.yml?branch=main[Deploy,link=https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/netlify-deploy.yml]
 
-In order to run this example, you need to setup i.e. a Discord app in here: https://discord.com/developers/applications/[Discord Developers Portal], to get a client secret and client id which should be added to the .env file. Also, in the Discord app settings under OAuth2, set the Return URL to: `http://localhost:3000/api/auth/callback/discord`
+Community catalog (public brand: *Registry*) for https://antora.org[Antora] extensions, UI themes/bundles, and related ecosystem packages.
 
-== AuthJS
+*Live site:* https://registry.antora-supplemental.org[registry.antora-supplemental.org]
 
-Everything you need to build an https://authjs.dev/[AuthJS] authenticated Solid project, powered by https://start.solidjs.com[`solid-start`].
+Themes are *not* Antora extensions (`ui.bundle` vs `antora.extensions`); both are first-class categories on this site.
 
-This will start a production server on port `3000`.
+== What you can do here
 
-=== Environment Variables
+* Browse https://registry.antora-supplemental.org/extensions[extensions] discovered from GitHub topics and registry metadata
+* Explore dependency relationships in the https://registry.antora-supplemental.org/registry[package registry]
+* Preview Antora UI https://registry.antora-supplemental.org/themes[themes] and submit your own (sign-in required)
 
-* `DISCORD_ID`=
-* `DISCORD_SECRET`=
-* `AUTH_SECRET`=b198e07a64406260b98f06e21c457b84
-* `AUTH_TRUST_HOST`=true
-* `AUTH_URL`=http://localhost:3000/api/auth
+== Documentation
 
+This repository publishes two kinds of documentation:
 
-== This project was created with the https://github.com/solidjs-community/solid-cli[Solid CLI]
+[cols="1,3"]
+|===
+| Audience | Where to look
+
+| Public users and extension authors
+| https://docs.antora-supplemental.org/registry/ROOT/index.html[Registry docs] in the https://docs.antora-supplemental.org/[Antora Supplemental docs hub] — contributing guides, metadata formats, and theme submission rules
+
+| Site operators and contributors working in this repo
+| The sections below (development, deployment, environment)
+|===
+
+The `docs/` directory in this repository is the Antora component source consumed by both the local playbook (`antora-playbook.yml`, output under `public/docs/`) and the supplemental docs hub playbook.
+
+== Quick start (developers)
+
+.Prerequisites
+* Node.js 22+
+* https://pnpm.io[pnpm]
+
+.Setup
+[source,shell]
+----
+pnpm install
+cp .env.example .env
+pnpm db:push
+pnpm dev
+----
+
+The dev server starts at http://localhost:3000.
+
+== Authentication
+
+Sign-in is powered by https://www.better-auth.com/[Better Auth] with:
+
+* Email magic link (when `EMAIL_SERVER` and `EMAIL_FROM` are configured)
+* GitHub, GitLab, Google, Microsoft, and Apple OAuth
+* Post sign-in provider linking at `/auth/account` (`allowDifferentEmails` enabled)
+
+OAuth callback URLs follow Better Auth conventions, for example:
+
+* GitHub: `http://localhost:3000/api/auth/callback/github`
+* GitLab: `http://localhost:3000/api/auth/callback/gitlab`
+
+Never commit secrets. Generate a random `BETTER_AUTH_SECRET` for each environment.
+
+=== Account linking vs. duplicate merge
+
+Better Auth includes *account linking*: after you sign in, you can attach additional providers to the same user record from `/auth/account`, even when those providers report different email addresses.
+
+It does *not* include a built-in self-service flow to merge two existing user records that were created separately (for example, one via GitHub and another via a work email magic link). The upstream docs describe that as a manual/admin operation: pick a primary user, move linked accounts and sessions, then delete the duplicate. A custom merge tool for this registry may be added later; it is not available in Better Auth today.
+
+== Database (Turso / LibSQL)
+
+Netlify serverless functions do not persist `file:` SQLite databases. Production must use a remote LibSQL provider such as https://turso.tech/[Turso]:
+
+[source,shell]
+----
+# Windows: install CLI in WSL (no native Windows binary in current Turso releases)
+wsl bash -lc 'curl -fsSL -o /tmp/turso.tar.gz https://github.com/tursodatabase/turso-cli/releases/download/v1.0.26/turso-cli_Linux_x86_64.tar.gz && tar -xzf /tmp/turso.tar.gz -C /tmp && install -m 755 /tmp/turso ~/.turso/turso'
+wsl bash -lc '~/.turso/turso auth login'
+
+# Replace the old antora-themes database with antora-extensions-registry
+wsl bash -lc 'cd /mnt/z/code/github.com/antora-supplemental/antora-extensions-registry && bash scripts/setup-turso.sh'
+
+# Apply schema (set DB_URL + DB_AUTH_TOKEN from setup-turso.sh output in .env first)
+pnpm db:push
+----
+
+Set `DB_URL=libsql://…` and `DB_AUTH_TOKEN` in Netlify environment variables and GitHub Actions secrets (`DB_URL`, `DB_AUTH_TOKEN`).
+
+Local development continues to use `DB_URL=file:local.db` without a token.
+
+== Deployment (Netlify)
+
+Production deploys run through GitHub Actions (`.github/workflows/netlify-deploy.yml`) to Netlify.
+
+Repository secrets required:
+
+* `NETLIFY_AUTH_TOKEN` — personal access token from Netlify user settings
+* `NETLIFY_SITE_ID` — `28389c57-19f0-45f0-abe6-075e2d6bd26c` (https://app.netlify.com/projects/antora-extensions-registry[Netlify project])
+* `BETTER_AUTH_SECRET` — production auth secret (also set in Netlify environment variables)
+* `DB_URL` — Turso/LibSQL connection URL (`libsql://…`)
+* `DB_AUTH_TOKEN` — Turso database auth token
+
+Optional repository variables:
+
+* `BETTER_AUTH_URL` — defaults to `https://registry.antora-supplemental.org` (also accept the Netlify `*.netlify.app` host during cutover)
+
+Local Netlify CLI workflow:
+
+[source,shell]
+----
+pnpm build
+pnpm dlx netlify-cli deploy --prod --dir=dist
+----
+
+The SolidStart app uses the Netlify server preset (`app.config.ts`) with publish directory `dist`.
+
+== Scripts
+
+[cols="1,3"]
+|===
+| Command | Purpose
+
+| `pnpm dev` | Local development server
+| `pnpm build` | Production build (Netlify output in `dist/`)
+| `pnpm docs:build` | Build the Antora component docs to `public/docs/`
+| `pnpm db:push` | Apply Drizzle schema to the configured database
+| `pnpm seed` | Seed registry data
+| `pnpm exec tsx scripts/generate-apple-client-secret.ts` | Generate Apple OAuth client secret JWT
+|===
+
+See link:LICENSE[LICENSE] in this repository.

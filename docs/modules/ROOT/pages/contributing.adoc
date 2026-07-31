@@ -67,5 +67,66 @@ This content will be displayed in the "Insights" panel of the Antora Extensions 
 * **Format**: Standard web formats like PNG, JPG, or WebP are supported.
 * **Count**: You can provide up to 5 screenshots.
 
+== GitHub Topics (planned auto-discovery)
+
+GitHub *repository topics* (not Git tags) are a lightweight way to opt into discovery.
+When automated indexing is enabled for this registry, crawlers will use the public GitHub Search API, for example `topic:antora-extension fork:false`.
+
+=== Why a topic can appear before anyone used it
+
+GitHub maintains a *topic catalog* (`GET /search/topics`).
+Several Antora-related names (for example `antora-ui-theme`, `antora-ui-plugin`, `antora-theme`) share the same catalog `created_at` timestamp in GitHub’s API, which means GitHub added them as recognized topic strings in bulk.
+That is why the topic picker may suggest `antora-ui-theme` even when the https://github.com/topics/antora-ui-theme[topic page] still shows few repositories — the string exists in GitHub’s suggestion index independently of your repo.
+
+To explore the live catalog and sample repository counts from your machine, run:
+
+[source,bash]
+----
+pnpm run discover:github-topics
+# optional: GITHUB_TOKEN=... pnpm run discover:github-topics
+pnpm exec tsx scripts/github-topic-discovery.ts --repos antora-extension
+----
+
+=== Recommended topics by content type
+
+These are *conventions for this registry*; align your topics so future automation can classify listings.
+Theme gallery submissions live at https://registry.antora-supplemental.org/themes[registry.antora-supplemental.org/themes] — use prescribed `antora-theme` topics plus appearance tags (`antora-light-theme`, `antora-dark-theme`, etc.), not repo/product names.
+
+[cols="1,2"]
+|===
+| Registry kind | Suggested GitHub topics
+
+| Playbook / generator extension (npm-style)
+| `antora-extension` (and usually `antora`)
+
+| Extension bundle
+| `antora-bundle`
+
+| Full UI theme (default-UI-style repo)
+| `antora-ui-theme`, or `antora-theme`, or `antora-site-theme`
+
+| Supplemental UI, components, styles, kits
+| `antora-ui`, `antora-ui-components`, `antora-ui-styles`, `antora-ui-kit`
+
+| UI-level plugin
+| `antora-ui-plugin`
+
+| Generic Antora plugin naming
+| `antora-plugin`
+
+| Documentation site or doc tooling (broad)
+| `antora-site`, `antora-docs`
+|===
+
+=== Forks and ownership (policy sketch)
+
+Automated listing should not mirror every personal fork.
+
+* *Default filter:* only repositories where GitHub reports `fork: false` in search (`fork:false` in the search query).
+* *Explicit forks:* allow a fork only if maintainers later support a *claim* flow (for example sign in with GitHub and prove admin on the repo) or a manual allowlist (for official org splits).
+* *Duplicate networks:* prefer the repository that is the *source* of the fork network when both carry the same topic, unless a claimed fork is designated as canonical.
+
+Exact rules will be documented here once the indexer ships; until then, follow the manual contributing flow above.
+
 
 

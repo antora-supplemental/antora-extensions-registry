@@ -1,18 +1,21 @@
+import { cache } from "@solidjs/router";
 import { createSignal, createResource, Show, onMount } from "solid-js";
+import SiteLayout from "~/components/SiteLayout";
 import { SearchTree } from "~/components/SearchTree";
 import { ExtensionPanel } from "~/components/ExtensionPanel";
 import { searchExtensions } from "~/lib/registry/search";
 import { resolveDependencyTree } from "~/lib/registry/analyzer";
-import { server$ } from "@solidjs/start/server";
 
-const searchAction = server$(async (query: string) => {
+const searchAction = cache(async (query: string) => {
+    "use server";
     if (query.length < 2) return [];
     return await searchExtensions(query);
-});
+}, "registry-search");
 
-const resolveDepsAction = server$(async (id: string) => {
+const resolveDepsAction = cache(async (id: string) => {
+    "use server";
     return await resolveDependencyTree(id, 1);
-});
+}, "registry-deps");
 
 export default function Registry() {
     const [query, setQuery] = createSignal("");
@@ -56,6 +59,7 @@ export default function Registry() {
     };
 
     return (
+        <SiteLayout>
         <div class="min-h-screen bg-background p-8 pb-32 transition-colors duration-300">
             <div class="max-w-5xl mx-auto space-y-12 mt-12">
                 <nav class="flex justify-end">
@@ -127,5 +131,6 @@ export default function Registry() {
                 onAnalyzeFull={() => {/* Full analysis logic */ }}
             />
         </div>
+        </SiteLayout>
     );
 }

@@ -11,5 +11,8 @@ ui:
   bundle:
     url: https://github.com/antora-supplemental/antora-dark-mode/releases/download/v1.2.0/ui-bundle.zip
     snapshot: true
+antora:
+  extensions:
+    - require: '@antora/lunr-extension'
 output:
   dir: ./public/docs

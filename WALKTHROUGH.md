@@ -23,7 +23,7 @@ I have successfully built the foundation for the Antora Extensions Registry. The
 
 ### 4. Documentation & Infrastructure
 
-- **Antora Docs**: Created in the `docs/` folder, configured with the `antora-dark-theme`.
+- **Antora Docs**: Created in the `docs/` folder, configured with `antora-dark-mode` (overlay or convenience `ui-bundle.zip`).
 - **Git Repository**: Initialized, committed, and pushed to [the-dev-center/antora-extensions-registry](https://github.com/the-dev-center/antora-extensions-registry).
 - **Local Database**: Initialized with a seed script for immediate testing.
 

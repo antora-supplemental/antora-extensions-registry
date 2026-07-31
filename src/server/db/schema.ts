@@ -1,42 +1,16 @@
 import { sqliteTable, text, integer, primaryKey } from "drizzle-orm/sqlite-core";
 
-export const users = sqliteTable("user", {
-    id: text("id").primaryKey(),
-    name: text("name"),
-    email: text("email").notNull(),
-    emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
-    image: text("image"),
-});
+export {
+  users,
+  sessions,
+  accounts,
+  verifications,
+  usersRelations,
+  sessionsRelations,
+  accountsRelations,
+} from "./auth-schema";
 
-export const accounts = sqliteTable("account", {
-    userId: text("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-    type: text("type").notNull(),
-    provider: text("provider").notNull(),
-    providerAccountId: text("providerAccountId").notNull(),
-    refresh_token: text("refresh_token"),
-    access_token: text("access_token"),
-    expires_at: integer("expires_at"),
-    token_type: text("token_type"),
-    scope: text("scope"),
-    id_token: text("id_token"),
-    session_state: text("session_state"),
-}, (table) => ({
-    compoundKey: primaryKey({ columns: [table.provider, table.providerAccountId] }),
-}));
-
-export const sessions = sqliteTable("session", {
-    sessionToken: text("sessionToken").primaryKey(),
-    userId: text("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-    expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
-});
-
-export const verificationTokens = sqliteTable("verificationToken", {
-    identifier: text("identifier").notNull(),
-    token: text("token").notNull(),
-    expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
-}, (table) => ({
-    compositePk: primaryKey({ columns: [table.identifier, table.token] }),
-}));
+import { users } from "./auth-schema";
 
 // Extension Registry Tables
 export const extensions = sqliteTable("extension", {
@@ -75,4 +49,34 @@ export const screenshots = sqliteTable("screenshot", {
     url: text("url").notNull(),
     caption: text("caption"),
     order: integer("order").default(0).notNull(),
+});
+
+export const extensionRepos = sqliteTable("extension_repo", {
+    id: text("id").primaryKey(),
+    repoUrl: text("repoUrl").notNull().unique(),
+    owner: text("owner").notNull(),
+    name: text("name").notNull(),
+    catalogSource: text("catalogSource"),
+    moduleCount: integer("moduleCount").notNull().default(0),
+    recipeCount: integer("recipeCount").notNull().default(0),
+    status: text("status", { enum: ["pending", "approved", "rejected"] }).notNull().default("pending"),
+    submittedBy: text("submittedBy").references(() => users.id, { onDelete: "set null" }),
+    createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+    updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
+export const themes = sqliteTable("theme", {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    description: text("description").notNull(),
+    authorId: text("authorId").references(() => users.id, { onDelete: "set null" }),
+    authorName: text("authorName").notNull(),
+    repoUrl: text("repoUrl").notNull().unique(),
+    demoUrl: text("demoUrl"),
+    previewImage: text("previewImage"),
+    stars: integer("stars").notNull().default(0),
+    tags: text("tags").notNull().default("[]"),
+    status: text("status", { enum: ["pending", "approved", "rejected"] }).notNull().default("pending"),
+    createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+    updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });

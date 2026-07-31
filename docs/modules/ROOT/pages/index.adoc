@@ -1,12 +1,25 @@
 = Antora Extensions Registry
 
-Welcome to the Antora Extensions Registry documentation!
+Welcome to the Antora ecosystem registry documentation (public site brand: *Registry*).
 
-This site allows users to browse and developers to submit Antora extensions and extension bundles.
+This component is published in two places:
+
+* https://registry.antora-supplemental.org[registry.antora-supplemental.org] — the live catalog (extensions, themes, packages)
+* https://docs.antora-supplemental.org/registry/ROOT/index.html[Antora Supplemental docs hub] — aggregated alongside other antora-supplemental projects
+
+Themes are UI bundles (`ui.bundle`), not Antora playbook extensions. Both are catalogued here.
+
+== For extension authors
+
+See xref:contributing.adoc[Contributing your Extension] for metadata files (`antora-registry.md`, `package.json`) and theme submission rules.
+
+== For site operators
+
+Repository setup, authentication, and Netlify deployment are documented in the https://github.com/antora-supplemental/antora-extensions-registry/blob/main/README.adoc[project README], not here.
 
 == Features
 
-* Browse Extensions
-* Deep Dependency Analysis
-* Easy Installation Instructions
-* Multi-provider Authentication
+* Browse extensions discovered from GitHub topics and registry metadata
+* Deep dependency analysis in the registry view
+* Theme gallery with community submissions (sign-in required)
+* Omni-search on the registry home with category chips (extensions / themes / packages)

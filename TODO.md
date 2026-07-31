@@ -1,25 +1,31 @@
 # TODO - Antora Extensions Registry
 
-## Cloudflare & DNS
+## Custom domain (registry.antora-supplemental.org)
 
-- [ ] Point `antora-extensions.org` to your hosting provider.
-- [ ] Configure SSL/TLS.
+- [ ] Add `registry.antora-supplemental.org` in Netlify Domain management (see `DOMAIN.adoc`).
+- [ ] Registrar CNAME `registry` → Netlify site hostname.
+- [ ] Set `BETTER_AUTH_URL` / `BETTER_AUTH_TRUSTED_ORIGINS` to `https://registry.antora-supplemental.org`.
+- [ ] Point OAuth callbacks at `https://registry.antora-supplemental.org/api/auth/callback/<provider>`.
 
 ## Authentication Setup
 
-- [ ] Create OAuth Application on **GitHub** (the-dev-center organization).
+- [x] Better Auth with account linking at `/auth/account` (`allowDifferentEmails`).
+- [ ] Create OAuth Application on **GitHub** (antora-supplemental organization).
 - [ ] Create OAuth Application on **GitLab**.
 - [ ] Create OAuth Application on **Google Cloud Console**.
 - [ ] Create OAuth Application on **Microsoft Azure Portal**.
-- [ ] Configure **SMTP** server for Email magic links.
-- [ ] Set `AUTH_SECRET` and provider IDs/Secrets in `.env`.
+- [ ] Create **Apple** Services ID and generate `APPLE_CLIENT_SECRET` via `scripts/generate-apple-client-secret.ts`.
+- [ ] Configure **SMTP** or a transactional email provider for magic links.
+- [ ] Set `BETTER_AUTH_SECRET` and provider IDs/secrets in Netlify environment variables.
+- [ ] (Future) Custom admin merge tool for duplicate user records — not provided by Better Auth upstream.
 
 ## Database & Deployment
 
-- [ ] Provision a production database (e.g., Turso for LibSQL or a managed Postgres).
-- [ ] Run `pnpm db:push` to initialize the production schema.
-- [ ] Troubleshoot persistent Vinxi SSR build error (`Exited with code: 1`) during `pnpm build`.
-- [ ] Set up a CI/CD pipeline (GitHub Actions).
+- [ ] Create a Turso database (`libsql://…`) — **required**; `file:` databases do not persist on Netlify.
+- [ ] Set `DB_URL` and `DB_AUTH_TOKEN` in Netlify and GitHub Actions secrets.
+- [ ] Run `pnpm db:push` against the Turso database.
+- [ ] Add `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`, `BETTER_AUTH_SECRET`, `DB_URL`, and `DB_AUTH_TOKEN` as GitHub repository secrets.
+- [ ] Verify the Netlify deploy workflow on push to `main`.
 
 ## Backend Enhancements
 
@@ -29,6 +35,6 @@
 
 ## Frontend Polishing
 
+- [x] Omni-search on home with category chips (extensions / themes / packages).
 - [ ] Add more micro-animations to the tree expansion.
-- [ ] Implement a full-screen search experience.
 - [ ] Add user profiles to manage submitted extensions.

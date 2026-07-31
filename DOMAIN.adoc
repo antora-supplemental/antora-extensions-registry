@@ -1,0 +1,10 @@
+# Custom domain — registry.antora-supplemental.org
+
+1. In Netlify → Domain management, add `registry.antora-supplemental.org`.
+2. At the registrar, CNAME `registry` → the Netlify hostname shown (e.g. `antora-extensions-registry.netlify.app`).
+3. Set Netlify env:
+   - `BETTER_AUTH_URL=https://registry.antora-supplemental.org`
+   - `BETTER_AUTH_TRUSTED_ORIGINS=https://registry.antora-supplemental.org`
+4. Update OAuth app callbacks to `https://registry.antora-supplemental.org/api/auth/callback/<provider>`.
+
+Org-wide DNS table: https://github.com/antora-supplemental/antora-supplemental.github.io/blob/main/DOMAIN.adoc
