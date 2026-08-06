@@ -1,8 +1,38 @@
-= Antora Extensions Registry
+ifndef::env-github[:icons: font]
+:toc: preamble
+:toclevels: 2
+:sectanchors:
+endif::[]
 
+ifndef::env-github[]
+image:https://img.shields.io/github/contributors/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Contributors,link=https://github.com/antora-supplemental/antora-extensions-registry/graphs/contributors]
+image:https://img.shields.io/github/forks/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Forks,link=https://github.com/antora-supplemental/antora-extensions-registry/network/members]
+image:https://img.shields.io/github/stars/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Stars,link=https://github.com/antora-supplemental/antora-extensions-registry/stargazers]
+image:https://img.shields.io/github/issues/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Issues,link=https://github.com/antora-supplemental/antora-extensions-registry/issues]
 image:https://img.shields.io/badge/site-registry.antora--supplemental.org-0ea5e9[Live site,link=https://registry.antora-supplemental.org]
 image:https://img.shields.io/badge/docs-docs.antora--supplemental.org-22c55e[Supplemental docs,link=https://docs.antora-supplemental.org/registry/ROOT/index.html]
 image:https://img.shields.io/github/actions/workflow/status/antora-supplemental/antora-extensions-registry/netlify-deploy.yml?branch=main[Deploy,link=https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/netlify-deploy.yml]
+endif::[]
+
+ifdef::env-github[]
+image:https://img.shields.io/github/contributors/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Contributors]
+image:https://img.shields.io/github/forks/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Forks]
+image:https://img.shields.io/github/stars/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Stars]
+image:https://img.shields.io/github/issues/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Issues]
+image:https://img.shields.io/badge/site-registry.antora--supplemental.org-0ea5e9[Live site]
+image:https://img.shields.io/badge/docs-docs.antora--supplemental.org-22c55e[Supplemental docs]
+image:https://img.shields.io/github/actions/workflow/status/antora-supplemental/antora-extensions-registry/netlify-deploy.yml?branch=main[Deploy]
+endif::[]
+
+= Antora Extensions Registry
+
+Antora ecosystem registry — extensions, themes, UI modules (registry.antora-supplemental.org).
+
+link:https://registry.antora-supplemental.org[Visit site] ·
+link:https://docs.antora-supplemental.org/registry/ROOT/index.html[Explore the docs] ·
+link:https://github.com/antora-supplemental/antora-extensions-registry/issues[Report Bug]
+
+== About The Project
 
 Community catalog (public brand: *Registry*) for https://antora.org[Antora] extensions, UI themes/bundles, and related ecosystem packages.
 
@@ -10,7 +40,7 @@ Community catalog (public brand: *Registry*) for https://antora.org[Antora] exte
 
 Themes are *not* Antora extensions (`ui.bundle` vs `antora.extensions`); both are first-class categories on this site.
 
-== What you can do here
+=== What you can do here
 
 * Browse https://registry.antora-supplemental.org/extensions[extensions] discovered from GitHub topics and registry metadata
 * Explore dependency relationships in the https://registry.antora-supplemental.org/registry[package registry]
@@ -131,5 +161,12 @@ The SolidStart app uses the Netlify server preset (`app.config.ts`) with publish
 | `pnpm seed` | Seed registry data
 | `pnpm exec tsx scripts/generate-apple-client-secret.ts` | Generate Apple OAuth client secret JWT
 |===
+
+== Contact
+
+Antora Supplemental — support@antora-supplemental.org
+
+* Project: https://github.com/antora-supplemental/antora-extensions-registry
+* Site: https://antora-supplemental.org
 
 See link:LICENSE[LICENSE] in this repository.
