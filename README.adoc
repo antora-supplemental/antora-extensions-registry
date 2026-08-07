@@ -4,14 +4,53 @@ ifndef::env-github[:icons: font]
 :sectanchors:
 endif::[]
 
-[[readme-top]]
+ifdef::env-github[]
+++++
+<a id="readme-top"></a>
+<div align="center">
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/graphs/contributors"><img src="https://img.shields.io/github/contributors/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge" alt="Contributors"></a>
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/network/members"><img src="https://img.shields.io/github/forks/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge" alt="Forks"></a>
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/stargazers"><img src="https://img.shields.io/github/stars/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge" alt="Stars"></a>
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/issues"><img src="https://img.shields.io/github/issues/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge" alt="Issues"></a>
+<br />
+<h3 align="center">Antora Extensions Registry</h3>
+<p align="center">
+Antora ecosystem registry — extensions, themes, UI modules.<br />
+<a href="https://docs.antora-supplemental.org/registry/"><strong>Explore the docs ·</strong></a>
+<br /><br />
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/issues">Report Bug</a>
+</p>
+</div>
+++++
+endif::[]
+
+ifndef::env-github[]
+
+ifdef::env-github[]
+++++
+<a id="readme-top"></a>
+<div align="center">
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/graphs/contributors"><img src="https://img.shields.io/github/contributors/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge" alt="Contributors"></a>
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/network/members"><img src="https://img.shields.io/github/forks/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge" alt="Forks"></a>
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/stargazers"><img src="https://img.shields.io/github/stars/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge" alt="Stars"></a>
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/issues"><img src="https://img.shields.io/github/issues/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge" alt="Issues"></a>
+<br />
+<h3 align="center">Antora Extensions Registry</h3>
+<p align="center">
+Antora ecosystem registry — extensions, themes, UI modules.<br />
+<a href="https://docs.antora-supplemental.org/registry/"><strong>Explore the docs ·</strong></a>
+<br /><br />
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/issues">Report Bug</a>
+</p>
+</div>
+++++
+endif::[]
+
+ifndef::env-github[]
 image:https://img.shields.io/github/contributors/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Contributors,link=https://github.com/antora-supplemental/antora-extensions-registry/graphs/contributors]
 image:https://img.shields.io/github/forks/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Forks,link=https://github.com/antora-supplemental/antora-extensions-registry/network/members]
 image:https://img.shields.io/github/stars/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Stars,link=https://github.com/antora-supplemental/antora-extensions-registry/stargazers]
 image:https://img.shields.io/github/issues/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Issues,link=https://github.com/antora-supplemental/antora-extensions-registry/issues]
-image:https://img.shields.io/badge/site-domain%20pending-yellow[Live site pending]
-image:https://img.shields.io/badge/docs-docs.antora--supplemental.org-22c55e[Supplemental docs,link=https://docs.antora-supplemental.org/registry/]
-image:https://img.shields.io/github/actions/workflow/status/antora-supplemental/antora-extensions-registry/netlify-deploy.yml?branch=main[Deploy,link=https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/netlify-deploy.yml]
 
 = Antora Extensions Registry
 
@@ -19,8 +58,7 @@ Antora ecosystem registry — extensions, themes, UI modules.
 
 link:https://docs.antora-supplemental.org/registry/[Explore the docs] ·
 link:https://github.com/antora-supplemental/antora-extensions-registry/issues[Report Bug]
-
-IMPORTANT: The public site domain `registry.antora-supplemental.org` is *pending* (DNS not configured; Netlify production URL currently returns 502). The GitHub About homepage is cleared until a working public URL is available. See `DOMAIN.adoc`.
+endif::[]
 
 == About The Project
 
@@ -36,8 +74,9 @@ Themes are *not* Antora extensions (`ui.bundle` vs `antora.extensions`); both ar
 * Explore dependency relationships in the package registry
 * Preview Antora UI themes and submit your own (sign-in required)
 
-link:#readme-top[back to top]
-
+++++
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+++++
 == Documentation
 
 This repository publishes two kinds of documentation:
@@ -163,4 +202,6 @@ Antora Supplemental — support@antora-supplemental.org
 
 See link:LICENSE[LICENSE] in this repository.
 
-link:#readme-top[back to top]
+++++
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+++++
