@@ -4,7 +4,7 @@ ifndef::env-github[:icons: font]
 :sectanchors:
 endif::[]
 
-ifndef::env-github[]
+[[readme-top]]
 image:https://img.shields.io/github/contributors/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Contributors,link=https://github.com/antora-supplemental/antora-extensions-registry/graphs/contributors]
 image:https://img.shields.io/github/forks/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Forks,link=https://github.com/antora-supplemental/antora-extensions-registry/network/members]
 image:https://img.shields.io/github/stars/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Stars,link=https://github.com/antora-supplemental/antora-extensions-registry/stargazers]
@@ -12,17 +12,6 @@ image:https://img.shields.io/github/issues/antora-supplemental/antora-extensions
 image:https://img.shields.io/badge/site-registry.antora--supplemental.org-0ea5e9[Live site,link=https://registry.antora-supplemental.org]
 image:https://img.shields.io/badge/docs-docs.antora--supplemental.org-22c55e[Supplemental docs,link=https://docs.antora-supplemental.org/registry/ROOT/index.html]
 image:https://img.shields.io/github/actions/workflow/status/antora-supplemental/antora-extensions-registry/netlify-deploy.yml?branch=main[Deploy,link=https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/netlify-deploy.yml]
-endif::[]
-
-ifdef::env-github[]
-image:https://img.shields.io/github/contributors/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Contributors]
-image:https://img.shields.io/github/forks/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Forks]
-image:https://img.shields.io/github/stars/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Stars]
-image:https://img.shields.io/github/issues/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Issues]
-image:https://img.shields.io/badge/site-registry.antora--supplemental.org-0ea5e9[Live site]
-image:https://img.shields.io/badge/docs-docs.antora--supplemental.org-22c55e[Supplemental docs]
-image:https://img.shields.io/github/actions/workflow/status/antora-supplemental/antora-extensions-registry/netlify-deploy.yml?branch=main[Deploy]
-endif::[]
 
 = Antora Extensions Registry
 
@@ -45,6 +34,8 @@ Themes are *not* Antora extensions (`ui.bundle` vs `antora.extensions`); both ar
 * Browse https://registry.antora-supplemental.org/extensions[extensions] discovered from GitHub topics and registry metadata
 * Explore dependency relationships in the https://registry.antora-supplemental.org/registry[package registry]
 * Preview Antora UI https://registry.antora-supplemental.org/themes[themes] and submit your own (sign-in required)
+
+link:#readme-top[back to top]
 
 == Documentation
 
@@ -170,3 +161,5 @@ Antora Supplemental — support@antora-supplemental.org
 * Site: https://antora-supplemental.org
 
 See link:LICENSE[LICENSE] in this repository.
+
+link:#readme-top[back to top]
