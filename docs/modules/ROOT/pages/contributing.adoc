@@ -90,7 +90,9 @@ pnpm exec tsx scripts/github-topic-discovery.ts --repos antora-extension
 === Recommended topics by content type
 
 These are *conventions for this registry*; align your topics so future automation can classify listings.
-Theme gallery submissions live at https://registry.antora-supplemental.org/themes[registry.antora-supplemental.org/themes] — use prescribed `antora-theme` topics plus appearance tags (`antora-light-theme`, `antora-dark-theme`, etc.), not repo/product names.
+Theme gallery submissions live at https://registry.antora-supplemental.org/themes[registry.antora-supplemental.org/themes] — use prescribed *capability* topics (`antora-theme`, `antora-light-theme`, `antora-dark-theme`, …) for gallery filters.
+
+Product / dependency rediscovery uses a *separate* rule (see <<product-dependency-topics>> below): the theme’s GitHub repository name as a topic on both the theme repo and every playbook that depends on it.
 
 [cols="1,2"]
 |===
@@ -103,7 +105,7 @@ Theme gallery submissions live at https://registry.antora-supplemental.org/theme
 | `antora-bundle`
 
 | Full UI theme (default-UI-style repo)
-| `antora-ui-theme`, or `antora-theme`, or `antora-site-theme`
+| `antora-theme` (or `antora-ui-theme` / `antora-site-theme`) *plus* appearance tags *plus* the product topic (repo name)
 
 | Supplemental UI, components, styles, kits
 | `antora-ui`, `antora-ui-components`, `antora-ui-styles`, `antora-ui-kit`
@@ -116,7 +118,32 @@ Theme gallery submissions live at https://registry.antora-supplemental.org/theme
 
 | Documentation site or doc tooling (broad)
 | `antora-site`, `antora-docs`
+
+| Docs / playbook repo that *uses* a named UI theme
+| That theme’s product topic (exact GitHub repo name), for example `valentus-theme`
 |===
+
+[[product-dependency-topics]]
+=== Product dependency topics (required for theme consumers)
+
+*Problem:* Capability topics (`antora-theme`, …) classify *what kind of thing* a repo is. They do not answer “which sites pin Valentus?” when you need to roll a chrome fix.
+
+*Rule:* Every published Antora UI theme picks a **product topic** equal to its GitHub repository name (kebab-case), for example `valentus-theme` or `architexture-theme`.
+
+* Theme repository: carry the product topic *alongside* gallery/capability topics.
+* Dependent repositories (Antora playbooks that set `ui.bundle.url` to that theme’s release, or vendor its `supplemental-ui`): add the *same* product topic.
+
+Rediscover with GitHub Search: `topic:valentus-theme` (or `gh search repos --topic valentus-theme`).
+
+Theme authors should document the rule in their install guide and keep a `knownDependents` list in root `antora-registry-topics.json5` (optional seed for maintainers). Apply theme + dependent topics with:
+
+[source,bash]
+----
+node scripts/apply-registry-topics.mjs path/to/antora-registry-topics.json5
+# merge-adds productTopic onto knownDependents without wiping other topics
+----
+
+Example Valentus guide: https://github.com/antora-supplemental/valentus-theme/blob/main/docs/modules/guide/pages/github-topics.adoc[`github-topics.adoc`^].
 
 === Forks and ownership (policy sketch)
 

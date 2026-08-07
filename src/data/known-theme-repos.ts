@@ -25,6 +25,7 @@ export const knownThemeRepos: KnownThemeRepo[] = [
       ANTORA_TOPICS.THEME,
       ANTORA_APPEARANCE_TOPICS.LIGHT_THEME,
       ANTORA_APPEARANCE_TOPICS.DARK_THEME,
+      'valentus-theme',
     ],
     demoUrl: 'https://antora-supplemental.github.io/valentus-theme/',
   },

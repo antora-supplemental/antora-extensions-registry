@@ -1,6 +1,10 @@
 /**
  * Prescribed GitHub topics for Antora extension/theme discovery.
  *
+ * Capability topics (antora-theme, appearance tags) classify gallery listings.
+ * Product dependency topics (exact GitHub repo name, e.g. valentus-theme) mark
+ * theme repos and playbook dependents for rediscovery — see contributing.adoc.
+ *
  * @see docs/modules/ROOT/pages/contributing.adoc
  */
 
@@ -133,7 +137,7 @@ export function classifyAppearance(topics: string[]): AppearanceProfile {
   };
 }
 
-export function validateAntoraTopics(topics: string[], repoName?: string): TopicValidationResult {
+export function validateAntoraTopics(topics: string[], _repoName?: string): TopicValidationResult {
   const normalized = topics.map((t) => t.toLowerCase());
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -152,12 +156,10 @@ export function validateAntoraTopics(topics: string[], repoName?: string): Topic
     if (topic.startsWith('antora') && !prescribed.has(topic)) {
       warnings.push(`Non-prescribed antora topic "${topic}"`);
     }
-    if (repoName && topic === repoName.toLowerCase()) {
-      warnings.push(
-        `Topic "${topic}" matches the repo name — use capability topics instead of product/repo names`,
-      );
-    }
   }
+
+  // Product dependency topics (exact GitHub repo name) are encouraged on both
+  // theme repos and playbook dependents — see contributing.adoc.
 
   if (
     normalized.includes(ANTORA_APPEARANCE_TOPICS.DARK_MODE) &&

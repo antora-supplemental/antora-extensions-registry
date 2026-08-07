@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * Apply githubTopics from antora-registry-topics.json5 to GitHub repos.
+ * Also merge-adds productTopic onto knownDependents (consumer playbook repos).
  * Requires: gh CLI authenticated with repo admin on target repos.
  *
  * Usage:
@@ -32,13 +33,26 @@ function discoverTopicFiles() {
 }
 
 function parseRepoFromUrl(repository) {
-  const match = repository?.match(/github\.com\/([^/]+)\/([^/]+)/);
+  const match = repository?.match(/github\.com\/([^/]+)\/([^/#?]+)/);
   if (!match) return null;
   return { owner: match[1], repo: match[2].replace(/\.git$/, '') };
 }
 
-function applyTopics(owner, repo, names) {
-  const body = JSON.stringify({ names });
+function fetchTopics(owner, repo) {
+  try {
+    const out = execSync(
+      `gh api repos/${owner}/${repo}/topics -H "Accept: application/vnd.github.mercy-preview+json"`,
+      { encoding: 'utf8' },
+    );
+    const parsed = JSON.parse(out);
+    return Array.isArray(parsed.names) ? parsed.names : [];
+  } catch {
+    return [];
+  }
+}
+
+function putTopics(owner, repo, names) {
+  const body = JSON.stringify({ names: [...new Set(names.map((n) => n.toLowerCase()))] });
   const tmp = path.join(process.cwd(), `.topics-${owner}-${repo}.json`);
   fs.writeFileSync(tmp, body, 'utf8');
   try {
@@ -51,6 +65,17 @@ function applyTopics(owner, repo, names) {
   } finally {
     fs.unlinkSync(tmp);
   }
+}
+
+/** Replace topics on the theme/extension repo itself (authoritative list from githubTopics). */
+function applyTopicsReplace(owner, repo, names) {
+  putTopics(owner, repo, names);
+}
+
+/** Merge-add topics onto a dependent without dropping unrelated topics. */
+function applyTopicsMerge(owner, repo, addNames) {
+  const existing = fetchTopics(owner, repo);
+  putTopics(owner, repo, [...existing, ...addNames]);
 }
 
 function main() {
@@ -78,10 +103,28 @@ function main() {
       continue;
     }
     try {
-      applyTopics(parsed.owner, parsed.repo, topics);
+      applyTopicsReplace(parsed.owner, parsed.repo, topics);
     } catch (err) {
       console.error(`✗ ${parsed.owner}/${parsed.repo}: ${err.stderr || err.message}`);
       process.exitCode = 1;
+    }
+
+    const productTopic =
+      (typeof spec.productTopic === 'string' && spec.productTopic) ||
+      parsed.repo;
+    const dependents = Array.isArray(spec.knownDependents) ? spec.knownDependents : [];
+    for (const depUrl of dependents) {
+      const dep = parseRepoFromUrl(depUrl);
+      if (!dep) {
+        console.warn(`Skip dependent ${depUrl}: invalid URL`);
+        continue;
+      }
+      try {
+        applyTopicsMerge(dep.owner, dep.repo, [productTopic]);
+      } catch (err) {
+        console.error(`✗ dependent ${dep.owner}/${dep.repo}: ${err.stderr || err.message}`);
+        process.exitCode = 1;
+      }
     }
   }
 }
