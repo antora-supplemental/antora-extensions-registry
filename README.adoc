@@ -9,31 +9,32 @@ image:https://img.shields.io/github/contributors/antora-supplemental/antora-exte
 image:https://img.shields.io/github/forks/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Forks,link=https://github.com/antora-supplemental/antora-extensions-registry/network/members]
 image:https://img.shields.io/github/stars/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Stars,link=https://github.com/antora-supplemental/antora-extensions-registry/stargazers]
 image:https://img.shields.io/github/issues/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Issues,link=https://github.com/antora-supplemental/antora-extensions-registry/issues]
-image:https://img.shields.io/badge/site-registry.antora--supplemental.org-0ea5e9[Live site,link=https://registry.antora-supplemental.org]
-image:https://img.shields.io/badge/docs-docs.antora--supplemental.org-22c55e[Supplemental docs,link=https://docs.antora-supplemental.org/registry/ROOT/index.html]
+image:https://img.shields.io/badge/site-domain%20pending-yellow[Live site pending]
+image:https://img.shields.io/badge/docs-docs.antora--supplemental.org-22c55e[Supplemental docs,link=https://docs.antora-supplemental.org/registry/]
 image:https://img.shields.io/github/actions/workflow/status/antora-supplemental/antora-extensions-registry/netlify-deploy.yml?branch=main[Deploy,link=https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/netlify-deploy.yml]
 
 = Antora Extensions Registry
 
-Antora ecosystem registry — extensions, themes, UI modules (registry.antora-supplemental.org).
+Antora ecosystem registry — extensions, themes, UI modules.
 
-link:https://registry.antora-supplemental.org[Visit site] ·
-link:https://docs.antora-supplemental.org/registry/ROOT/index.html[Explore the docs] ·
+link:https://docs.antora-supplemental.org/registry/[Explore the docs] ·
 link:https://github.com/antora-supplemental/antora-extensions-registry/issues[Report Bug]
+
+IMPORTANT: The public site domain `registry.antora-supplemental.org` is *pending* (DNS not configured; Netlify production URL currently returns 502). The GitHub About homepage is cleared until a working public URL is available. See `DOMAIN.adoc`.
 
 == About The Project
 
 Community catalog (public brand: *Registry*) for https://antora.org[Antora] extensions, UI themes/bundles, and related ecosystem packages.
 
-*Live site:* https://registry.antora-supplemental.org[registry.antora-supplemental.org]
+*Live site:* pending — intended brand URL is `registry.antora-supplemental.org` (see `DOMAIN.adoc`).
 
 Themes are *not* Antora extensions (`ui.bundle` vs `antora.extensions`); both are first-class categories on this site.
 
-=== What you can do here
+=== What you can do here (once the site is live)
 
-* Browse https://registry.antora-supplemental.org/extensions[extensions] discovered from GitHub topics and registry metadata
-* Explore dependency relationships in the https://registry.antora-supplemental.org/registry[package registry]
-* Preview Antora UI https://registry.antora-supplemental.org/themes[themes] and submit your own (sign-in required)
+* Browse extensions discovered from GitHub topics and registry metadata
+* Explore dependency relationships in the package registry
+* Preview Antora UI themes and submit your own (sign-in required)
 
 link:#readme-top[back to top]
 
@@ -46,7 +47,7 @@ This repository publishes two kinds of documentation:
 | Audience | Where to look
 
 | Public users and extension authors
-| https://docs.antora-supplemental.org/registry/ROOT/index.html[Registry docs] in the https://docs.antora-supplemental.org/[Antora Supplemental docs hub] — contributing guides, metadata formats, and theme submission rules
+| https://docs.antora-supplemental.org/registry/[Registry docs] in the https://docs.antora-supplemental.org/[Antora Supplemental docs hub] — contributing guides, metadata formats, and theme submission rules
 
 | Site operators and contributors working in this repo
 | The sections below (development, deployment, environment)

@@ -1,10 +1,16 @@
-# Custom domain — registry.antora-supplemental.org
+# Custom domain - registry.antora-supplemental.org
+
+Status (2026-08): DNS for `registry.antora-supplemental.org` does not resolve.
+`https://antora-extensions-registry.netlify.app` returns HTTP 502 despite successful GitHub Actions Netlify deploys.
+GitHub About homepage is empty until a working public URL exists.
 
 1. In Netlify → Domain management, add `registry.antora-supplemental.org`.
 2. At the registrar, CNAME `registry` → the Netlify hostname shown (e.g. `antora-extensions-registry.netlify.app`).
-3. Set Netlify env:
+3. Fix the Netlify production site (502) — confirm site ID/token, SSR function env (`DB_URL`, `BETTER_AUTH_*`), and a healthy deploy.
+4. Set Netlify env:
    - `BETTER_AUTH_URL=https://registry.antora-supplemental.org`
    - `BETTER_AUTH_TRUSTED_ORIGINS=https://registry.antora-supplemental.org`
-4. Update OAuth app callbacks to `https://registry.antora-supplemental.org/api/auth/callback/<provider>`.
+5. Update OAuth app callbacks to `https://registry.antora-supplemental.org/api/auth/callback/<provider>`.
+6. Restore the repo homepage URL to `https://registry.antora-supplemental.org` once it returns 200.
 
 Org-wide DNS table: https://github.com/antora-supplemental/antora-supplemental.github.io/blob/main/DOMAIN.adoc
