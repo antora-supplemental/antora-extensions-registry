@@ -9,6 +9,7 @@ app.config.timestamp_*.js
 # Environment
 .env
 .env*.local
+MEMORIES.md
 
 # dependencies
 /node_modules
