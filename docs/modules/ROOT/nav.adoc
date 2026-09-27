@@ -1,2 +1,3 @@
 * xref:index.adoc[Welcome]
 * xref:contributing.adoc[Contributing]
+* xref:filters.adoc[Registry filters]

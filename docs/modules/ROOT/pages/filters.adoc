@@ -1,0 +1,60 @@
+= Registry filters
+:description: How to filter Antora pipeline extensions vs Asciidoctor extensions, lifecycle hooks, and processor subtypes.
+:page-orig-author: Ryan Johnson
+:page-last-edited: 2026-09-27
+
+Catalog filters help operators and authors distinguish **where** an extension plugs in.
+
+== Playbook buckets
+
+[cols="1,2,2"]
+|===
+|Filter / bucket |Playbook key |Typical metadata
+
+|Antora / pipeline extensions
+|`antora.extensions`
+|`pipeline: true`, often `lifecycleHooks` such as `sitePublished`
+
+|AsciiDoc / Asciidoctor extensions
+|`asciidoc.extensions`
+|`asciidoctor: true`, optional `processorSubtypes`
+
+|UI themes / bundles
+|`ui.bundle` (not an extension)
+|Separate catalog category — not listed under `antora.extensions`
+|===
+
+== Lifecycle hooks
+
+Pipeline extensions should declare `lifecycleHooks` in `antora-registry.md` / `registryMeta`, for example:
+
+* `contentClassified`
+* `documentsConverted`
+* `sitePublished`
+
+Filters can surface “runs at site publish” vs earlier generator phases.
+
+== Asciidoctor subtypes
+
+When `asciidoctor: true`, use `processorSubtypes` so the registry can filter:
+
+* `tree` / `document`
+* `inline`
+* `block`
+* `include`
+* `postprocessor` / `preprocessor`
+
+== Chassis layer and purpose
+
+Also filterable (see https://github.com/antora-supplemental/extension-lister[extension-lister] DESIGN notes):
+
+* **Layer:** `engine` · `chassis` · `body-kit` · `paint` · `bolt-on`
+* **Purpose:** capability tags such as `link-validation`, `link-ux`, `registry`, `nav`
+
+== Self-register sources
+
+Prefer machine-readable exports (first hit wins in extension-lister):
+
+. `require(pkg).registryMeta` or `pkg/registry`
+. `antora-registry.md` YAML frontmatter
+. `package.json#antoraSupplemental`
