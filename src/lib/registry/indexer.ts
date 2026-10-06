@@ -55,7 +55,7 @@ export async function indexExtension(
     // If we have an adoc file, it should be parsed
     // This is where we dogfood the AsciiDoc parser
     if (enhanced?.readme && (enhanced.readme.includes('\n= ') || enhanced.readme.startsWith('= '))) {
-        const parsed = parseExtensionDoc(enhanced.readme);
+        const parsed = await parseExtensionDoc(enhanced.readme);
         readmeHtml = parsed.contentHtml;
         // Optionally update other metadata from frontmatter if not provided
         if (!pkg.description) pkg.description = parsed.description;
