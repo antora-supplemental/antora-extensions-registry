@@ -1,10 +1,11 @@
-import type { Component} from "solid-js";
+import type { Component } from "solid-js";
 import { createSignal, Show, For } from "solid-js";
 import { InstallMethods } from "./InstallMethods";
 import type { DependencyNode } from "~/lib/registry/analyzer";
+import type { SearchResult } from "~/lib/registry/search";
 
 export const ExtensionPanel: Component<{
-    extension: any;
+    extension: SearchResult | null;
     isOpen: boolean;
     onClose: () => void;
     dependencyTree: DependencyNode | null;

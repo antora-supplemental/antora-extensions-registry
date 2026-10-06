@@ -1,5 +1,4 @@
 import {
-  ANTORA_TOPICS,
   EXTENSION_DISCOVERY_QUERY,
   THEME_DISCOVERY_QUERY,
   validateAntoraTopics,
@@ -91,7 +90,7 @@ async function enrichDiscoveredRepo(item: GitHubSearchRepo): Promise<TopicDiscov
   const topics =
     item.topics && item.topics.length > 0 ? item.topics : await fetchRepoTopics(owner, repo);
 
-  const topicValidation = validateAntoraTopics(topics, repo);
+  const topicValidation = validateAntoraTopics(topics);
   if (!topicValidation.valid || !topicValidation.primaryKind) return null;
 
   return {

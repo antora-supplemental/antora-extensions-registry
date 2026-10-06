@@ -137,7 +137,7 @@ export function classifyAppearance(topics: string[]): AppearanceProfile {
   };
 }
 
-export function validateAntoraTopics(topics: string[], _repoName?: string): TopicValidationResult {
+export function validateAntoraTopics(topics: string[]): TopicValidationResult {
   const normalized = topics.map((t) => t.toLowerCase());
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -145,8 +145,7 @@ export function validateAntoraTopics(topics: string[], _repoName?: string): Topi
   const matchedPrimary = PRIMARY_TOPIC_VALUES.filter((p) => normalized.includes(p));
   if (matchedPrimary.length === 0) {
     errors.push(
-      `Missing primary topic — add "${ANTORA_TOPICS.EXTENSION}" or "${ANTORA_TOPICS.THEME}"`,
-    );
+      `Missing primary topic — add "${ANTORA_TOPICS.EXTENSION}" or "${ANTORA_TOPICS.THEME}"`);
   } else if (matchedPrimary.length > 1) {
     errors.push(`Multiple primary topics (${matchedPrimary.join(', ')}) — use exactly one`);
   }

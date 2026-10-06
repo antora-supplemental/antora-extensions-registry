@@ -16,7 +16,7 @@ export async function GET({ request }: { request: Request }) {
 
   const parsed = parseGitHubUrl(repoUrl);
   const topics = parsed ? await fetchRepoTopics(parsed.owner, parsed.repo) : [];
-  const topicValidation = validateAntoraTopics(topics, parsed?.repo);
+  const topicValidation = validateAntoraTopics(topics);
 
   const result = await discoverUiModules(repoUrl);
 

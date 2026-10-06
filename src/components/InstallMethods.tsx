@@ -1,4 +1,5 @@
-import { Component, createSignal, For } from "solid-js";
+import type { Component } from "solid-js";
+import { createSignal, For } from "solid-js";
 
 export const InstallMethods: Component<{ name: string; version: string }> = (props) => {
     const [activeTab, setActiveTab] = createSignal("pnpm");

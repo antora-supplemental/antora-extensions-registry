@@ -3,8 +3,8 @@ import { discoverUiModules } from '~/lib/ui-modules';
 
 export function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
   const patterns = [
-    /github\.com\/([^\/]+)\/([^\/]+)/,
-    /^([^\/]+)\/([^\/]+)$/,
+    /github\.com\/([^/]+)\/([^/]+)/,
+    /^([^/]+)\/([^/]+)$/,
   ];
 
   for (const pattern of patterns) {

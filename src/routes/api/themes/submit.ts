@@ -47,7 +47,7 @@ export async function POST({ request }: { request: Request }) {
       });
     }
 
-    const githubMatch = repoUrl.match(/github\.com\/([^\/]+)\/([^\/\?#]+)/);
+    const githubMatch = repoUrl.match(/github\.com\/([^/]+)\/([^/?#]+)/);
     if (!githubMatch) {
       return new Response(JSON.stringify({ error: 'Invalid GitHub URL' }), {
         status: 400,
