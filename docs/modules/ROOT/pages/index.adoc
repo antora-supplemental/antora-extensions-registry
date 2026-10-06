@@ -4,8 +4,8 @@ Welcome to the Antora ecosystem registry documentation (public site brand: *Regi
 
 This component is published in two places:
 
-* https://registry.antora-supplemental.org[registry.antora-supplemental.org] â€” the live catalog (extensions, themes, packages)
-* https://docs.antora-supplemental.org/registry/ROOT/index.html[Antora Supplemental docs hub] â€” aggregated alongside other antora-supplemental projects
+* https://registry.antora-supplemental.org[registry.antora-supplemental.org] — the live catalog (extensions, themes, packages)
+* https://docs.antora-supplemental.org/registry/ROOT/index.html[Antora Supplemental docs hub] — aggregated alongside other antora-supplemental projects
 
 Themes are UI bundles (`ui.bundle`), not Antora playbook extensions. Both are catalogued here.
 
