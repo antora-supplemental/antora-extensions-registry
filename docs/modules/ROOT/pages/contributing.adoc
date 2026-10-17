@@ -131,19 +131,19 @@ Product / dependency rediscovery uses a *separate* rule (see <<product-dependenc
 *Rule:* Every published Antora UI theme picks a **product topic** equal to its GitHub repository name (kebab-case), for example `valentus-theme` or `architexture-theme`.
 
 * Theme repository: carry the product topic *alongside* gallery/capability topics.
-* Dependent repositories (Antora playbooks that set `ui.bundle.url` to that theme’s release, or vendor its `supplemental-ui`): add the *same* product topic.
+* Dependent repositories (Antora playbooks that set `ui.bundle.url` to that theme’s release, or vendor its `supplemental-ui`) **without** a compose pack: add the *same* product topic. Hubs on facto-stack tag the pack instead (see <<direct-deps-only>>).
 
 Rediscover with GitHub Search: `topic:valentus-theme` (or `gh search repos --topic valentus-theme`).
 
 [[direct-deps-only]]
-==== Direct dependencies only (transitive exclusion)
+==== Provider rule (direct deps only; packs own their members)
 
-Playbook / docs-hub repositories tag **direct** dependencies only — not every package a compose pack pulls in.
+Playbook / docs-hub repositories tag the **provider they declare**, not every package that provider supplies.
 
-* *Direct* — tag when the hub declares it: top-level playbook `require:`, hub `package.json` pin, or `ui.bundle.url` to a named theme.
-* *Transitive* — do **not** tag when the package appears only because `@antora-supplemental/facto-stack` (or another compose pack) registered it. Tag `facto-stack` instead; pack releases communicate member bumps to those consumers.
+* *Direct* — tag when the hub declares it itself: a top-level playbook `require:` of a non-pack extension, a hub `package.json` pin it genuinely owns, or `ui.bundle.url` to a named theme *when no compose pack is in use*.
+* *Provided* — do **not** tag when `@antora-supplemental/facto-stack` (or another compose pack) supplies it: every pack member extension, the maint CLIs (`facto-maint`), and the Valentus bundle that pairs with the pack. The hub does not pin them, so it does not tag them; pack releases communicate member bumps.
 
-Example: a hub with only `require: '@antora-supplemental/facto-stack'` carries topics `facto-stack` and `valentus-theme` (bundle URL), not `linkinator`, `page-edit`, or `antora-search-chat`. Add `site-nav-tree` only if the hub also pins that repo in `package.json` for supplemental-ui sync.
+Example: a hub on facto-stack carries the single topic `facto-stack` — no `valentus-theme`, `page-context`, `site-nav-tree`, `soft-nav-page-toc`, `linkinator`, `page-edit`, or `antora-search-chat`. A hub that uses Valentus *without* a pack carries `valentus-theme` (and any extension it directly requires).
 
 Mis-tagged transitive topics pollute `topic:<extension>` search and imply a direct pin the hub does not own. Hub operator guide: link:https://github.com/antora-supplemental/docs/blob/main/docs/modules/ROOT/pages/hub-github-topics.adoc[Hub GitHub topics^] (antora-supplemental/docs).
 
