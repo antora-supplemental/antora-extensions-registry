@@ -135,6 +135,18 @@ Product / dependency rediscovery uses a *separate* rule (see <<product-dependenc
 
 Rediscover with GitHub Search: `topic:valentus-theme` (or `gh search repos --topic valentus-theme`).
 
+[[direct-deps-only]]
+==== Direct dependencies only (transitive exclusion)
+
+Playbook / docs-hub repositories tag **direct** dependencies only — not every package a compose pack pulls in.
+
+* *Direct* — tag when the hub declares it: top-level playbook `require:`, hub `package.json` pin, or `ui.bundle.url` to a named theme.
+* *Transitive* — do **not** tag when the package appears only because `@antora-supplemental/facto-stack` (or another compose pack) registered it. Tag `facto-stack` instead; pack releases communicate member bumps to those consumers.
+
+Example: a hub with only `require: '@antora-supplemental/facto-stack'` carries topics `facto-stack` and `valentus-theme` (bundle URL), not `linkinator`, `page-edit`, or `antora-search-chat`. Add `site-nav-tree` only if the hub also pins that repo in `package.json` for supplemental-ui sync.
+
+Mis-tagged transitive topics pollute `topic:<extension>` search and imply a direct pin the hub does not own. Hub operator guide: link:https://github.com/antora-supplemental/docs/blob/main/docs/modules/ROOT/pages/hub-github-topics.adoc[Hub GitHub topics^] (antora-supplemental/docs).
+
 Theme authors should document the rule in their install guide and keep a `knownDependents` list in root `antora-registry-topics.json5` (optional seed for maintainers). Apply theme + dependent topics with:
 
 [source,bash]
