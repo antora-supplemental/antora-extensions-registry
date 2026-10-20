@@ -35,7 +35,7 @@ Everything below the frontmatter is used as the detailed description in the exte
 
 === Template
 
-You can use the following template as a starting point. [link:https://github.com/antora-supplemental/antora-extensions-registry/blob/main/templates/antora-registry.md[Download Template]]
+You can use the following template as a starting point. link:https://github.com/antora-supplemental/antora-extensions-registry/blob/main/templates/antora-registry.adoc[Download template (`antora-registry.adoc`)^]
 
 [source,markdown]
 ----
@@ -43,9 +43,9 @@ You can use the following template as a starting point. [link:https://github.com
 name: "My Awesome Extension"
 description: "Briefly explain what your extension does and why it's great."
 screenshots:
-  - url: "https://raw.githubusercontent.com/user/repo/main/docs/assets/screenshot1.png"
+  - url: "https://example.com/assets/screenshot1.png"
     caption: "Desktop View - Features highlighted"
-  - url: "https://raw.githubusercontent.com/user/repo/main/docs/assets/screenshot2.png"
+  - url: "https://example.com/assets/screenshot2.png"
     caption: "Responsive Mobile Layout"
 ---
 

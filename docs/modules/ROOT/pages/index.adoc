@@ -5,7 +5,7 @@ Welcome to the Antora ecosystem registry documentation (public site brand: *Regi
 This component is published in two places:
 
 * https://registry.antora-supplemental.org[registry.antora-supplemental.org] — the live catalog (extensions, themes, packages)
-* https://docs.antora-supplemental.org/registry/ROOT/index.html[Antora Supplemental docs hub] — aggregated alongside other antora-supplemental projects
+* xref:docs:ROOT:index.adoc[Antora Supplemental docs hub] — aggregated alongside other antora-supplemental projects (also https://docs.antora-supplemental.org/registry/[on the live site^])
 
 Themes are UI bundles (`ui.bundle`), not Antora playbook extensions. Both are catalogued here.
 
@@ -26,4 +26,4 @@ Repository setup, authentication, and Netlify deployment are documented in the h
 
 == Filters
 
-See xref:filters.adoc[Registry filters] for ntora.extensions vs sciidoc.extensions, lifecycle hooks, and Asciidoctor subtypes.
+See xref:filters.adoc[Registry filters] for `antora.extensions` vs `asciidoc.extensions`, lifecycle hooks, and Asciidoctor subtypes.
