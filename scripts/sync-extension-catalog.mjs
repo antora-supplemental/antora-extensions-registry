@@ -19,6 +19,12 @@ const knownExtensionRepos = [
     branch: 'main',
     localRegistryIndex: '../valentus-theme/ui-modules/registry-index.json',
   },
+  {
+    owner: 'antora-supplemental',
+    repo: 'antora-ui-chassis',
+    branch: 'main',
+    localRegistryIndex: '../antora-ui-chassis/registry-index.json',
+  },
 ];
 
 const UI_MODULES_ROOT = 'ui-modules';

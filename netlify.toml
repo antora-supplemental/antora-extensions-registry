@@ -4,6 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # Runtime (Netlify UI → Environment): BETTER_AUTH_SECRET, DB_URL, DB_AUTH_TOKEN.
+  # Until set, SSR falls back to catalog-only mode (see src/env/server.ts).
 
 [[redirects]]
   from = "/*"

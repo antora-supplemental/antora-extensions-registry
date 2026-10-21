@@ -1,6 +1,7 @@
 # Custom domain - registry.antora-supplemental.org
 
-Status (2026-08): DNS for `registry.antora-supplemental.org` does not resolve.
+Status (2026-10): DNS for `registry.antora-supplemental.org` may not resolve from all networks; canonical hostname is `registry.antora-supplemental.org` (not `registry.antora-extensions.org`).
+Netlify default `https://antora-extensions-registry.netlify.app` returns 502 when runtime env (Turso + Better Auth) is missing — set secrets in Netlify or enable catalog-only bootstrap until Turso is wired.
 `https://antora-extensions-registry.netlify.app` returns HTTP 502 despite successful GitHub Actions Netlify deploys.
 GitHub About homepage is empty until a working public URL exists.
 

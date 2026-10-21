@@ -25,9 +25,18 @@ export const serverScheme = z
     DB_URL: z.string().default("file:local.db"),
     DB_AUTH_TOKEN: z.string().optional(),
     GITHUB_TOKEN: z.string().optional(),
+    REGISTRY_CATALOG_ONLY: z.enum(["true", "false", "0", "1"]).optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.NODE_ENV === "production" && !isRemoteLibSql(data.DB_URL)) {
+    const catalogOnly =
+      data.REGISTRY_CATALOG_ONLY === "true" ||
+      data.REGISTRY_CATALOG_ONLY === "1";
+
+    if (
+      data.NODE_ENV === "production" &&
+      !catalogOnly &&
+      !isRemoteLibSql(data.DB_URL)
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["DB_URL"],
@@ -35,7 +44,7 @@ export const serverScheme = z
       });
     }
 
-    if (isRemoteLibSql(data.DB_URL) && !data.DB_AUTH_TOKEN) {
+    if (isRemoteLibSql(data.DB_URL) && !data.DB_AUTH_TOKEN && !catalogOnly) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["DB_AUTH_TOKEN"],
