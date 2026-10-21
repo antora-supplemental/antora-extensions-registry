@@ -6,4 +6,5 @@
 * SSR bootstrap: catalog-only mode on Netlify when Better Auth / Turso env is missing (avoids hard 502; full auth/search still needs Netlify secrets).
 * Netlify follow-up: Lambda runtime detection, in-memory LibSQL for catalog-only, `REGISTRY_CATALOG_ONLY=true` in `netlify.toml` until Turso + Better Auth are set.
 * Netlify SSR: declare `pathe` dependency so the server function bundle resolves Vinxi imports; set production runtime `REGISTRY_CATALOG_ONLY` in `netlify.toml`.
+* Netlify deploy: stage `.netlify` into `dist/` after build so GitHub Actions uploads SSR functions with static assets.
 * Document canonical hostname `registry.antora-supplemental.org` vs stale `registry.antora-extensions.org` (`DOMAIN.adoc`).

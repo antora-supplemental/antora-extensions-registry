@@ -2,7 +2,7 @@
   "name": "antora-extensions-registry",
   "scripts": {
     "dev": "vinxi dev",
-    "build": "vinxi build",
+    "build": "vinxi build && node scripts/stage-netlify-in-dist.mjs",
     "start": "vinxi start",
     "lint": "eslint --fix \"**/*.{ts,tsx,js,jsx}\"",
     "typecheck": "tsc --noEmit",
