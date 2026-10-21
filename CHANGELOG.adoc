@@ -2,6 +2,8 @@
 
 == Unreleased
 
+* Netlify SSR staging: cross-platform `server.zip` rebuild (Windows `tar -a`), normalize `manifest.json` paths, copy required packages (`pathe`) into the Lambda bundle; fail staging if `server.zip` is missing.
+* DNS: Cloudflare CNAME `registry.antora-supplemental.org` → `antora-extensions-registry.netlify.app` (2026-10-21).
 * Docs: hub xref now targets component `home` (was `docs`).
 * Catalog: index `antora-ui-chassis` playbook extensions (`soft-nav-context`, `chassis-compose`) via `registry-index.json`.
 * SSR bootstrap: catalog-only mode on Netlify when Better Auth / Turso env is missing (avoids hard 502; full auth/search still needs Netlify secrets).

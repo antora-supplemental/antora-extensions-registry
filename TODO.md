@@ -2,6 +2,7 @@
 
 ## Custom domain (registry.antora-supplemental.org)
 
+- [x] Cloudflare CNAME `registry` → `antora-extensions-registry.netlify.app` (proxied, 2026-10-21).
 - [ ] Add `registry.antora-supplemental.org` in Netlify Domain management (see `DOMAIN.adoc`).
 - [ ] Registrar CNAME `registry` → Netlify site hostname.
 - [ ] Set `BETTER_AUTH_URL` / `BETTER_AUTH_TRUSTED_ORIGINS` to `https://registry.antora-supplemental.org`.

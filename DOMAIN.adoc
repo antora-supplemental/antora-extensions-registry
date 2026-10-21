@@ -1,9 +1,10 @@
 # Custom domain - registry.antora-supplemental.org
 
-Status (2026-10): DNS for `registry.antora-supplemental.org` may not resolve from all networks; canonical hostname is `registry.antora-supplemental.org` (not `registry.antora-extensions.org`).
-Netlify default `https://antora-extensions-registry.netlify.app` returns 502 when runtime env (Turso + Better Auth) is missing — set secrets in Netlify or enable catalog-only bootstrap until Turso is wired.
-`https://antora-extensions-registry.netlify.app` returns HTTP 502 despite successful GitHub Actions Netlify deploys.
-GitHub About homepage is empty until a working public URL exists.
+Status (2026-10): Cloudflare CNAME `registry` → `antora-extensions-registry.netlify.app` (proxied). Canonical hostname is `registry.antora-supplemental.org` (not `registry.antora-extensions.org`).
+
+Production still returns HTTP 502 until a deploy uploads a fixed SSR `server.zip` (missing `pathe` in the live Lambda bundle) **and** Netlify Domain management lists `registry.antora-supplemental.org`.
+
+GitHub Actions deploys require repository secrets `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID` (`28389c57-19f0-45f0-abe6-075e2d6bd26c`). Catalog-only mode (`REGISTRY_CATALOG_ONLY=true` in `netlify.toml`) is enough for a public catalog until Turso + Better Auth are set.
 
 1. In Netlify → Domain management, add `registry.antora-supplemental.org`.
 2. At the registrar, CNAME `registry` → the Netlify hostname shown (e.g. `antora-extensions-registry.netlify.app`).
