@@ -41,6 +41,7 @@
     "drizzle-orm": "^0.45.2",
     "gray-matter": "^4.0.3",
     "jose": "^6.2.3",
+    "pathe": "^2.0.3",
     "json5": "^2.2.3",
     "postcss": "^8.4.40",
     "solid-js": "^1.9.5",

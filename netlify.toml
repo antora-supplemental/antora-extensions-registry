@@ -7,6 +7,9 @@
   REGISTRY_CATALOG_ONLY = "true"
   # Full mode: set in Netlify UI (runtime): BETTER_AUTH_SECRET, DB_URL, DB_AUTH_TOKEN, then REGISTRY_CATALOG_ONLY=false.
 
+[context.production.environment]
+  REGISTRY_CATALOG_ONLY = "true"
+
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/server"
