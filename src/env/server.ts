@@ -19,6 +19,14 @@ function netlifyHost(): string {
   );
 }
 
+function isNetlifyRuntime(): boolean {
+  return (
+    process.env.NETLIFY === "true" ||
+    Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME) ||
+    Boolean(process.env.NETLIFY_DEV)
+  );
+}
+
 function catalogOnlyBootstrap(): boolean {
   if (
     process.env.REGISTRY_CATALOG_ONLY === "true" ||
@@ -26,7 +34,7 @@ function catalogOnlyBootstrap(): boolean {
   ) {
     return true;
   }
-  if (process.env.NETLIFY !== "true") return false;
+  if (!isNetlifyRuntime()) return false;
   return !process.env.BETTER_AUTH_SECRET || !process.env.DB_URL;
 }
 
@@ -42,17 +50,17 @@ function bootstrapCatalogOnlyEnv() {
       process.env.BETTER_AUTH_SECRET ||
       "catalog-only-placeholder-not-for-auth-use",
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL || netlifyHost(),
-    DB_URL: process.env.DB_URL || "file:registry-catalog-only.db",
+    DB_URL: process.env.DB_URL || "file::memory:?cache=shared",
   });
 }
 
 const parsed = serverScheme.safeParse(process.env);
 
 export const serverEnv =
-  parsed.success === false && catalogOnlyBootstrap()
-    ? bootstrapCatalogOnlyEnv()
-    : parsed.success
-      ? parsed.data
+  parsed.success
+    ? parsed.data
+    : catalogOnlyBootstrap()
+      ? bootstrapCatalogOnlyEnv()
       : (() => {
           console.error(
             "❌ Invalid environment variables:\n",

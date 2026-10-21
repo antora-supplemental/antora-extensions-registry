@@ -4,4 +4,5 @@
 
 * Catalog: index `antora-ui-chassis` playbook extensions (`soft-nav-context`, `chassis-compose`) via `registry-index.json`.
 * SSR bootstrap: catalog-only mode on Netlify when Better Auth / Turso env is missing (avoids hard 502; full auth/search still needs Netlify secrets).
+* Netlify follow-up: Lambda runtime detection, in-memory LibSQL for catalog-only, `REGISTRY_CATALOG_ONLY=true` in `netlify.toml` until Turso + Better Auth are set.
 * Document canonical hostname `registry.antora-supplemental.org` vs stale `registry.antora-extensions.org` (`DOMAIN.adoc`).
