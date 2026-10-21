@@ -50,6 +50,7 @@ jobs:
           enable-pull-request-comment: true
           enable-commit-comment: false
           overwrites-pull-request-comment: true
+          fails-without-credentials: true
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

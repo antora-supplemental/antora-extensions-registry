@@ -8,4 +8,5 @@
 * Netlify SSR: declare `pathe` dependency so the server function bundle resolves Vinxi imports; set production runtime `REGISTRY_CATALOG_ONLY` in `netlify.toml`.
 * Netlify deploy: stage `.netlify` into `dist/` after build; set `functions-dir` in GitHub Actions so SSR `server.zip` deploys with static assets.
 * Netlify SSR: materialize pnpm-linked deps (e.g. `pathe`) before re-zipping the server function for Lambda.
+* CI: fail Netlify deploy when `NETLIFY_AUTH_TOKEN` / `NETLIFY_SITE_ID` secrets are missing (avoid green builds that skip upload).
 * Document canonical hostname `registry.antora-supplemental.org` vs stale `registry.antora-extensions.org` (`DOMAIN.adoc`).
