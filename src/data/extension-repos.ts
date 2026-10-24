@@ -18,7 +18,14 @@ export const knownExtensionRepos: KnownExtensionRepo[] = [
     repo: 'antora-ui-chassis',
     branch: 'main',
     discoveredVia: 'curated',
-    githubTopics: [ANTORA_TOPICS.EXTENSION, 'soft-nav-context', 'chassis-compose'],
+    githubTopics: [ANTORA_TOPICS.EXTENSION, 'page-state', 'chassis-compose'],
     localRegistryIndex: '../antora-ui-chassis/registry-index.json',
+  },
+  {
+    owner: 'antora-supplemental',
+    repo: 'antora-glossary',
+    branch: 'main',
+    discoveredVia: 'curated',
+    githubTopics: [ANTORA_TOPICS.EXTENSION, 'glossary', 'antora-glossary'],
   },
 ];
