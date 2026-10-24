@@ -278,7 +278,9 @@ export async function discoverUiModules(repoUrl: string): Promise<ExtensionDisco
   };
   const htmlUrl = repoInfo?.html_url ?? `https://github.com/${owner}/${repo}`;
 
-  const indexText = await fetchRawText(owner, repo, REGISTRY_INDEX_PATH);
+  const indexText =
+    (await fetchRawText(owner, repo, REGISTRY_INDEX_PATH)) ??
+    (await fetchRawText(owner, repo, 'registry-index.json'));
   if (indexText) {
     try {
       const index = JSON.parse(indexText) as RegistryIndex;
