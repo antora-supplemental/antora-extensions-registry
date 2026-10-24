@@ -10,7 +10,3 @@
 [context.production.environment]
   REGISTRY_CATALOG_ONLY = "true"
 
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/server"
-  status = 200

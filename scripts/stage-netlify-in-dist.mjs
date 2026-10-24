@@ -172,16 +172,8 @@ if (!existsSync(netlifyOut)) {
   process.exit(0);
 }
 
-rebuildServerZip();
-mkdirSync(distDir, { recursive: true });
-cpSync(netlifyOut, dest, { recursive: true });
-normalizeFunctionsManifest(join(dest, "functions"));
-
-const stagedZip = join(dest, "functions/server.zip");
-if (!existsSync(stagedZip)) {
-  throw new Error(
-    "[registry] dist/.netlify/functions/server.zip missing after staging.",
-  );
-}
-
-console.log("[registry] Staged .netlify SSR artifacts into dist/.netlify for deploy.");
+// Netlify CLI bundles .netlify/functions-internal/server itself (deploy --functions).
+// Only materialize pnpm symlinks so the function folder is self-contained.
+ensureServerBundlePackages(join(netlifyOut, "functions-internal/server"));
+rmSync(dest, { force: true, recursive: true });
+console.log("[registry] Prepared .netlify/functions-internal/server for netlify deploy.");
