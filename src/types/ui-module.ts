@@ -1,6 +1,6 @@
 /** Catalog entry types derived from ui-modules/registry.json5 manifests. */
 
-export type ExtensionKind = 'ui-module' | 'ui-recipe' | 'ui-bundle';
+export type ExtensionKind = 'ui-module' | 'ui-recipe' | 'ui-bundle' | 'antora-extension';
 
 export interface UiModuleSlots {
   head?: {

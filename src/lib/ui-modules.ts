@@ -269,16 +269,14 @@ export async function discoverUiModules(repoUrl: string): Promise<ExtensionDisco
   }
 
   const { owner, repo } = parsed;
+  // GitHub API metadata is optional: unauthenticated calls are rate limited, raw files are not.
   const repoInfo = await fetchRepoInfo(owner, repo);
-  if (!repoInfo) {
-    return { valid: false, error: 'Repository not found or not accessible' };
-  }
-
   const repoMeta = {
-    stars: repoInfo.stargazers_count,
-    author: repoInfo.owner.login,
-    lastUpdated: repoInfo.updated_at,
+    stars: repoInfo?.stargazers_count ?? 0,
+    author: repoInfo?.owner.login ?? owner,
+    lastUpdated: repoInfo?.updated_at ?? new Date().toISOString(),
   };
+  const htmlUrl = repoInfo?.html_url ?? `https://github.com/${owner}/${repo}`;
 
   const indexText = await fetchRawText(owner, repo, REGISTRY_INDEX_PATH);
   if (indexText) {
@@ -287,7 +285,7 @@ export async function discoverUiModules(repoUrl: string): Promise<ExtensionDisco
       const catalog = indexToCatalog(index, owner, repo, repoMeta);
       return {
         valid: true,
-        repository: index.repository || repoInfo.html_url,
+        repository: index.repository || htmlUrl,
         source: 'registry-index.json',
         modules: catalog.modules,
         recipes: catalog.recipes,
@@ -315,7 +313,7 @@ export async function discoverUiModules(repoUrl: string): Promise<ExtensionDisco
     const catalog = indexToCatalog(index, owner, repo, repoMeta);
     return {
       valid: true,
-      repository: registry.repository || repoInfo.html_url,
+      repository: registry.repository || htmlUrl,
       source: 'registry.json5',
       modules: catalog.modules,
       recipes: catalog.recipes,
@@ -364,10 +362,52 @@ export async function indexKnownRepo(
 
   const result = await discoverUiModules(repoUrl);
   if (!result.valid) {
+    const pkgEntry = await packageJsonEntry(owner, repo, ref.branch ?? 'main', repoMeta);
+    if (pkgEntry) return { modules: [pkgEntry], recipes: [] };
     console.warn(`Failed to index ${ref.owner}/${ref.repo}: ${result.error}`);
     return { modules: [], recipes: [] };
   }
   return { modules: result.modules ?? [], recipes: result.recipes ?? [] };
+}
+
+/**
+ * Plain Antora extensions (no ui-modules catalog) are listed from package.json.
+ */
+async function packageJsonEntry(
+  owner: string,
+  repo: string,
+  branch: string,
+  repoMeta: { stars: number; author: string; lastUpdated: string; githubRepoId?: number; githubTopics?: string[] },
+): Promise<ExtensionCatalogEntry | null> {
+  const text = await fetchRawText(owner, repo, 'package.json', branch);
+  if (!text) return null;
+  let pkg: { name?: string; version?: string; description?: string };
+  try {
+    pkg = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  const entry = enrichEntry(
+    {
+      id: repo,
+      name: pkg.name ?? repo,
+      version: pkg.version ?? '0.0.0',
+      type: 'antora-extension',
+      description: pkg.description ?? '',
+      repository: `https://github.com/${owner}/${repo}`,
+      repositoryOwner: owner,
+      repositoryName: repo,
+      manifestPath: 'package.json',
+      requires: [],
+      recommends: [],
+      conflicts: [],
+    } as Parameters<typeof enrichEntry>[0],
+    owner,
+    repo,
+    repoMeta,
+  );
+  entry.tags = [...new Set(['antora-extension', ...entry.tags.filter((t) => t !== 'ui-module')])];
+  return entry;
 }
 
 export interface ExtensionCatalogResult {
@@ -458,6 +498,10 @@ export function formatInstallSnippet(entry: ExtensionCatalogEntry): string {
     '    - require: ./ui-modules/packages/orchestrator/lib/index.js',
     `      registry: ${registry}`,
   ];
+
+  if (entry.type === 'antora-extension') {
+    return ['antora:', '  extensions:', `    - require: '${entry.name}'`].join('\n');
+  }
 
   if (entry.install?.orchestrator?.recipe) {
     lines.push(`      recipe: ${entry.install.orchestrator.recipe}`);

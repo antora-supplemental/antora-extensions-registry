@@ -27,6 +27,7 @@ export default function ExtensionCard(props: ExtensionCardProps) {
 
   const typeLabel = () => {
     if (props.entry.type === 'ui-recipe') return 'Recipe';
+    if (props.entry.type === 'antora-extension') return 'Extension';
     if (props.entry.tags.includes('fragment')) return 'Fragment';
     return 'Module';
   };

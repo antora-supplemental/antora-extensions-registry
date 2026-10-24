@@ -1,0 +1,1047 @@
+{
+  "generatedAt": "2026-10-24T09:14:26.804Z",
+  "modules": [
+    {
+      "id": "vcs-icons",
+      "name": "VCS provider icons",
+      "version": "1.0.0",
+      "type": "ui-module",
+      "description": "Provider SVG assets and JS to map repository URLs to icons in header and edit links.",
+      "repository": "https://github.com/antora-supplemental/valentus-theme",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "valentus-theme",
+      "manifestPath": "packages/vcs-icons/ui-module.json5",
+      "modulePath": "packages/vcs-icons",
+      "requires": [],
+      "recommends": [
+        "dark-mode"
+      ],
+      "conflicts": [],
+      "partials": {
+        "provide": [],
+        "replace": []
+      },
+      "slots": {
+        "foot": {
+          "scripts": [
+            "js/site-vcs-icons.js"
+          ]
+        }
+      },
+      "uiFileCount": 10,
+      "install": {
+        "orchestrator": {
+          "registry": "./ui-modules/registry.json5",
+          "modules": [
+            "vcs-icons"
+          ]
+        }
+      },
+      "catalogId": "antora-supplemental/valentus-theme/vcs-icons",
+      "tags": [
+        "ui-module",
+        "layout",
+        "extension"
+      ],
+      "stars": 1,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T06:54:22Z",
+      "githubRepoId": 1264628880,
+      "githubTopics": [
+        "antora-extension"
+      ]
+    },
+    {
+      "id": "bc-mast",
+      "name": "Breadcrumb doc mast",
+      "version": "1.0.0",
+      "type": "ui-module",
+      "description": "Component/version kickers in the breadcrumb row, trail fragments, doc mast wrapper, and accordion behavior.",
+      "repository": "https://github.com/antora-supplemental/valentus-theme",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "valentus-theme",
+      "manifestPath": "packages/bc-mast/ui-module.json5",
+      "modulePath": "packages/bc-mast",
+      "requires": [
+        "edit-crumb"
+      ],
+      "recommends": [
+        "dark-mode"
+      ],
+      "conflicts": [],
+      "partials": {
+        "provide": [
+          "valentus-bc-cluster",
+          "valentus-bc-trail",
+          "valentus-doc-mast"
+        ],
+        "replace": [
+          "breadcrumbs"
+        ]
+      },
+      "slots": {
+        "foot": {
+          "scripts": [
+            "js/site-valentus-accordion.js"
+          ]
+        }
+      },
+      "uiFileCount": 5,
+      "install": {
+        "orchestrator": {
+          "registry": "./ui-modules/registry.json5",
+          "modules": [
+            "bc-mast"
+          ]
+        }
+      },
+      "catalogId": "antora-supplemental/valentus-theme/bc-mast",
+      "tags": [
+        "ui-module",
+        "fragment",
+        "override",
+        "composed",
+        "layout",
+        "breadcrumb",
+        "extension"
+      ],
+      "stars": 1,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T06:54:22Z",
+      "githubRepoId": 1264628880,
+      "githubTopics": [
+        "antora-extension"
+      ]
+    },
+    {
+      "id": "edit-crumb",
+      "name": "Edit in breadcrumb",
+      "version": "1.0.0",
+      "type": "ui-module",
+      "description": "Inline edit link partial for breadcrumb rows (pairs with bc-mast or custom breadcrumbs).",
+      "repository": "https://github.com/antora-supplemental/valentus-theme",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "valentus-theme",
+      "manifestPath": "packages/edit-crumb/ui-module.json5",
+      "modulePath": "packages/edit-crumb",
+      "requires": [],
+      "recommends": [
+        "vcs-icons"
+      ],
+      "conflicts": [],
+      "partials": {
+        "provide": [
+          "edit-breadcrumb"
+        ],
+        "replace": []
+      },
+      "slots": {},
+      "uiFileCount": 1,
+      "install": {
+        "orchestrator": {
+          "registry": "./ui-modules/registry.json5",
+          "modules": [
+            "edit-crumb"
+          ]
+        }
+      },
+      "catalogId": "antora-supplemental/valentus-theme/edit-crumb",
+      "tags": [
+        "ui-module",
+        "fragment",
+        "layout",
+        "breadcrumb",
+        "extension"
+      ],
+      "stars": 1,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T06:54:22Z",
+      "githubRepoId": 1264628880,
+      "githubTopics": [
+        "antora-extension"
+      ]
+    },
+    {
+      "id": "header-chrome",
+      "name": "Doc site header chrome",
+      "version": "1.0.0",
+      "type": "ui-module",
+      "description": "Sticky site navbar with logo slot, doc title, search slot, VCS link, and doc mast include.",
+      "repository": "https://github.com/antora-supplemental/valentus-theme",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "valentus-theme",
+      "manifestPath": "packages/header-chrome/ui-module.json5",
+      "modulePath": "packages/header-chrome",
+      "requires": [
+        "bc-mast"
+      ],
+      "recommends": [
+        "vcs-icons",
+        "dark-mode"
+      ],
+      "conflicts": [],
+      "partials": {
+        "provide": [],
+        "replace": [
+          "header",
+          "header-content",
+          "head-title"
+        ]
+      },
+      "slots": {
+        "head": {
+          "links": [
+            "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">",
+            "<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>",
+            "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap\">"
+          ],
+          "fragments": [
+            "snippets/repo-meta.hbs"
+          ]
+        }
+      },
+      "uiFileCount": 5,
+      "install": {
+        "orchestrator": {
+          "registry": "./ui-modules/registry.json5",
+          "modules": [
+            "header-chrome"
+          ]
+        }
+      },
+      "catalogId": "antora-supplemental/valentus-theme/header-chrome",
+      "tags": [
+        "ui-module",
+        "override",
+        "composed",
+        "layout",
+        "extension"
+      ],
+      "stars": 1,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T06:54:22Z",
+      "githubRepoId": 1264628880,
+      "githubTopics": [
+        "antora-extension"
+      ]
+    },
+    {
+      "id": "doc-layout",
+      "name": "Doc layout body and styles",
+      "version": "1.0.0",
+      "type": "ui-module",
+      "description": "Body/nav/article layout, site-doc-layout.css, and footer chrome for the debranded doc site pattern.",
+      "repository": "https://github.com/antora-supplemental/valentus-theme",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "valentus-theme",
+      "manifestPath": "packages/doc-layout/ui-module.json5",
+      "modulePath": "packages/doc-layout",
+      "requires": [
+        "header-chrome"
+      ],
+      "recommends": [
+        "dark-mode"
+      ],
+      "conflicts": [],
+      "partials": {
+        "provide": [],
+        "replace": [
+          "body",
+          "nav",
+          "nav-menu",
+          "main",
+          "article",
+          "footer-content",
+          "edit-this-page"
+        ]
+      },
+      "slots": {
+        "head": {
+          "stylesheets": [
+            "css/site-doc-layout.css"
+          ]
+        }
+      },
+      "uiFileCount": 9,
+      "install": {
+        "orchestrator": {
+          "registry": "./ui-modules/registry.json5",
+          "modules": [
+            "doc-layout"
+          ]
+        }
+      },
+      "catalogId": "antora-supplemental/valentus-theme/doc-layout",
+      "tags": [
+        "ui-module",
+        "override",
+        "composed",
+        "layout",
+        "extension"
+      ],
+      "stars": 1,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T06:54:22Z",
+      "githubRepoId": 1264628880,
+      "githubTopics": [
+        "antora-extension"
+      ]
+    },
+    {
+      "id": "ui-bus",
+      "name": "UiBus",
+      "version": "0.1.0",
+      "type": "ui-module",
+      "description": "General event bus for UI extensions: UiBus.events (transient signals) and UiBus.state (persistent values). No feature knowledge.",
+      "repository": "https://github.com/antora-supplemental/antora-ui-chassis",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "antora-ui-chassis",
+      "manifestPath": "packages/ui-bus/package.json",
+      "modulePath": "packages/ui-bus",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "install": {
+        "gitPath": "github:antora-supplemental/antora-ui-chassis#chassis-v0.2.0&path:packages/ui-bus",
+        "productTopic": "ui-bus"
+      },
+      "catalogId": "antora-supplemental/antora-ui-chassis/ui-bus",
+      "tags": [
+        "ui-module",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-24T07:45:21Z",
+      "githubRepoId": 1376697374,
+      "githubTopics": [
+        "antora-extension",
+        "page-state",
+        "chassis-compose"
+      ]
+    },
+    {
+      "id": "soft-nav",
+      "name": "SoftNav",
+      "version": "0.2.0",
+      "type": "ui-module",
+      "description": "Soft navigation; publishes nav:before, nav:loaded and nav:failed on UiBus.",
+      "repository": "https://github.com/antora-supplemental/antora-ui-chassis",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "antora-ui-chassis",
+      "manifestPath": "packages/soft-nav/package.json",
+      "modulePath": "packages/soft-nav",
+      "requires": [
+        "ui-bus"
+      ],
+      "recommends": [
+        "page-state"
+      ],
+      "conflicts": [],
+      "install": {
+        "gitPath": "github:antora-supplemental/antora-ui-chassis#chassis-v0.2.0&path:packages/soft-nav",
+        "productTopic": "soft-nav"
+      },
+      "catalogId": "antora-supplemental/antora-ui-chassis/soft-nav",
+      "tags": [
+        "ui-module",
+        "composed",
+        "layout",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-24T07:45:21Z",
+      "githubRepoId": 1376697374,
+      "githubTopics": [
+        "antora-extension",
+        "page-state",
+        "chassis-compose"
+      ]
+    },
+    {
+      "id": "page-state",
+      "name": "page-state",
+      "version": "0.1.0",
+      "type": "ui-module",
+      "description": "Publishes the current page component, version, url and title as page.* values on UiBus.state.",
+      "repository": "https://github.com/antora-supplemental/antora-ui-chassis",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "antora-ui-chassis",
+      "manifestPath": "packages/page-state/package.json",
+      "modulePath": "packages/page-state",
+      "requires": [
+        "ui-bus"
+      ],
+      "recommends": [
+        "soft-nav"
+      ],
+      "conflicts": [],
+      "install": {
+        "gitPath": "github:antora-supplemental/antora-ui-chassis#chassis-v0.2.0&path:packages/page-state",
+        "productTopic": "page-state"
+      },
+      "catalogId": "antora-supplemental/antora-ui-chassis/page-state",
+      "tags": [
+        "ui-module",
+        "composed",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-24T07:45:21Z",
+      "githubRepoId": 1376697374,
+      "githubTopics": [
+        "antora-extension",
+        "page-state",
+        "chassis-compose"
+      ]
+    },
+    {
+      "id": "chassis-compose",
+      "name": "Chassis compose",
+      "version": "0.2.0",
+      "type": "ui-module",
+      "description": "Meta extension bundling ui-bus, soft-nav and page-state.",
+      "repository": "https://github.com/antora-supplemental/antora-ui-chassis",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "antora-ui-chassis",
+      "manifestPath": "packages/chassis-compose/package.json",
+      "modulePath": "packages/chassis-compose",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "install": {
+        "gitPath": "github:antora-supplemental/antora-ui-chassis#chassis-v0.2.0&path:packages/chassis-compose",
+        "productTopic": "chassis-compose"
+      },
+      "catalogId": "antora-supplemental/antora-ui-chassis/chassis-compose",
+      "tags": [
+        "ui-module",
+        "layout",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-24T07:45:21Z",
+      "githubRepoId": 1376697374,
+      "githubTopics": [
+        "antora-extension",
+        "page-state",
+        "chassis-compose"
+      ]
+    },
+    {
+      "id": "antora-glossary",
+      "name": "@antora-supplemental/glossary",
+      "version": "0.1.2",
+      "type": "antora-extension",
+      "description": "Antora glossary: generated alphabet index, per-letter term lists, and exact-match highlights including synonyms.",
+      "repository": "https://github.com/antora-supplemental/antora-glossary",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "antora-glossary",
+      "manifestPath": "package.json",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "catalogId": "antora-supplemental/antora-glossary/antora-glossary",
+      "tags": [
+        "antora-extension",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-24T08:49:13Z",
+      "githubRepoId": 1431974009,
+      "githubTopics": [
+        "antora-extension",
+        "glossary",
+        "antora-glossary"
+      ]
+    },
+    {
+      "id": "link-registry",
+      "name": "@antora-supplemental/link-registry",
+      "version": "0.1.1",
+      "type": "antora-extension",
+      "description": "Named link registry for AsciiDoc/Antora: register URLs as memorable {url-*} attributes, reject literal copies in CI with teaching messages, fix them locally, and index which pages use which link",
+      "repository": "https://github.com/antora-supplemental/link-registry",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "link-registry",
+      "manifestPath": "package.json",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "catalogId": "antora-supplemental/link-registry/link-registry",
+      "tags": [
+        "antora-extension",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-24T00:43:26Z",
+      "githubRepoId": 1431678845,
+      "githubTopics": [
+        "antora",
+        "antora-extension",
+        "asciidoc",
+        "asciidoctor",
+        "docs-hub",
+        "github-action",
+        "links"
+      ]
+    },
+    {
+      "id": "related-docs",
+      "name": "@antora-supplemental/related-docs",
+      "version": "0.1.0",
+      "type": "antora-extension",
+      "description": "Antora extension: link every page to an org's other docs sites (team, partner, public) via a generated registry page; explicit `sites: none` opt-out",
+      "repository": "https://github.com/antora-supplemental/related-docs",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "related-docs",
+      "manifestPath": "package.json",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "catalogId": "antora-supplemental/related-docs/related-docs",
+      "tags": [
+        "antora-extension",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-23T23:33:39Z",
+      "githubRepoId": 1431646622,
+      "githubTopics": [
+        "antora",
+        "antora-extension",
+        "asciidoc",
+        "asciidoctor",
+        "docs-hub",
+        "navigation"
+      ]
+    },
+    {
+      "id": "antora-tracer",
+      "name": "@antora-tracer/core",
+      "version": "0.31.0",
+      "type": "antora-extension",
+      "description": "Requirements traceability extensions for Antora/AsciiDoc",
+      "repository": "https://github.com/rattermeyer/antora-tracer",
+      "repositoryOwner": "rattermeyer",
+      "repositoryName": "antora-tracer",
+      "manifestPath": "package.json",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "catalogId": "rattermeyer/antora-tracer/antora-tracer",
+      "tags": [
+        "antora-extension",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "rattermeyer",
+      "lastUpdated": "2026-10-21T06:51:26Z",
+      "githubRepoId": 1310804679,
+      "githubTopics": [
+        "antora",
+        "antora-extension",
+        "asciidoc",
+        "requirements",
+        "requirements-traceability"
+      ]
+    },
+    {
+      "id": "page-edit",
+      "name": "@antora-supplemental/page-edit",
+      "version": "0.3.3",
+      "type": "antora-extension",
+      "description": "Antora extension: bake View | Edit into the page-context lead table (no runtime icon JS)",
+      "repository": "https://github.com/antora-supplemental/page-edit",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "page-edit",
+      "manifestPath": "package.json",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "catalogId": "antora-supplemental/page-edit/page-edit",
+      "tags": [
+        "antora-extension",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T06:36:49Z",
+      "githubRepoId": 1363501592,
+      "githubTopics": [
+        "antora",
+        "antora-extension",
+        "vcs"
+      ]
+    },
+    {
+      "id": "dark-mode",
+      "name": "Antora dark mode",
+      "version": "1.3.1",
+      "type": "ui-module",
+      "description": "Dark mode CSS, FOUC prevention, and navbar theme toggle. Slot-based overlay — does not replace theme partials.",
+      "repository": "https://github.com/antora-supplemental/antora-dark-mode",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "antora-dark-mode",
+      "manifestPath": "packages/dark-mode/ui-module.json5",
+      "modulePath": "packages/dark-mode",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "partials": {
+        "provide": [],
+        "replace": []
+      },
+      "slots": {
+        "head": {
+          "stylesheets": [
+            "css/site-extra.css"
+          ],
+          "scripts": [
+            "scripts/fouc.js"
+          ]
+        },
+        "foot": {
+          "scripts": [
+            "js/site-dark-mode.js"
+          ]
+        }
+      },
+      "uiFileCount": 3,
+      "install": {
+        "orchestrator": {
+          "registry": "./ui-modules/registry.json5",
+          "modules": [
+            "dark-mode"
+          ]
+        }
+      },
+      "catalogId": "antora-supplemental/antora-dark-mode/dark-mode",
+      "tags": [
+        "ui-module",
+        "dark",
+        "layout"
+      ],
+      "stars": 2,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T06:25:34Z",
+      "githubRepoId": 1142274512,
+      "githubTopics": [
+        "antora-dark-mode",
+        "antora-dark-theme",
+        "antora-extension"
+      ]
+    },
+    {
+      "id": "page-context",
+      "name": "@antora-supplemental/page-context",
+      "version": "0.7.2",
+      "type": "antora-extension",
+      "description": "Asciidoctor/Antora extension: slim byline + page-* metadata, keyword index pages, HTML meta",
+      "repository": "https://github.com/antora-supplemental/page-context",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "page-context",
+      "manifestPath": "package.json",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "catalogId": "antora-supplemental/page-context/page-context",
+      "tags": [
+        "antora-extension",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T06:12:48Z",
+      "githubRepoId": 1345902139,
+      "githubTopics": [
+        "antora",
+        "antora-extension",
+        "asciidoc",
+        "asciidoctor"
+      ]
+    },
+    {
+      "id": "antora-search-chat",
+      "name": "@antora-supplemental/antora-search-chat",
+      "version": "0.1.24",
+      "type": "antora-extension",
+      "description": "Antora extension: wraps @antora/lunr-extension with a Search/Ask omnibox (lunr-first; optional local tier-0 + remote backend). Does not fork lunr.",
+      "repository": "https://github.com/antora-supplemental/antora-search-chat",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "antora-search-chat",
+      "manifestPath": "package.json",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "catalogId": "antora-supplemental/antora-search-chat/antora-search-chat",
+      "tags": [
+        "antora-extension",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T05:58:15Z",
+      "githubRepoId": 1311978071,
+      "githubTopics": [
+        "antora",
+        "antora-extension",
+        "antora-search-chat",
+        "lunr",
+        "search"
+      ]
+    },
+    {
+      "id": "link-validator",
+      "name": "@antora-supplemental/link-validator",
+      "version": "0.2.2",
+      "type": "antora-extension",
+      "description": "Antora extension: site triage UI + WARN logs for outbound link validation (uses asciidoc-link-validator)",
+      "repository": "https://github.com/antora-supplemental/link-validator",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "link-validator",
+      "manifestPath": "package.json",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "catalogId": "antora-supplemental/link-validator/link-validator",
+      "tags": [
+        "antora-extension",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T01:36:31Z",
+      "githubRepoId": 1390334894,
+      "githubTopics": [
+        "antora",
+        "antora-extension",
+        "asciidoc-link-validator",
+        "link-validator"
+      ]
+    },
+    {
+      "id": "antora-unversioned-component-urls",
+      "name": "@antora-supplemental/unversioned-component-urls",
+      "version": "2.1.2",
+      "type": "antora-extension",
+      "description": "Antora extension: choose how bare /component/ URLs behave — version selector (default) or alias to latest. Candidate for core (urls.unversioned).",
+      "repository": "https://github.com/antora-supplemental/antora-unversioned-component-urls",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "antora-unversioned-component-urls",
+      "manifestPath": "package.json",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "catalogId": "antora-supplemental/antora-unversioned-component-urls/antora-unversioned-component-urls",
+      "tags": [
+        "antora-extension",
+        "extension"
+      ],
+      "stars": 0,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T01:36:08Z",
+      "githubRepoId": 1315726808,
+      "githubTopics": [
+        "antora-extension"
+      ]
+    },
+    {
+      "id": "antora-confluence",
+      "name": "antora-confluence",
+      "version": "0.4.0",
+      "type": "antora-extension",
+      "description": "A tool to convert and publish Antora documentation to Confluence",
+      "repository": "https://github.com/PacoVK/antora-confluence",
+      "repositoryOwner": "PacoVK",
+      "repositoryName": "antora-confluence",
+      "manifestPath": "package.json",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "catalogId": "pacovk/antora-confluence/antora-confluence",
+      "tags": [
+        "antora-extension",
+        "extension"
+      ],
+      "stars": 17,
+      "author": "PacoVK",
+      "lastUpdated": "2026-10-17T15:43:04Z",
+      "githubRepoId": 761708414,
+      "githubTopics": [
+        "antora",
+        "antora-extension",
+        "asciidoc",
+        "confluence",
+        "docs-as-code",
+        "npm-package"
+      ]
+    },
+    {
+      "id": "antora-detect-unused-media-extension",
+      "name": "@bonitasoft/antora-detect-unused-media-extension",
+      "version": "1.0.0",
+      "type": "antora-extension",
+      "description": "Antora extension to detect unused media files in a Antora project.",
+      "repository": "https://github.com/bonitasoft/antora-detect-unused-media-extension",
+      "repositoryOwner": "bonitasoft",
+      "repositoryName": "antora-detect-unused-media-extension",
+      "manifestPath": "package.json",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "catalogId": "bonitasoft/antora-detect-unused-media-extension/antora-detect-unused-media-extension",
+      "tags": [
+        "antora-extension",
+        "extension"
+      ],
+      "stars": 3,
+      "author": "bonitasoft",
+      "lastUpdated": "2026-06-24T09:00:48Z",
+      "githubRepoId": 920531032,
+      "githubTopics": [
+        "antora-extension"
+      ]
+    },
+    {
+      "id": "antora-shiki-extension",
+      "name": "antora-shiki-extension",
+      "version": "1.0.0",
+      "type": "antora-extension",
+      "description": "An antora extension to use shiki as a build-time syntax highligher.",
+      "repository": "https://github.com/lask79/antora-shiki-extension",
+      "repositoryOwner": "lask79",
+      "repositoryName": "antora-shiki-extension",
+      "manifestPath": "package.json",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "catalogId": "lask79/antora-shiki-extension/antora-shiki-extension",
+      "tags": [
+        "antora-extension",
+        "extension"
+      ],
+      "stars": 11,
+      "author": "lask79",
+      "lastUpdated": "2025-09-12T16:18:22Z",
+      "githubRepoId": 739600420,
+      "githubTopics": [
+        "antora",
+        "antora-extension",
+        "asciidoctorjs",
+        "shiki"
+      ]
+    }
+  ],
+  "recipes": [
+    {
+      "id": "valentus-site",
+      "name": "Valentus doc site chrome",
+      "version": "1.0.0",
+      "type": "ui-recipe",
+      "description": "Composed doc-site layout: mast, header, VCS icons, and body chrome. Pair with antora-dark-mode for dark styling.",
+      "repository": "https://github.com/antora-supplemental/valentus-theme",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "valentus-theme",
+      "manifestPath": "recipes/valentus-site.json5",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "modules": [
+        "vcs-icons",
+        "bc-mast",
+        "edit-crumb",
+        "header-chrome",
+        "doc-layout"
+      ],
+      "install": {
+        "orchestrator": {
+          "registry": "./ui-modules/registry.json5",
+          "recipe": "valentus-site"
+        }
+      },
+      "catalogId": "antora-supplemental/valentus-theme/valentus-site",
+      "tags": [
+        "ui-module",
+        "recipe",
+        "dark",
+        "layout",
+        "extension"
+      ],
+      "stars": 1,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T06:54:22Z",
+      "githubRepoId": 1264628880,
+      "githubTopics": [
+        "antora-extension"
+      ]
+    },
+    {
+      "id": "dark-mode-only",
+      "name": "Dark mode only",
+      "version": "1.3.0",
+      "type": "ui-recipe",
+      "description": "Dark mode toggle and styles layered on any Antora UI bundle (Default UI or a theme release bundle).",
+      "repository": "https://github.com/antora-supplemental/antora-dark-mode",
+      "repositoryOwner": "antora-supplemental",
+      "repositoryName": "antora-dark-mode",
+      "manifestPath": "recipes/dark-mode-only.json5",
+      "requires": [],
+      "recommends": [],
+      "conflicts": [],
+      "modules": [
+        "dark-mode"
+      ],
+      "install": {
+        "orchestrator": {
+          "registry": "./ui-modules/registry.json5",
+          "recipe": "dark-mode-only"
+        }
+      },
+      "catalogId": "antora-supplemental/antora-dark-mode/dark-mode-only",
+      "tags": [
+        "ui-module",
+        "recipe",
+        "dark"
+      ],
+      "stars": 2,
+      "author": "antora-supplemental",
+      "lastUpdated": "2026-10-21T06:25:34Z",
+      "githubRepoId": 1142274512,
+      "githubTopics": [
+        "antora-dark-mode",
+        "antora-dark-theme",
+        "antora-extension"
+      ]
+    }
+  ],
+  "indexedRepos": [
+    {
+      "owner": "antora-supplemental",
+      "repo": "valentus-theme",
+      "githubRepoId": 1264628880,
+      "discoveredVia": "curated",
+      "moduleCount": 5,
+      "recipeCount": 1
+    },
+    {
+      "owner": "antora-supplemental",
+      "repo": "antora-ui-chassis",
+      "githubRepoId": 1376697374,
+      "discoveredVia": "curated",
+      "moduleCount": 4,
+      "recipeCount": 0
+    },
+    {
+      "owner": "antora-supplemental",
+      "repo": "antora-glossary",
+      "githubRepoId": 1431974009,
+      "discoveredVia": "curated",
+      "moduleCount": 1,
+      "recipeCount": 0
+    },
+    {
+      "owner": "antora-supplemental",
+      "repo": "link-registry",
+      "githubRepoId": 1431678845,
+      "discoveredVia": "github-topic",
+      "moduleCount": 1,
+      "recipeCount": 0
+    },
+    {
+      "owner": "antora-supplemental",
+      "repo": "related-docs",
+      "githubRepoId": 1431646622,
+      "discoveredVia": "github-topic",
+      "moduleCount": 1,
+      "recipeCount": 0
+    },
+    {
+      "owner": "rattermeyer",
+      "repo": "antora-tracer",
+      "githubRepoId": 1310804679,
+      "discoveredVia": "github-topic",
+      "moduleCount": 1,
+      "recipeCount": 0
+    },
+    {
+      "owner": "antora-supplemental",
+      "repo": "page-edit",
+      "githubRepoId": 1363501592,
+      "discoveredVia": "github-topic",
+      "moduleCount": 1,
+      "recipeCount": 0
+    },
+    {
+      "owner": "antora-supplemental",
+      "repo": "antora-dark-mode",
+      "githubRepoId": 1142274512,
+      "discoveredVia": "github-topic",
+      "moduleCount": 1,
+      "recipeCount": 1
+    },
+    {
+      "owner": "antora-supplemental",
+      "repo": "page-context",
+      "githubRepoId": 1345902139,
+      "discoveredVia": "github-topic",
+      "moduleCount": 1,
+      "recipeCount": 0
+    },
+    {
+      "owner": "antora-supplemental",
+      "repo": "antora-search-chat",
+      "githubRepoId": 1311978071,
+      "discoveredVia": "github-topic",
+      "moduleCount": 1,
+      "recipeCount": 0
+    },
+    {
+      "owner": "antora-supplemental",
+      "repo": "link-validator",
+      "githubRepoId": 1390334894,
+      "discoveredVia": "github-topic",
+      "moduleCount": 1,
+      "recipeCount": 0
+    },
+    {
+      "owner": "antora-supplemental",
+      "repo": "antora-unversioned-component-urls",
+      "githubRepoId": 1315726808,
+      "discoveredVia": "github-topic",
+      "moduleCount": 1,
+      "recipeCount": 0
+    },
+    {
+      "owner": "PacoVK",
+      "repo": "antora-confluence",
+      "githubRepoId": 761708414,
+      "discoveredVia": "github-topic",
+      "moduleCount": 1,
+      "recipeCount": 0
+    },
+    {
+      "owner": "bonitasoft",
+      "repo": "antora-detect-unused-media-extension",
+      "githubRepoId": 920531032,
+      "discoveredVia": "github-topic",
+      "moduleCount": 1,
+      "recipeCount": 0
+    },
+    {
+      "owner": "lask79",
+      "repo": "antora-shiki-extension",
+      "githubRepoId": 739600420,
+      "discoveredVia": "github-topic",
+      "moduleCount": 1,
+      "recipeCount": 0
+    }
+  ],
+  "discoveredRepoCount": 13
+}

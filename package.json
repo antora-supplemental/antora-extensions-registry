@@ -12,7 +12,8 @@
     "seed": "pnpm exec tsx scripts/seed.ts",
     "discover:github-topics": "pnpm exec tsx scripts/github-topic-discovery.ts",
     "extensions:sync": "node scripts/sync-extension-catalog.mjs",
-    "apply:registry-topics": "node scripts/apply-registry-topics.mjs --discover"
+    "apply:registry-topics": "node scripts/apply-registry-topics.mjs --discover",
+    "catalog:snapshot": "tsx scripts/build-catalog-snapshot.ts"
   },
   "type": "module",
   "devDependencies": {
