@@ -125,7 +125,6 @@ try {
   const { serializeSnapshot, SNAPSHOT_KEYS, CACHE_TAG } = await import('../src/lib/browse-cache');
   const { classifyEntry } = await import('../src/lib/layers');
   const { readFirstListed } = await import('../src/lib/first-listed');
-  const { loadGalleryThemes } = await import('../src/lib/themes/catalog');
   const first = await readFirstListed(db, 'extension');
   const all = entries.map((e) => classifyEntry(first.get(e.catalogId) ? { ...e, firstListedAt: first.get(e.catalogId) } : e));
   const repoMap = new Map<string, { owner: string; repo: string; githubRepoId?: number; moduleCount: number; recipeCount: number }>();
@@ -142,12 +141,10 @@ try {
     discoveredRepoCount: catalog.discoveredRepoCount,
     syncedAt: new Date().toISOString(),
   });
-  const themeSnap = serializeSnapshot(await loadGalleryThemes({ snapshot: false }));
   await db.batch([
     { sql: "INSERT INTO catalog_meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", args: [SNAPSHOT_KEYS.extensions, extSnap] },
-    { sql: "INSERT INTO catalog_meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", args: [SNAPSHOT_KEYS.themes, themeSnap] },
   ], 'write');
-  console.log(`[registry] browse snapshots: extensions ${Math.round(extSnap.length / 1024)} KB, themes ${Math.round(themeSnap.length / 1024)} KB`);
+  console.log(`[registry] browse snapshots: extensions ${Math.round(extSnap.length / 1024)} KB`);
   // Optional CDN purge (names only: NETLIFY_AUTH_TOKEN, NETLIFY_SITE_ID). Without them the 5-minute s-maxage applies.
   if (process.env.NETLIFY_AUTH_TOKEN && process.env.NETLIFY_SITE_ID) {
     const res = await fetch('https://api.netlify.com/api/v1/purge', {
