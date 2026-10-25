@@ -148,7 +148,7 @@ export default function ExtensionDetailPage() {
                         {copied() ? 'Copied!' : 'Copy'}
                       </button>
                     </div>
-                    <pre class="p-3 bg-slate-900/80 border border-slate-700/50 rounded-lg text-xs text-slate-300 overflow-x-auto font-mono whitespace-pre">{formatInstallSnippet(e())}</pre>
+                    <pre tabIndex={0} aria-label="Install snippet" class="p-3 bg-slate-900/80 border border-slate-700/50 rounded-lg text-xs text-slate-300 overflow-x-auto font-mono whitespace-pre">{formatInstallSnippet(e())}</pre>
                   </Card>
                 </>
               )}

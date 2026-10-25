@@ -48,10 +48,10 @@ export function LayerColumn(props: { groups: LayerGroup[]; onPick: (catalogId: s
 export function LayerList(props: { groups: LayerGroup[]; onPick: (catalogId: string) => void }) {
   const [open, setOpen] = createSignal<string | null>(null);
   return (
-    <nav aria-label="Results by layer" class="lg:hidden mb-6 rounded-xl border border-slate-700 bg-slate-800/50 divide-y divide-slate-700">
+    <nav aria-label="Results by layer" class="lg:hidden mb-6 rounded-xl border border-slate-700 bg-slate-800/50">
       <For each={props.groups}>
         {(g) => (
-          <div>
+          <div class="border-t border-slate-700 first:border-t-0">
             <button
               type="button"
               aria-expanded={open() === g.id}

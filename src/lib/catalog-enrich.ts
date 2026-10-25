@@ -40,7 +40,7 @@ export async function readRepoMetadata(owner: string, repo: string, branch: stri
   return {
     declared,
     keywords: (pkg?.keywords ?? []).map((k) => String(k).toLowerCase()),
-    dependencyNames: Object.keys(pkg?.dependencies ?? {}),
+    dependencyNames: Object.keys(pkg?.dependencies ?? {}).filter((n) => n !== pkg?.name),
     privatePackage: pkg?.private === true,
     homepage: pkg?.homepage,
     readmeImages: await readmeImages(owner, repo, branch, fetchText),

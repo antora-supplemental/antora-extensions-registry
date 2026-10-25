@@ -157,8 +157,9 @@ export default function SearchPage() {
               <span class="text-sm font-semibold text-slate-400 mr-1">Layers</span>
               <For each={LAYER_BOXES}>
                 {(b) => (
-                  <A href={toggleLayerHref(b.id)} aria-pressed={!hidden().has(b.id)} title={hidden().has(b.id) ? `Show ${b.label}` : `Hide ${b.label}`} class={chipClass(!hidden().has(b.id))}>
+                  <A href={toggleLayerHref(b.id)} aria-current={hidden().has(b.id) ? undefined : 'true'} title={hidden().has(b.id) ? `Show ${b.label}` : `Hide ${b.label}`} class={chipClass(!hidden().has(b.id))}>
                     {b.label} <span class="opacity-80">{layerCounts().get(b.id) ?? 0}</span>
+                    <span class="sr-only">{hidden().has(b.id) ? ' (hidden, select to show)' : ' (shown, select to hide)'}</span>
                   </A>
                 )}
               </For>
