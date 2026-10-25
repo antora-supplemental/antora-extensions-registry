@@ -2,6 +2,15 @@
 
 == Unreleased
 
+* New `/add` guide, "Add to the registry": shared steps (topic, README, license, sign in, submit, review), a Themes section (preview.png, live demo, screenshot workflow, starting points, moved from the theme submit page), an Extensions section (topic, `antora-dark-mode` tagging, optional manifest with a docs link) and what happens after you submit. Linked from the home page, both browse pages and the nav, where "Add to registry" replaces "Submit Theme". `/submit` now goes to `/add`.
+* New admin-only `/admin` page (`ADMIN_GITHUB_LOGINS`, comma-separated GitHub logins): review queue, catalog sync status, topic-discovered repos, load errors, manifest paths, API endpoints and topic schema, and a "Run discovery" button (`POST /api/admin/discover`, read-only preview). The account page shows an Admin link to admins.
+* New `/extensions/submit` form (posts to `POST /api/extensions/submit`) and an "Add your extension" button on `/extensions`.
+* Home search *All* now lands on a combined `/search?q=` page with extension and theme results (was `/extensions?q=`).
+* Copy pass: plainer home cards, extensions and themes intros, loading and error text, theme form states ("Repository found", "Submitted for review"), sign-in subtitle, account linking text, footer tagline "Antora Registry — community extensions and themes", and a "Browse themes" link on the 404 page. Repository topics, discovery counts, the Catalog API block, catalog load errors and manifest paths move from public pages to `/admin`; the extension detail page no longer shows the manifest path or internal ID.
+* Extensions filters: type is All / Single extensions / Bundles; color mode offers "Dark-only themes", "Dark mode add-ons" and "Other color schemes" ("Dual appearance" removed, "Dark" now means dark-only). Dark mode add-ons are no longer hidden by default, and the count reads "N extensions".
+* Page titles use "Antora Registry" everywhere, and each page sets its own title and meta description through `SiteLayout`.
+* Sign-in honors a same-site `?redirect=` path, so signing in from a submit form returns you to it. Signed-out visitors to a submit form land on `/add` with a sign-in notice.
+* Theme toggle tooltip now matches its accessible label.
 * Mobile header shows the light/dark toggle next to the menu button; the duplicate toggle inside the menu sheet is removed.
 * Wording: extensions are no longer described as UI-only. The Extensions page title and intro, the home CTA, the home Extensions card, the Extensions search placeholder (was "Search modules and recipes..."), the `antora-extension` topic description, and the site description and og/twitter meta now cover build-time pipeline extensions, CI checkers and validators, generators, utilities, and UI-side modules. UI modules remain one category within extensions.
 * Removed the purple-glass trims: the `--trim*` and `--glass-*` tokens, the Tailwind `trim` color, the violet rims, rules, nav underline, mode-icon borders and selection color are gone, back to the `design-orange-v1` look. The mobile header toggle and the extensions wording are kept.

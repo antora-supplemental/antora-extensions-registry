@@ -26,12 +26,12 @@ export default function Home() {
       navigate(q ? `/extensions?q=${encodeURIComponent(q)}` : '/extensions');
       return;
     }
-    // all: typed queries land on extension results (themes have their own chip); empty goes to the theme gallery
-    navigate(q ? `/extensions?q=${encodeURIComponent(q)}` : '/themes');
+    // all: typed queries land on combined extension + theme results; empty goes to the theme gallery
+    navigate(q ? `/search?q=${encodeURIComponent(q)}` : '/themes');
   };
 
   return (
-    <SiteLayout title="Antora Supplemental Registry">
+    <SiteLayout>
       <section class="relative overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 relative">
           <div class="text-center max-w-3xl mx-auto">
@@ -107,19 +107,17 @@ export default function Home() {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <A href="/extensions" class="p-6 bg-slate-800/30 border border-slate-700/50 rounded-xl hover:border-primary-500/50 transition-colors group">
             <h2 class="text-xl font-semibold text-white mb-2 group-hover:text-primary-400">Extensions</h2>
-            <p class="text-slate-400 text-sm">
-              Build-time, CI and utility Antora extensions, plus UI-side modules indexed from <code class="text-primary-300">ui-modules/registry.json5</code> manifests.
-              GitHub topic discovery for <code class="text-primary-300">antora-extension</code> repos.
-            </p>
+            <p class="text-slate-400 text-sm">Build-time, CI, utility and UI extensions for Antora.</p>
           </A>
           <A href="/themes" class="p-6 bg-slate-800/30 border border-slate-700/50 rounded-xl hover:border-primary-500/50 transition-colors group">
             <h2 class="text-xl font-semibold text-white mb-2 group-hover:text-primary-400">Themes</h2>
-            <p class="text-slate-400 text-sm">
-              Gallery of full Antora UI themes (ui.bundle) with previews, demos, and appearance filters.
-              Not Antora extensions — a first-class category here.
-            </p>
+            <p class="text-slate-400 text-sm">Complete UI themes for Antora sites, with previews and live demos.</p>
           </A>
         </div>
+        <p class="mt-6 text-center text-sm text-slate-400">
+          Made an extension or theme?{' '}
+          <A href="/add" class="text-primary-400 hover:text-primary-300 font-medium">Add it to the registry</A>
+        </p>
       </section>
 
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">

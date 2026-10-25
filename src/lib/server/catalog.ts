@@ -27,7 +27,7 @@ export const loadExtensionCatalog = cache(async (): Promise<ExtensionCatalogPayl
       modules: [],
       recipes: [],
       discoveredRepoCount: 0,
-      catalogError: 'Could not fetch extension manifests from known repositories.',
+      catalogError: "Some extensions couldn't be loaded. Try again later.",
     };
   }
 }, 'extension-catalog');

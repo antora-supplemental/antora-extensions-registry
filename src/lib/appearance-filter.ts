@@ -11,37 +11,32 @@ export const APPEARANCE_FILTER_OPTIONS: Array<{
   {
     value: 'all',
     label: 'All',
-    description: 'No appearance filter',
+    description: 'Every color mode',
   },
   {
     value: 'default',
     label: 'Light + dark themes',
-    description: 'Full themes with both antora-light-theme and antora-dark-theme (default)',
-  },
-  {
-    value: 'light-dark',
-    label: 'Dual appearance',
-    description: 'Same as default — themes tagged with both light and dark',
+    description: 'Themes with both a light and a dark mode',
   },
   {
     value: 'light',
     label: 'Light',
-    description: 'antora-light-theme',
+    description: 'Themes with a light mode',
   },
   {
     value: 'dark',
-    label: 'Dark themes',
-    description: 'Full antora-dark-theme (not slipstream overlays)',
+    label: 'Dark-only themes',
+    description: 'Themes that are dark only',
   },
   {
     value: 'dark-mode-only',
-    label: 'Dark mode overlays',
-    description: 'antora-dark-mode — installable into existing themes',
+    label: 'Dark mode add-ons',
+    description: 'Adds dark mode to an existing theme',
   },
   {
     value: 'wildcard',
-    label: 'Wildcard',
-    description: 'antora-wildcard-theme — themes that do not fit light/dark',
+    label: 'Other color schemes',
+    description: 'Themes that are neither light nor dark',
   },
 ];
 

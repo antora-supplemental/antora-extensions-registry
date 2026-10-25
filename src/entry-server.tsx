@@ -8,7 +8,6 @@ export default createHandler(() => (
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <meta name="description" content="Unofficial, community-run catalog of Antora extensions (build-time pipeline extensions, CI checkers and validators, generators, utilities, and UI-side add-ons) and Antora UI themes, with install guidance. Not affiliated with the Antora project." />
           <meta property="og:description" content="Unofficial, community-run catalog of Antora extensions (build-time pipeline extensions, CI checkers and validators, generators, utilities, and UI-side add-ons) and Antora UI themes, with install guidance. Not affiliated with the Antora project." />
           <meta name="twitter:description" content="Unofficial, community-run catalog of Antora extensions (build-time pipeline extensions, CI checkers and validators, generators, utilities, and UI-side add-ons) and Antora UI themes, with install guidance. Not affiliated with the Antora project." />
           {/* Apply the stored or system color scheme before first paint (no flash). */}

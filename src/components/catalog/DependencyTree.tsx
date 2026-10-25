@@ -12,7 +12,7 @@ function NodeRow(props: { node: DependencyNode }) {
         </Show>
         <Show
           when={props.node.entry}
-          fallback={<span class="font-mono text-sm text-slate-400">{props.node.id} <span class="text-xs">(not in catalog)</span></span>}
+          fallback={<span class="font-mono text-sm text-slate-400">{props.node.id} <span class="text-xs">(not listed)</span></span>}
         >
           {(entry) => (
             <Show when={props.node.relation !== 'root'} fallback={<span class="font-semibold text-white">{entry().name}</span>}>

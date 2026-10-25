@@ -38,7 +38,6 @@ export type PrimaryKind = 'extension' | 'theme';
 export type AppearanceFilter =
   | 'all'
   | 'default'
-  | 'light-dark'
   | 'light'
   | 'dark'
   | 'dark-mode-only'
@@ -203,12 +202,10 @@ export function matchesAppearanceFilter(topics: string[], filter: AppearanceFilt
       return true;
     case 'default':
       return a.defaultThemeVisible;
-    case 'light-dark':
-      return a.isTheme && a.hasLight && a.hasDark;
     case 'light':
       return a.hasLight;
     case 'dark':
-      return a.hasDark;
+      return a.hasDark && !a.hasLight;
     case 'dark-mode-only':
       return a.hasDarkModeOverlay;
     case 'wildcard':

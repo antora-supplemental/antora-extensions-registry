@@ -1,5 +1,4 @@
 import { A, createAsync, useParams } from '@solidjs/router';
-import { Title } from '@solidjs/meta';
 import { createMemo, createSignal, For, Show, Suspense } from 'solid-js';
 import SiteLayout from '~/components/SiteLayout';
 import DependencyTree from '~/components/catalog/DependencyTree';
@@ -31,30 +30,28 @@ export default function ExtensionDetailPage() {
   };
 
   return (
-    <SiteLayout>
+    <SiteLayout title={entry()?.name ?? 'Extensions'} description={entry()?.description}>
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <A href="/extensions" class="text-sm text-primary-400 hover:text-primary-300">&larr; All extensions</A>
-        <Suspense fallback={<div class="text-center py-16 text-slate-400">Loading extension...</div>}>
+        <Suspense fallback={<div class="text-center py-16 text-slate-400">Loading extension…</div>}>
           <Show when={catalog()}>
             <Show
               when={entry()}
               fallback={
                 <div class="py-16 text-center">
                   <h1 class="text-2xl font-bold text-white mb-2">Extension not found</h1>
-                  <p class="text-slate-400">No catalog entry for <code class="font-mono">{params.catalogId}</code>.</p>
+                  <p class="text-slate-400">We couldn't find an extension called <code class="font-mono">{params.catalogId}</code>.</p>
                 </div>
               }
             >
               {(e) => (
                 <>
-                  <Title>{e().name} - Antora Extension Registry</Title>
                   <header class="mt-6 mb-8">
                     <div class="flex flex-wrap items-center gap-2 mb-2">
                       <Badge variant="primary">{e().type}</Badge>
                       <span class="font-mono text-sm text-slate-500">v{e().version}</span>
                     </div>
-                    <h1 class="text-3xl lg:text-4xl font-bold text-white mb-2">{e().name}</h1>
-                    <p class="font-mono text-sm text-slate-500 mb-4 break-all">{e().catalogId}</p>
+                    <h1 class="text-3xl lg:text-4xl font-bold text-white mb-4">{e().name}</h1>
                     <p class="text-slate-300 text-lg max-w-3xl">{e().description}</p>
                     <div class="mt-4 flex flex-wrap gap-2">
                       <a href={e().repository} target="_blank" rel="noopener noreferrer" class={buttonVariants({ variant: 'secondary', size: 'sm' })}>
@@ -68,7 +65,7 @@ export default function ExtensionDetailPage() {
                       <h2 class="text-lg font-semibold text-white mb-4">Dependency tree</h2>
                       <DependencyTree tree={buildDependencyTree(e(), all())} />
                       <Show when={(e().requires?.length ?? 0) + (e().recommends?.length ?? 0) === 0}>
-                        <p class="text-sm text-slate-400 mt-2">No requires or recommends declared in the manifest.</p>
+                        <p class="text-sm text-slate-400 mt-2">No dependencies.</p>
                       </Show>
                       <Show when={dependents(e(), all()).length > 0}>
                         <h3 class="text-sm font-semibold text-white mt-6 mb-2">Used by</h3>
@@ -91,7 +88,6 @@ export default function ExtensionDetailPage() {
                         <div><dt class="text-slate-500">Author</dt><dd class="text-slate-300">{e().author}</dd></div>
                         <div><dt class="text-slate-500">Updated</dt><dd class="text-slate-300">{new Date(e().lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</dd></div>
                         <div><dt class="text-slate-500">Stars</dt><dd class="text-slate-300">{e().stars}</dd></div>
-                        <div><dt class="text-slate-500">Manifest</dt><dd class="font-mono text-xs text-slate-300 break-all">{e().manifestPath}</dd></div>
                         <Show when={(e().conflicts?.length ?? 0) > 0}>
                           <div><dt class="text-slate-500">Conflicts</dt><dd class="text-slate-300">{e().conflicts.join(', ')}</dd></div>
                         </Show>

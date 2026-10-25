@@ -1,8 +1,8 @@
-import { createAsync, useSearchParams } from '@solidjs/router';
+import { A, createAsync, useSearchParams } from '@solidjs/router';
 import { Show, Suspense } from 'solid-js';
 import SiteLayout from '~/components/SiteLayout';
 import ExtensionGallery from '~/components/catalog/ExtensionGallery';
-import { ANTORA_TOPICS } from '~/data/github-topics';
+import { buttonVariants } from '~/components/ui/button';
 import { loadExtensionCatalog } from '~/lib/server/catalog';
 
 export default function ExtensionsPage() {
@@ -13,34 +13,25 @@ export default function ExtensionsPage() {
   return (
     <SiteLayout
       title="Extensions"
-      description="Browse Antora extensions: build-time pipeline extensions, CI checkers, generators, utilities, and UI-side modules"
+      description="Find Antora extensions for builds, CI, generators and site UI."
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="mb-8">
-          <h1 class="text-3xl lg:text-4xl font-bold text-white mb-4">Extensions</h1>
-          <p class="text-slate-400 text-lg max-w-3xl">
-            Antora extensions of every kind: build-time pipeline extensions, CI checkers and validators, generators and other utilities, and UI-side modules. UI modules are indexed from{' '}
-            <code class="px-1.5 py-0.5 bg-slate-800 rounded text-primary-300">ui-modules/registry.json5</code>
-            {' '}manifests. Repos tagged{' '}
-            <code class="px-1.5 py-0.5 bg-slate-800 rounded text-primary-300">{ANTORA_TOPICS.EXTENSION}</code>
-            {' '}are discovered automatically.
-          </p>
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl lg:text-4xl font-bold text-white mb-4">Extensions</h1>
+            <p class="text-slate-400 text-lg max-w-3xl">
+              Extensions for Antora builds, CI checks, generators and site UI.
+            </p>
+          </div>
+          <div class="flex flex-col items-start sm:items-end gap-2 shrink-0">
+            <A href="/extensions/submit" class={buttonVariants({ size: 'lg' })}>
+              Add your extension
+            </A>
+            <A href="/add" class="text-sm text-primary-400 hover:text-primary-300">How to add to the registry</A>
+          </div>
         </div>
 
-        <div class="mb-8 p-4 bg-slate-800/30 border border-slate-700/50 rounded-xl text-sm text-slate-400 space-y-2">
-          <p>
-            Catalog API: <a href="/api/extensions/catalog" class="text-primary-400 hover:text-primary-300">/api/extensions/catalog</a>
-            {' '}· Topic schema: <a href="/api/extensions/topics" class="text-primary-400 hover:text-primary-300">/api/extensions/topics</a>
-            {' '}· Discover: <a href="/api/extensions/discover?repoUrl=https://github.com/antora-supplemental/valentus-theme" class="text-primary-400 hover:text-primary-300">/api/extensions/discover</a>
-            {' '}· Submit repo: <code class="text-primary-300">POST /api/extensions/submit</code> (sign-in required)
-          </p>
-        </div>
-
-        <Suspense
-          fallback={
-            <div class="text-center py-16 text-slate-400">Loading extension catalog...</div>
-          }
-        >
+        <Suspense fallback={<div class="text-center py-16 text-slate-400">Loading extensions…</div>}>
           <Show when={catalog()}>
             {(data) => (
               <>
@@ -48,12 +39,6 @@ export default function ExtensionsPage() {
                   <div class="mb-8 p-4 bg-amber-500/10 border border-amber-500/50 rounded-xl text-amber-300 text-sm">
                     {data().catalogError}
                   </div>
-                </Show>
-                <Show when={data().discoveredRepoCount > 0}>
-                  <p class="text-emerald-400/90 text-sm mb-6">
-                    {data().discoveredRepoCount} additional{' '}
-                    {data().discoveredRepoCount === 1 ? 'repository' : 'repositories'} found via GitHub topics.
-                  </p>
                 </Show>
                 <ExtensionGallery modules={data().modules} recipes={data().recipes} initialQuery={initialQuery()} />
               </>

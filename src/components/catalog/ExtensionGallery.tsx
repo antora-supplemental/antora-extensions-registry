@@ -1,11 +1,7 @@
 import { createSignal, createMemo, For, Show } from 'solid-js';
 import { inputClass } from '~/components/ui/text-field';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
-import {
-  isDarkModeOverlayOnly,
-  matchesAppearanceFilter,
-  type AppearanceFilter,
-} from '~/data/github-topics';
+import { matchesAppearanceFilter, type AppearanceFilter } from '~/data/github-topics';
 import { APPEARANCE_FILTER_OPTIONS } from '~/lib/appearance-filter';
 import ExtensionCard from './ExtensionCard';
 
@@ -15,11 +11,11 @@ interface ExtensionGalleryProps {
   recipes: ExtensionCatalogEntry[];
 }
 
-type ViewMode = 'all' | 'modules' | 'recipes';
+type ViewMode = 'all' | 'single' | 'bundles';
 
 const EXTENSION_APPEARANCE_OPTIONS = [
-  { value: 'all' as AppearanceFilter, label: 'All extensions', description: 'Includes dark mode overlays' },
-  ...APPEARANCE_FILTER_OPTIONS.filter((o) => o.value !== 'default' && o.value !== 'light-dark'),
+  { value: 'all' as AppearanceFilter, label: 'All color modes' },
+  ...APPEARANCE_FILTER_OPTIONS.filter((o) => o.value !== 'all' && o.value !== 'default'),
 ];
 
 export default function ExtensionGallery(props: ExtensionGalleryProps) {
@@ -40,19 +36,12 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
     let entries = [...allEntries()];
 
     const mode = viewMode();
-    if (mode === 'modules') entries = entries.filter((e) => e.type === 'ui-module');
-    if (mode === 'recipes') entries = entries.filter((e) => e.type === 'ui-recipe');
+    if (mode === 'single') entries = entries.filter((e) => e.type !== 'ui-recipe');
+    if (mode === 'bundles') entries = entries.filter((e) => e.type === 'ui-recipe');
 
     const appearance = appearanceFilter();
-    if (appearance === 'all') {
-      entries = entries.filter((e) => {
-        const topics = e.githubTopics ?? [];
-        return !isDarkModeOverlayOnly(topics);
-      });
-    } else {
-      entries = entries.filter((e) =>
-        matchesAppearanceFilter(e.githubTopics ?? [], appearance),
-      );
+    if (appearance !== 'all') {
+      entries = entries.filter((e) => matchesAppearanceFilter(e.githubTopics ?? [], appearance));
     }
 
     const query = searchQuery().toLowerCase();
@@ -88,19 +77,21 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
 
         <select
           value={viewMode()}
+          aria-label="Filter by kind"
           onChange={(e) => setViewMode(e.currentTarget.value as ViewMode)}
           class="px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white cursor-pointer"
         >
-          <option value="all">All entries</option>
-          <option value="modules">Modules only</option>
-          <option value="recipes">Recipes only</option>
+          <option value="all">All</option>
+          <option value="single">Single extensions</option>
+          <option value="bundles">Bundles</option>
         </select>
 
         <select
           value={appearanceFilter()}
           onChange={(e) => setAppearanceFilter(e.currentTarget.value as AppearanceFilter)}
           class="px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white cursor-pointer"
-          title="Appearance / capability filter"
+          title="Filter by color mode"
+          aria-label="Filter by color mode"
         >
           <For each={EXTENSION_APPEARANCE_OPTIONS}>
             {(opt) => <option value={opt.value}>{opt.label}</option>}
@@ -132,8 +123,7 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
       </div>
 
       <p class="text-slate-400 text-sm mb-6">
-        Showing {filteredEntries().length} entries. Default view hides dark-mode-only overlays — use
-        &quot;Dark mode overlays&quot; to find slipstream extensions like antora-dark-mode.
+        {filteredEntries().length} {filteredEntries().length === 1 ? 'extension' : 'extensions'}
       </p>
 
       <Show

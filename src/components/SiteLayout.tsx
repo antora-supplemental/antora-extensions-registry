@@ -1,10 +1,14 @@
 import { A, createAsync, useLocation } from '@solidjs/router';
+import { Meta, Title } from '@solidjs/meta';
 import { buttonVariants } from '~/components/ui/button';
 import { createEffect, createSignal, For, on, Show, Suspense, type ParentProps } from 'solid-js';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '~/components/ui/sheet';
 import { getSessionData } from '~/app';
 import { authClient } from '~/lib/auth-client';
 import ThemeToggle from '~/components/ThemeToggle';
+
+const DEFAULT_DESCRIPTION =
+  'Unofficial, community-run catalog of Antora extensions (build-time pipeline extensions, CI checkers and validators, generators, utilities, and UI-side add-ons) and Antora UI themes, with install guidance. Not affiliated with the Antora project.';
 
 interface SiteLayoutProps extends ParentProps {
   title?: string;
@@ -20,11 +24,14 @@ export default function SiteLayout(props: SiteLayoutProps) {
   const navLinks = [
     { href: '/extensions', label: 'Extensions' },
     { href: '/themes', label: 'Themes' },
+    { href: '/add', label: 'Add to registry' },
   ];
   const mobileLink = 'block rounded-lg px-3 py-2 text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
   return (
     <div class="site-shell min-h-screen text-slate-100 antialiased">
+      <Title>{props.title ? `${props.title} - Antora Registry` : 'Antora Registry'}</Title>
+      <Meta name="description" content={props.description ?? DEFAULT_DESCRIPTION} />
       <nav class="border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex items-center justify-between h-16">
@@ -41,6 +48,9 @@ export default function SiteLayout(props: SiteLayoutProps) {
               <A href="/themes" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
                 Themes
               </A>
+              <A href="/add" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
+                Add to registry
+              </A>
               <ThemeToggle />
               <Suspense fallback={null}>
                 <Show
@@ -56,12 +66,6 @@ export default function SiteLayout(props: SiteLayoutProps) {
                 >
                   {(user) => (
                     <div class="flex items-center gap-3">
-                      <A
-                        href="/themes/submit"
-                        class={buttonVariants()}
-                      >
-                        Submit Theme
-                      </A>
                       <Show when={user().image}>
                         <img src={user().image!} alt={user().name ?? ''} class="w-8 h-8 rounded-full" />
                       </Show>
@@ -113,7 +117,6 @@ export default function SiteLayout(props: SiteLayoutProps) {
                       when={session()?.user}
                       fallback={<A href="/auth/signin" class={mobileLink} onClick={() => setMenuOpen(false)}>Sign in</A>}
                     >
-                      <A href="/themes/submit" class={mobileLink} onClick={() => setMenuOpen(false)}>Submit Theme</A>
                       <A href="/auth/account" class={mobileLink} onClick={() => setMenuOpen(false)}>Account</A>
                       <button type="button" class={`${mobileLink} text-left`} onClick={() => { setMenuOpen(false); void authClient.signOut(); }}>
                         Sign out
@@ -134,7 +137,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <p class="text-slate-400 text-sm">
-              registry.antora-supplemental.org — extensions and themes for the Antora community
+              Antora Registry — community extensions and themes
               <span id="disclaimer" class="block mt-1 text-xs text-slate-500">Not affiliated with or endorsed by the Antora project.</span>
             </p>
             <div class="flex items-center gap-6">
