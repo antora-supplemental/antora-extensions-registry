@@ -1,4 +1,5 @@
 import { A, createAsync, useParams } from '@solidjs/router';
+import { Meta, Title } from '@solidjs/meta';
 import { createMemo, createSignal, For, Show, Suspense } from 'solid-js';
 import SiteLayout from '~/components/SiteLayout';
 import DependencyTree from '~/components/catalog/DependencyTree';
@@ -30,7 +31,7 @@ export default function ExtensionDetailPage() {
   };
 
   return (
-    <SiteLayout title={entry()?.name ?? 'Extensions'} description={entry()?.description}>
+    <SiteLayout title="Extensions">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <A href="/extensions" class="text-sm text-primary-400 hover:text-primary-300">&larr; All extensions</A>
         <Suspense fallback={<div class="text-center py-16 text-slate-400">Loading extension…</div>}>
@@ -46,6 +47,8 @@ export default function ExtensionDetailPage() {
             >
               {(e) => (
                 <>
+                  <Title>{`${e().name} - Antora Registry`}</Title>
+                  <Meta name="description" content={e().description} />
                   <header class="mt-6 mb-8">
                     <div class="flex flex-wrap items-center gap-2 mb-2">
                       <Badge variant="primary">{e().type}</Badge>
