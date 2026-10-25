@@ -12,14 +12,14 @@ export default function ExtensionsPage() {
 
   return (
     <SiteLayout
-      title="UI Extensions"
-      description="Browse composable Antora UI modules indexed from repository manifests"
+      title="Extensions"
+      description="Browse Antora extensions: build-time pipeline extensions, CI checkers, generators, utilities, and UI-side modules"
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="mb-8">
-          <h1 class="text-3xl lg:text-4xl font-bold text-white mb-4">UI Extensions</h1>
+          <h1 class="text-3xl lg:text-4xl font-bold text-white mb-4">Extensions</h1>
           <p class="text-slate-400 text-lg max-w-3xl">
-            Composable UI modules indexed from{' '}
+            Antora extensions of every kind: build-time pipeline extensions, CI checkers and validators, generators and other utilities, and UI-side modules. UI modules are indexed from{' '}
             <code class="px-1.5 py-0.5 bg-slate-800 rounded text-primary-300">ui-modules/registry.json5</code>
             {' '}manifests. Repos tagged{' '}
             <code class="px-1.5 py-0.5 bg-slate-800 rounded text-primary-300">{ANTORA_TOPICS.EXTENSION}</code>

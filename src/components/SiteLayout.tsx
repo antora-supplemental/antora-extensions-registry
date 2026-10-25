@@ -83,6 +83,8 @@ export default function SiteLayout(props: SiteLayoutProps) {
                 </Show>
               </Suspense>
             </div>
+            <div class="md:hidden flex items-center gap-1">
+            <ThemeToggle />
             <Sheet open={menuOpen()} onOpenChange={setMenuOpen}>
               <SheetTrigger
                 aria-label="Open navigation menu"
@@ -105,7 +107,6 @@ export default function SiteLayout(props: SiteLayoutProps) {
                       </A>
                     )}
                   </For>
-                  <ThemeToggle showLabel class="w-full px-3 py-2" />
                   <div class="my-2 trim-rule-t" />
                   <Suspense fallback={null}>
                     <Show
@@ -122,6 +123,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
                 </nav>
               </SheetContent>
             </Sheet>
+            </div>
           </div>
         </div>
       </nav>

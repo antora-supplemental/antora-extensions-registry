@@ -69,7 +69,7 @@ export const ANTORA_TOPIC_REGISTRY: AntoraTopicDefinition[] = [
     primaryKind: 'extension',
     label: 'Antora extension',
     description:
-      'Extends Antora (UI modules, generator packages, chrome). Indexer scans for ui-modules/registry.json5.',
+      'Extends Antora: build-time pipeline extensions, CI checkers, generators, utilities, or UI-side modules. Indexer scans for ui-modules/registry.json5.',
   },
   {
     topic: ANTORA_TOPICS.THEME,

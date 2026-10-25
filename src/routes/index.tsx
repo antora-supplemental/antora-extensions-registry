@@ -90,7 +90,7 @@ export default function Home() {
                 href="/extensions"
                 class={cn(buttonVariants({ size: 'xl' }), 'shadow-lg shadow-primary-600/25')}
               >
-                UI Extensions
+                Extensions
               </A>
               <A
                 href="/themes"
@@ -108,7 +108,7 @@ export default function Home() {
           <A href="/extensions" class="p-6 bg-slate-800/30 glass-rim rounded-xl group">
             <h2 class="text-xl font-semibold text-white mb-2 group-hover:text-primary-400">Extensions</h2>
             <p class="text-slate-400 text-sm">
-              Index <code class="text-primary-300">ui-modules/registry.json5</code> manifests.
+              Build-time, CI and utility Antora extensions, plus UI-side modules indexed from <code class="text-primary-300">ui-modules/registry.json5</code> manifests.
               GitHub topic discovery for <code class="text-primary-300">antora-extension</code> repos.
             </p>
           </A>
