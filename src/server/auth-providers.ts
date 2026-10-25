@@ -13,14 +13,6 @@ export function buildSocialProviders(): SocialProviders {
     };
   }
 
-  if (serverEnv.GITLAB_ID && serverEnv.GITLAB_SECRET) {
-    providers.gitlab = {
-      clientId: serverEnv.GITLAB_ID,
-      clientSecret: serverEnv.GITLAB_SECRET,
-      issuer: "https://gitlab.com",
-      scope: ["read_user"],
-    };
-  }
 
   if (serverEnv.GOOGLE_ID && serverEnv.GOOGLE_SECRET) {
     providers.google = {
@@ -57,3 +49,27 @@ export const configuredProviderIds = () => {
   if (serverEnv.EMAIL_SERVER && serverEnv.EMAIL_FROM) ids.push("magic-link");
   return ids;
 };
+
+/** GitLab via OpenID Connect (genericOAuth). Callback: {BETTER_AUTH_URL}/api/auth/oauth2/callback/gitlab */
+export function buildOidcProviders() {
+  if (!serverEnv.GITLAB_ID || !serverEnv.GITLAB_SECRET) return [];
+  const issuer = (serverEnv.GITLAB_ISSUER ?? "https://gitlab.com").replace(/\/+$/, "");
+  return [
+    {
+      providerId: "gitlab",
+      clientId: serverEnv.GITLAB_ID,
+      clientSecret: serverEnv.GITLAB_SECRET,
+      discoveryUrl: `${issuer}/.well-known/openid-configuration`,
+      issuer,
+      scopes: ["openid", "profile", "email"],
+      pkce: true,
+      mapProfileToUser: (profile: Record<string, unknown>) => ({
+        id: String(profile.sub),
+        email: profile.email as string | undefined,
+        emailVerified: profile.email_verified === true,
+        name: (profile.name as string | undefined) ?? (profile.nickname as string | undefined),
+        image: profile.picture as string | undefined,
+      }),
+    },
+  ];
+}

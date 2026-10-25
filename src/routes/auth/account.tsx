@@ -2,7 +2,7 @@ import { createAsync, Navigate, useSearchParams } from "@solidjs/router";
 import { createSignal, For, onMount, Show, Suspense } from "solid-js";
 import SiteLayout from "~/components/SiteLayout";
 import { getSessionData } from "~/app";
-import { authClient } from "~/lib/auth-client";
+import { authClient, linkProvider as startLink, signInWithProvider } from "~/lib/auth-client";
 
 type ProviderId = "github" | "gitlab" | "google" | "microsoft" | "apple";
 
@@ -55,7 +55,7 @@ export default function AccountPage() {
     setError(null);
     setLoading(provider);
     try {
-      const res = await authClient.linkSocial({ provider, callbackURL: "/auth/account" });
+      const res = await startLink(provider, "/auth/account");
       if (res?.error) setError(res.error.message ?? "Could not link provider");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not link provider");
@@ -97,7 +97,7 @@ export default function AccountPage() {
       }
       if (!res.ok) throw new Error("Could not start the merge");
       // Prove ownership of the other account; the callback merges it into this one.
-      await authClient.signIn.social({ provider, callbackURL: "/api/account/merge/complete" });
+      await signInWithProvider(provider, "/api/account/merge/complete");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start the merge");
       setLoading(null);

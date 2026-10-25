@@ -1,8 +1,8 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { magicLink } from "better-auth/plugins";
+import { genericOAuth, magicLink } from "better-auth/plugins";
 import { serverEnv } from "~/env/server";
-import { buildSocialProviders, configuredProviderIds } from "./auth-providers";
+import { buildOidcProviders, buildSocialProviders, configuredProviderIds } from "./auth-providers";
 import { db } from "./db";
 import * as schema from "./db/schema";
 
@@ -29,11 +29,15 @@ export const auth = betterAuth({
       enabled: true,
       // Auto-link only when the provider reports a verified email that matches the existing user.
       allowDifferentEmails: false,
-      trustedProviders: configuredProviderIds().filter((id) => id === "github" || id === "gitlab"),
+      // GitHub is trusted (better-auth only uses its verified primary email). GitLab (OIDC) is not listed,
+      // so it auto-links only when the ID token/userinfo says email_verified: true.
+      trustedProviders: configuredProviderIds().filter((id) => id === "github"),
     },
   },
   socialProviders: buildSocialProviders(),
-  plugins: serverEnv.EMAIL_SERVER && serverEnv.EMAIL_FROM
+  plugins: [
+    ...(buildOidcProviders().length ? [genericOAuth({ config: buildOidcProviders() })] : []),
+    ...(serverEnv.EMAIL_SERVER && serverEnv.EMAIL_FROM
     ? [
         magicLink({
           sendMagicLink: async ({ email, url }) => {
@@ -48,7 +52,8 @@ export const auth = betterAuth({
           },
         }),
       ]
-    : [],
+    : []),
+  ],
 });
 
 export type Session = typeof auth.$Infer.Session;

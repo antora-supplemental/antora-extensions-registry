@@ -2,7 +2,7 @@
 
 == Unreleased
 
-* Sign in with GitLab (gitlab.com, read_user) when GITLAB_ID/GITLAB_SECRET are set; sign-in and account pages only show configured providers. Account page gains *Linked sign-ins* (link/unlink, last one protected; GitHub/GitLab auto-link only on matching verified email) and *Merge another account* (fresh sign-in on both accounts, transactional merge with audit row in account_merge_audit).
+* Sign in with GitLab via OpenID Connect (better-auth genericOAuth, discovery + PKCE, scopes `openid profile email`; callback `/api/auth/oauth2/callback/gitlab`; optional GITLAB_ISSUER for self-managed GitLab) when GITLAB_ID/GITLAB_SECRET are set; GitLab auto-links only when `email_verified` is true; sign-in and account pages only show configured providers. Account page gains *Linked sign-ins* (link/unlink, last one protected; GitHub/GitLab auto-link only on matching verified email) and *Merge another account* (fresh sign-in on both accounts, transactional merge with audit row in account_merge_audit).
 * UI: adopt solid-ui (Kobalte + cva + tailwind-merge v2, Tailwind 3.4). Theme tokens mapped to the existing slate/sky palette; cards, badges/tags, buttons and search inputs now use `~/components/ui`.
 * Overscroll: `html`/`body` background now use `--chrome-bg` (slate-900 `#0f172a`, the header/footer color) in both schemes, so trackpad rubber-banding no longer flashes white.
 * Theme/extension cards: dark/light mode tags render as circular color-composite icons (contrasting border, `Dark theme` / `Light theme` labels) on their own row instead of tag pills.

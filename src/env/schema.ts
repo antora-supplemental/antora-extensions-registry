@@ -10,6 +10,8 @@ export const serverScheme = z
     GITHUB_SECRET: z.string().optional(),
     GITLAB_ID: z.string().optional(),
     GITLAB_SECRET: z.string().optional(),
+    /** OIDC issuer for GitLab sign-in; set for self-managed GitLab. Defaults to https://gitlab.com. */
+    GITLAB_ISSUER: z.string().url().optional(),
     GOOGLE_ID: z.string().optional(),
     GOOGLE_SECRET: z.string().optional(),
     MICROSOFT_ID: z.string().optional(),

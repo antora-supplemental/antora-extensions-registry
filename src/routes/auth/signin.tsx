@@ -1,7 +1,7 @@
 import type { Component } from "solid-js";
 import { createSignal, For, onMount, Show } from "solid-js";
 import SiteLayout from "~/components/SiteLayout";
-import { authClient } from "~/lib/auth-client";
+import { authClient, signInWithProvider as startProviderSignIn } from "~/lib/auth-client";
 
 type ProviderId = "github" | "gitlab" | "google" | "microsoft" | "apple";
 
@@ -37,10 +37,7 @@ export default function SignIn() {
         setError(null);
         setLoading(provider);
         try {
-            await authClient.signIn.social({
-                provider,
-                callbackURL: "/",
-            });
+            await startProviderSignIn(provider, "/");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Sign-in failed");
         } finally {
