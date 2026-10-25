@@ -43,9 +43,9 @@ export default function Home() {
             <p class="text-slate-500 text-xs mb-4">
               Unofficial<a href="#disclaimer" aria-label="See disclaimer" title="See disclaimer" class="text-primary-400 hover:text-primary-300 no-underline">*</a>
             </p>
-            <h1 class="text-4xl lg:text-6xl font-bold text-white mb-8 leading-tight">
-              Antora <KnockoutText text="Extensions" />{' '}
-              <span class="text-slate-400">themes &amp; more</span>
+            <h1 class="font-bold text-white mb-8 leading-tight">
+              <span class="block whitespace-nowrap text-[1.7rem] sm:text-5xl lg:text-6xl">Extensions &amp; themes for</span>{' '}
+              <KnockoutText text="Antora" class="mt-3 text-6xl sm:text-7xl lg:text-8xl" />
             </h1>
 
             <form class="max-w-2xl mx-auto mb-6" onSubmit={submitOmni}>

@@ -12,11 +12,13 @@ export default function KnockoutText(props: { text: string; class?: string }) {
   return (
     <span class={`inline-block align-middle ${props.class ?? ''}`}>
       <span class="sr-only">{props.text}</span>
-      <svg aria-hidden="true" focusable="false" viewBox={`0 0 ${width()} ${height}`} class="h-[1.15em] w-auto">
+      <svg aria-hidden="true" focusable="false" viewBox={`0 0 ${width()} ${height}`} class="h-[1.1em] w-auto">
         <defs>
           <linearGradient id={`ko-fill-${id}`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#0ea5e9" />
-            <stop offset="100%" stop-color="#0369a1" />
+            {/* Brand gradient, driven by CSS variables so a new palette only touches app.css. */}
+            <stop offset="0%" style={{ 'stop-color': 'var(--brand-grad-from)' }} />
+            <stop offset="50%" style={{ 'stop-color': 'var(--brand-grad-via)' }} />
+            <stop offset="100%" style={{ 'stop-color': 'var(--brand-grad-to)' }} />
           </linearGradient>
           <mask id={`ko-mask-${id}`} maskUnits="userSpaceOnUse" x="0" y="0" width={width()} height={height}>
             <rect width={width()} height={height} fill="white" />

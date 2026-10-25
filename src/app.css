@@ -25,6 +25,10 @@
   --radius: 0.5rem;
   /* Header/footer chrome; also the overscroll backdrop. */
   --chrome-bg: #ffffff;
+  /* Brand gradient (knockout blocks); placeholder accent colors until the brand palette lands. */
+  --brand-grad-from: #38bdf8; /* primary-400 */
+  --brand-grad-via: #6366f1;  /* indigo-500 */
+  --brand-grad-to: #0369a1;   /* primary-700 */
   color-scheme: light;
 }
 
