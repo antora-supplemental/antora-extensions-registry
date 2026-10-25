@@ -1,4 +1,4 @@
-import { createAsync } from '@solidjs/router';
+import { createAsync, useSearchParams } from '@solidjs/router';
 import { Show, Suspense } from 'solid-js';
 import SiteLayout from '~/components/SiteLayout';
 import ExtensionGallery from '~/components/catalog/ExtensionGallery';
@@ -7,6 +7,8 @@ import { loadExtensionCatalog } from '~/lib/server/catalog';
 
 export default function ExtensionsPage() {
   const catalog = createAsync(() => loadExtensionCatalog());
+  const [params] = useSearchParams();
+  const initialQuery = () => (typeof params.q === 'string' ? params.q : '');
 
   return (
     <SiteLayout
@@ -53,7 +55,7 @@ export default function ExtensionsPage() {
                     {data().discoveredRepoCount === 1 ? 'repository' : 'repositories'} found via GitHub topics.
                   </p>
                 </Show>
-                <ExtensionGallery modules={data().modules} recipes={data().recipes} />
+                <ExtensionGallery modules={data().modules} recipes={data().recipes} initialQuery={initialQuery()} />
               </>
             )}
           </Show>

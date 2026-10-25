@@ -4,6 +4,7 @@ import { createEffect, createSignal, For, on, Show, Suspense, type ParentProps }
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '~/components/ui/sheet';
 import { getSessionData } from '~/app';
 import { authClient } from '~/lib/auth-client';
+import ThemeToggle from '~/components/ThemeToggle';
 
 interface SiteLayoutProps extends ParentProps {
   title?: string;
@@ -19,7 +20,6 @@ export default function SiteLayout(props: SiteLayoutProps) {
   const navLinks = [
     { href: '/extensions', label: 'Extensions' },
     { href: '/themes', label: 'Themes' },
-    { href: '/registry', label: 'Registry' },
   ];
   const mobileLink = 'block rounded-lg px-3 py-2 text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
@@ -45,9 +45,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
               <A href="/themes" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
                 Themes
               </A>
-              <A href="/registry" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
-                Registry
-              </A>
+              <ThemeToggle />
               <Suspense fallback={null}>
                 <Show
                   when={session()?.user}
@@ -111,6 +109,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
                       </A>
                     )}
                   </For>
+                  <ThemeToggle showLabel class="w-full px-3 py-2" />
                   <div class="my-2 border-t border-slate-700/50" />
                   <Suspense fallback={null}>
                     <Show
@@ -138,6 +137,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
           <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <p class="text-slate-400 text-sm">
               registry.antora-supplemental.org — extensions, themes, and packages for the Antora community
+              <span class="block mt-1 text-slate-500">Unofficial, community-run. Not affiliated with or endorsed by the Antora project.</span>
             </p>
             <div class="flex items-center gap-6">
               <a href="https://antora-supplemental.org" target="_blank" rel="noopener" class="text-slate-400 hover:text-white transition-colors text-sm">

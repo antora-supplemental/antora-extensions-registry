@@ -31,7 +31,7 @@ The registry parses the YAML frontmatter for specific fields:
 
 === Content
 
-Everything below the frontmatter is used as the detailed description in the extension's "Insights" panel. Standard Markdown is supported.
+Everything below the frontmatter is used as the detailed description on the extension's detail page (`/extensions/<owner>/<repo>/<id>`). Standard Markdown is supported.
 
 === Template
 
@@ -52,7 +52,7 @@ screenshots:
 # Overview
 
 Add a detailed description of your extension here. You can use **Markdown** to format your content. 
-This content will be displayed in the "Insights" panel of the Antora Extensions Registry.
+This content will be displayed on the extension's detail page in the Antora Extension Registry.
 
 ## Key Features
 - Feature 1

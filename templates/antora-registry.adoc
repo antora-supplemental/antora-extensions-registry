@@ -11,7 +11,7 @@ screenshots:
 = Overview
 
 Add a detailed description of your extension here. You can use *AsciiDoc* to format your content. 
-This content will be displayed in the "Insights" panel of the Antora Extensions Registry.
+This content will be displayed on the extension's detail page in the Antora Extension Registry.
 
 == Key Features
 

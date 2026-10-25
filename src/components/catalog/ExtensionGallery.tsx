@@ -10,6 +10,7 @@ import { APPEARANCE_FILTER_OPTIONS } from '~/lib/appearance-filter';
 import ExtensionCard from './ExtensionCard';
 
 interface ExtensionGalleryProps {
+  initialQuery?: string;
   modules: ExtensionCatalogEntry[];
   recipes: ExtensionCatalogEntry[];
 }
@@ -22,7 +23,7 @@ const EXTENSION_APPEARANCE_OPTIONS = [
 ];
 
 export default function ExtensionGallery(props: ExtensionGalleryProps) {
-  const [searchQuery, setSearchQuery] = createSignal('');
+  const [searchQuery, setSearchQuery] = createSignal(props.initialQuery ?? '');
   const [selectedTag, setSelectedTag] = createSignal<string | null>(null);
   const [viewMode, setViewMode] = createSignal<ViewMode>('all');
   const [appearanceFilter, setAppearanceFilter] = createSignal<AppearanceFilter>('all');

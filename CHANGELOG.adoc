@@ -2,6 +2,12 @@
 
 == Unreleased
 
+* New extension detail page at `/extensions/<owner>/<repo>/<id>` with key info, install snippet, a requires/recommends dependency tree (cycle- and depth-guarded, same-repo ids preferred) and a "Used by" list; extension cards link to it.
+* Homepage search *All* now lands on `/extensions?q=...`; the extensions page reads `?q=` to pre-filter.
+* Removed the `/registry` prototype page (no redirect), its nav links, the homepage *Package search* button and *Packages* card, and the dead components (`SearchTree`, `ExtensionPanel`, `DependencyButton`, `InstallMethods`, `lib/registry/*`) and CSS (`.glass`, `.premium-gradient`, `.side-panel`, `.dependency-tree-node`, custom `.animate-in`).
+* Site-wide Light/Dark toggle (sun/moon, desktop header and mobile menu). Follows `prefers-color-scheme` on load; a manual choice persists in `localStorage` until the OS scheme changes, which switches live and clears it. An inline head script applies the scheme before paint.
+* Wording: the site is described as an unofficial, community-run catalog not affiliated with or endorsed by the Antora project (homepage, footer, meta description).
+
 * Search inputs with an icon (`/registry`, themes gallery): padding reserves the icon area and long queries fade out (CSS `mask-image`) before running under the icon; the box chrome moved to a wrapper with `focus-within` ring.
 * `/registry` hero: *EXTENSIONS* is now a true knockout (letters cut out of a gradient pill via an SVG mask, real text kept for screen readers). It was invisible because `.premium-gradient` used the `background` shorthand, which reset `bg-clip-text` to `border-box` on `text-transparent` text; the class now sets `background-image` only.
 * Fix: client-side navigation to `/` from any page threw "Uncaught Client Exception" (blank home). The home route imported the server-only `loadGalleryThemes` (Drizzle + `~/env/server`) directly, so env validation ran in the browser on soft-nav; it now uses the `'use server'` `loadThemes` query.

@@ -1,4 +1,5 @@
 import { createSignal, Show } from 'solid-js';
+import { A } from '@solidjs/router';
 import { Card } from '~/components/ui/card';
 import { Badge } from '~/components/ui/badge';
 import { buttonVariants } from '~/components/ui/button';
@@ -47,8 +48,10 @@ export default function ExtensionCard(props: ExtensionCardProps) {
               </Badge>
               <span class="text-slate-500 text-xs font-mono">v{props.entry.version}</span>
             </div>
-            <h3 class="font-semibold text-lg text-white group-hover:text-primary-400 transition-colors">
-              {props.entry.name}
+            <h3 class="font-semibold text-lg text-white">
+              <A href={`/extensions/${props.entry.catalogId}`} class="hover:text-primary-400 transition-colors focus-visible:outline-none focus-visible:underline">
+                {props.entry.name}
+              </A>
             </h3>
             <p class="text-slate-500 text-xs font-mono mt-1 truncate">{props.entry.catalogId}</p>
           </div>

@@ -6,7 +6,7 @@ import SiteLayout from '~/components/SiteLayout';
 import ThemeCard from '~/components/catalog/ThemeCard';
 import { loadThemes } from '~/lib/server/catalog';
 
-type OmniKind = 'all' | 'extensions' | 'themes' | 'registry';
+type OmniKind = 'all' | 'extensions' | 'themes';
 
 export default function Home() {
   const themes = createAsync(() => loadThemes());
@@ -26,12 +26,8 @@ export default function Home() {
       navigate(q ? `/extensions?q=${encodeURIComponent(q)}` : '/extensions');
       return;
     }
-    if (k === 'registry') {
-      navigate(q ? `/registry?q=${encodeURIComponent(q)}` : '/registry');
-      return;
-    }
-    // all → prefer registry search when typing; otherwise themes gallery
-    navigate(q ? `/registry?q=${encodeURIComponent(q)}` : '/themes');
+    // all: typed queries land on extension results (themes have their own chip); empty goes to the theme gallery
+    navigate(q ? `/extensions?q=${encodeURIComponent(q)}` : '/themes');
   };
 
   return (
@@ -43,6 +39,7 @@ export default function Home() {
             <p class="text-primary-400 text-sm font-semibold tracking-widest uppercase mb-4">
               Antora Extension Registry
             </p>
+            <p class="text-slate-500 text-xs mb-4">Unofficial, community-run. Not affiliated with or endorsed by the Antora project.</p>
             <h1 class="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Discover Antora{' '}
               <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-primary-600">
@@ -73,7 +70,7 @@ export default function Home() {
                 </button>
               </div>
               <div class="flex flex-wrap justify-center gap-2 mt-3" role="group" aria-label="Search category">
-                <For each={(['all', 'extensions', 'themes', 'registry'] as OmniKind[])}>
+                <For each={(['all', 'extensions', 'themes'] as OmniKind[])}>
                   {(chip) => (
                     <button
                       type="button"
@@ -84,7 +81,7 @@ export default function Home() {
                       }
                       onClick={() => setKind(chip)}
                     >
-                      {chip === 'all' ? 'All' : chip === 'registry' ? 'Packages' : chip[0]!.toUpperCase() + chip.slice(1)}
+                      {chip === 'all' ? 'All' : chip[0]!.toUpperCase() + chip.slice(1)}
                     </button>
                   )}
                 </For>
@@ -104,19 +101,13 @@ export default function Home() {
               >
                 Theme Gallery
               </A>
-              <A
-                href="/registry"
-                class={buttonVariants({ variant: 'outline', size: 'xl' })}
-              >
-                Package search
-              </A>
             </div>
           </div>
         </div>
       </section>
 
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <A href="/extensions" class="p-6 bg-slate-800/30 border border-slate-700/50 rounded-xl hover:border-primary-500/50 transition-colors group">
             <h2 class="text-xl font-semibold text-white mb-2 group-hover:text-primary-400">Extensions</h2>
             <p class="text-slate-400 text-sm">
@@ -129,12 +120,6 @@ export default function Home() {
             <p class="text-slate-400 text-sm">
               Gallery of full Antora UI themes (ui.bundle) with previews, demos, and appearance filters.
               Not Antora extensions — a first-class category here.
-            </p>
-          </A>
-          <A href="/registry" class="p-6 bg-slate-800/30 border border-slate-700/50 rounded-xl hover:border-primary-500/50 transition-colors group">
-            <h2 class="text-xl font-semibold text-white mb-2 group-hover:text-primary-400">Packages</h2>
-            <p class="text-slate-400 text-sm">
-              Search extensions and bundles with dependency analysis and install guidance.
             </p>
           </A>
         </div>
