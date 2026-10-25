@@ -36,3 +36,34 @@ export const loadThemes = cache(async (): Promise<Theme[]> => {
   'use server';
   return loadGalleryThemes();
 }, 'themes-gallery');
+
+/** Compact name index for search typeahead: just enough to label and link each suggestion. */
+export interface SearchIndexItem {
+  kind: 'extension' | 'theme';
+  /** Extension type (antora-extension, ui-module, ui-recipe, ui-bundle) or 'theme'. */
+  type: string;
+  id: string;
+  name: string;
+  href: string;
+}
+
+export const loadSearchIndex = cache(async (): Promise<SearchIndexItem[]> => {
+  'use server';
+  const [catalog, themes] = await Promise.all([loadExtensionCatalog(), loadThemes()]);
+  const ext = [...catalog.modules, ...catalog.recipes].map((e) => ({
+    kind: 'extension' as const,
+    type: e.type,
+    id: e.catalogId,
+    name: e.name,
+    href: `/extensions/${e.catalogId}`,
+  }));
+  // Themes have no detail page; a suggestion opens the theme-filtered results for that name.
+  const th = themes.map((t) => ({
+    kind: 'theme' as const,
+    type: 'theme',
+    id: t.id,
+    name: t.name,
+    href: `/search?q=${encodeURIComponent(t.name)}&type=themes`,
+  }));
+  return [...ext, ...th];
+}, 'search-index');

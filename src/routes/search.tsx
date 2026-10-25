@@ -4,6 +4,7 @@ import SiteLayout from '~/components/SiteLayout';
 import ExtensionCard from '~/components/catalog/ExtensionCard';
 import ThemeCard from '~/components/catalog/ThemeCard';
 import { inputClass } from '~/components/ui/text-field';
+import { EXTENSION_KIND_LABELS, searchHref, type SearchType } from '~/lib/search-categories';
 import { loadExtensionCatalog, loadThemes } from '~/lib/server/catalog';
 
 function matches(q: string, fields: Array<string | undefined>, tags: string[]): boolean {
@@ -11,11 +12,24 @@ function matches(q: string, fields: Array<string | undefined>, tags: string[]): 
   return fields.some((f) => f?.toLowerCase().includes(q)) || tags.some((t) => t.toLowerCase().includes(q));
 }
 
-/** Combined extension + theme results for the home page's "All" search. */
+const TYPE_FILTERS: Array<{ value: SearchType; label: string }> = [
+  { value: 'all', label: 'All' },
+  { value: 'extensions', label: 'Extensions' },
+  { value: 'themes', label: 'Themes' },
+];
+
+const chipClass = (on: boolean) =>
+  on
+    ? 'px-3 py-1.5 rounded-full text-sm font-semibold bg-primary-600 text-brand-foreground'
+    : 'px-3 py-1.5 rounded-full text-sm font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-500';
+
+/** Combined extension + theme results, refined by type (and extension kind) from the URL. */
 export default function SearchPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const query = () => (typeof params.q === 'string' ? params.q.trim() : '');
+  const type = (): SearchType => (params.type === 'extensions' || params.type === 'themes' ? params.type : 'all');
+  const kind = () => (type() === 'extensions' && typeof params.kind === 'string' && params.kind in EXTENSION_KIND_LABELS ? params.kind : undefined);
   const [draft, setDraft] = createSignal(query());
   const catalog = createAsync(() => loadExtensionCatalog());
   const themes = createAsync(() => loadThemes());
@@ -24,7 +38,10 @@ export default function SearchPage() {
     const c = catalog();
     if (!c) return [];
     const q = query().toLowerCase();
-    return [...c.modules, ...c.recipes].filter((e) => matches(q, [e.name, e.description], e.tags));
+    const k = kind();
+    return [...c.modules, ...c.recipes].filter(
+      (e) => (!k || e.type === k) && matches(q, [e.name, e.id, e.description], e.tags),
+    );
   });
   const themeHits = createMemo(() => {
     const q = query().toLowerCase();
@@ -34,7 +51,7 @@ export default function SearchPage() {
   const onSubmit = (e: Event) => {
     e.preventDefault();
     const q = draft().trim();
-    navigate(q ? `/search?q=${encodeURIComponent(q)}` : '/search');
+    navigate(searchHref(q, type(), kind()));
   };
 
   return (
@@ -54,7 +71,31 @@ export default function SearchPage() {
           />
         </form>
 
+        <nav aria-label="Filter results" class="mb-10 -mt-6 flex flex-col gap-3">
+          <div class="flex flex-wrap gap-2">
+            <For each={TYPE_FILTERS}>
+              {(f) => (
+                <A href={searchHref(query(), f.value)} aria-current={type() === f.value && !kind() ? 'page' : undefined} class={chipClass(type() === f.value && !kind())}>
+                  {f.label}
+                </A>
+              )}
+            </For>
+          </div>
+          <Show when={type() === 'extensions'}>
+            <div class="flex flex-wrap gap-2" aria-label="Extension kind">
+              <For each={Object.entries(EXTENSION_KIND_LABELS)}>
+                {([k, label]) => (
+                  <A href={kind() === k ? searchHref(query(), 'extensions') : searchHref(query(), 'extensions', k)} aria-current={kind() === k ? 'page' : undefined} class={chipClass(kind() === k)}>
+                    {label}
+                  </A>
+                )}
+              </For>
+            </div>
+          </Show>
+        </nav>
+
         <Suspense fallback={<div class="text-center py-16 text-slate-400">Loading…</div>}>
+          <Show when={type() !== 'themes'}>
           <section class="mb-12">
             <div class="flex items-baseline justify-between mb-4">
               <h2 class="text-2xl font-bold text-white">Extensions</h2>
@@ -71,7 +112,9 @@ export default function SearchPage() {
               </div>
             </Show>
           </section>
+          </Show>
 
+          <Show when={type() !== 'extensions'}>
           <section>
             <div class="flex items-baseline justify-between mb-4">
               <h2 class="text-2xl font-bold text-white">Themes</h2>
@@ -88,6 +131,7 @@ export default function SearchPage() {
               </div>
             </Show>
           </section>
+          </Show>
         </Suspense>
       </div>
     </SiteLayout>
