@@ -157,3 +157,6 @@ input[type='search']::-ms-reveal {
 html:not(.dark) .search-pop { background-color: #ffffff; border-color: #d4d4d4; color: #111111; }
 html:not(.dark) .search-pop-meta { color: #c2410c; }
 html:not(.dark) .search-pop-option[aria-selected='true'] { background-color: #fff7ed; }
+
+/* Dark mode: small slate-500 meta text (versions, ids, authors, dates) was #737373 on charcoal (3.59:1); lift to AA. */
+html.dark .text-slate-500 { color: #a3a3a3; }
