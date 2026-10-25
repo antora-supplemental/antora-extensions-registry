@@ -10,12 +10,23 @@
 <link rel="stylesheet" href="../_/css/site-extra.css">
 <script>
 (function () {
-  const themeKey = 'antora-theme';
-  const savedTheme = localStorage.getItem(themeKey);
-  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    document.documentElement.classList.add('dark-theme');
+  const MODE = 'antora-theme-mode'
+  const LEGACY = 'antora-theme'
+  function mode() {
+    const m = localStorage.getItem(MODE)
+    if (m === 'system' || m === 'dark' || m === 'light') return m
+    const o = localStorage.getItem(LEGACY)
+    if (o === 'dark' || o === 'light') return o
+    return 'system'
   }
-})();
+  function isDark() {
+    const m = mode()
+    if (m === 'dark') return true
+    if (m === 'light') return false
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  if (isDark()) document.documentElement.classList.add('dark-theme')
+})()
 </script>
   </head>
   <body class="article">
@@ -23,6 +34,11 @@
   <nav class="navbar">
     <div class="navbar-brand">
       <a class="navbar-item" href="https://antora-extensions.org">Antora Extensions Registry</a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field">
+          <input id="search-input" type="text" placeholder="Search the docs" autofocus>
+        </div>
+      </div>
       <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
         <span></span>
         <span></span>
@@ -71,6 +87,27 @@
   <li class="nav-item is-current-page" data-depth="1">
     <a class="nav-link" href="index.html">Welcome</a>
   </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="install-guide.html">Installing from the registry</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="registry-metadata.html">Registry metadata (layers, bundles, previews)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="filters.html">Registry filters</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Design</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="design/trust-and-quality-spec.html">Trust and quality spec</a>
+  </li>
+</ul>
+  </li>
 </ul>
   </li>
 </ul>
@@ -100,7 +137,7 @@
     <li><a href="index.html">Welcome</a></li>
   </ul>
 </nav>
-<div class="edit-this-page"><a href="file:///Z:/code/the-dev-center/antora-extensions-registry/docs/modules/ROOT/pages/index.adoc">Edit this Page</a></div>
+<div class="edit-this-page"><a href="file:///Z:/code/github.com/antora-supplemental/antora-extensions-registry/docs/modules/ROOT/pages/index.adoc">Edit this Page</a></div>
 </div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
@@ -111,10 +148,47 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>Welcome to the Antora Extensions Registry documentation!</p>
+<p>Welcome to the Antora ecosystem registry documentation (public site brand: <strong>Registry</strong>).</p>
 </div>
 <div class="paragraph">
-<p>This site allows users to browse and developers to submit Antora extensions and extension bundles.</p>
+<p>This component is published in two places:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://registry.antora-supplemental.org">registry.antora-supplemental.org</a> — the live catalog (extensions and themes)</p>
+</li>
+<li>
+<p><a href="https://docs.antora-supplemental.org/">Antora Supplemental docs hub</a> — aggregated alongside other antora-supplemental projects (also <a href="https://docs.antora-supplemental.org/registry/" target="_blank" rel="noopener">on the live site</a>)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Themes are UI bundles (<code>ui.bundle</code>), not Antora playbook extensions. Both are catalogued here.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_for_site_operators_installing_packages"><a class="anchor" href="#_for_site_operators_installing_packages"></a>For site operators installing packages</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>See <a href="install-guide.html" class="xref page">Installing from the registry</a> for where each install snippet goes in <code>antora-playbook.yml</code> and how to check that it worked.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_for_extension_authors"><a class="anchor" href="#_for_extension_authors"></a>For extension authors</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>See <a href="contributing.html" class="xref page">Contributing your Extension</a> for metadata files (<code>antora-registry.md</code>, <code>package.json</code>) and theme submission rules.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_for_site_operators"><a class="anchor" href="#_for_site_operators"></a>For site operators</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Repository setup, authentication, and Netlify deployment are documented in the <a href="https://github.com/antora-supplemental/antora-extensions-registry/blob/main/README.adoc">project README</a>, not here.</p>
 </div>
 </div>
 </div>
@@ -124,18 +198,26 @@
 <div class="ulist">
 <ul>
 <li>
-<p>Browse Extensions</p>
+<p>Browse extensions discovered from GitHub topics and registry metadata</p>
 </li>
 <li>
-<p>Deep Dependency Analysis</p>
+<p>Deep dependency analysis in the registry view</p>
 </li>
 <li>
-<p>Easy Installation Instructions</p>
+<p>Theme gallery with community submissions (sign-in required)</p>
 </li>
 <li>
-<p>Multi-provider Authentication</p>
+<p>Omni-search on the registry home with category chips (extensions / themes / packages)</p>
 </li>
 </ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_filters"><a class="anchor" href="#_filters"></a>Filters</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>See <a href="filters.html" class="xref page">Registry filters</a> for <code>antora.extensions</code> vs <code>asciidoc.extensions</code>, lifecycle hooks, and Asciidoctor subtypes.</p>
 </div>
 </div>
 </div>
@@ -149,6 +231,9 @@
 </footer>
 <script id="site-script" src="../_/js/site.js" data-ui-root-path="../_"></script>
 <script async src="../_/js/vendor/highlight.js"></script>
+<script src="../_/js/vendor/lunr.js"></script>
+<script src="../_/js/search-ui.js" id="search-ui-script" data-site-root-path=".." data-snippet-length="100" data-stylesheet="../_/css/search.css"></script>
+<script async src="../search-index.js"></script>
 <script src="../_/js/site-dark-mode.js"></script>
   </body>
 </html>

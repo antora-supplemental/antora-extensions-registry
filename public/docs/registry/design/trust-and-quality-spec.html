@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Antora Extension Registry: Accounts, Stacks, Quality &amp; Trust :: Antora Extensions Registry</title>
+    <link rel="canonical" href="https://antora-extensions.org/registry/design/trust-and-quality-spec.html">
+    <meta name="description" content="Design spec v0.2 for registry.antora-supplemental.org: what signed-in users can do, how stacks install, how everything Antora-related gets indexed, scanned and claimed, and the quality model (ratings, tiers, flags, redemption). Draft for iteration; parts are now implemented (see commit 657c396) and this spec is recorded in the repo.">
+    <meta name="generator" content="Antora 3.1.14">
+    <link rel="stylesheet" href="../../_/css/site.css">
+<link rel="stylesheet" href="../../_/css/site-extra.css">
+<script>
+(function () {
+  const MODE = 'antora-theme-mode'
+  const LEGACY = 'antora-theme'
+  function mode() {
+    const m = localStorage.getItem(MODE)
+    if (m === 'system' || m === 'dark' || m === 'light') return m
+    const o = localStorage.getItem(LEGACY)
+    if (o === 'dark' || o === 'light') return o
+    return 'system'
+  }
+  function isDark() {
+    const m = mode()
+    if (m === 'dark') return true
+    if (m === 'light') return false
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  if (isDark()) document.documentElement.classList.add('dark-theme')
+})()
+</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://antora-extensions.org">Antora Extensions Registry</a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field">
+          <input id="search-input" type="text" placeholder="Search the docs">
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="registry" data-version="">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Antora Extensions Registry</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Welcome</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../install-guide.html">Installing from the registry</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../registry-metadata.html">Registry metadata (layers, bundles, previews)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../filters.html">Registry filters</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Design</span>
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="trust-and-quality-spec.html">Trust and quality spec</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Antora Extensions Registry</span>
+    <span class="version"></span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Antora Extensions Registry</a></div>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Antora Extensions Registry</a></li>
+    <li>Design</li>
+    <li><a href="trust-and-quality-spec.html">Trust and quality spec</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///Z:/code/github.com/antora-supplemental/antora-extensions-registry/docs/modules/ROOT/pages/design/trust-and-quality-spec.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Antora Extension Registry: Accounts, Stacks, Quality &amp; Trust</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<div class="title">Source of truth</div>
+<div class="paragraph">
+<p>Spec version v0.2+, recorded 2026-10-25. This page is the source of truth for the registry accounts, stacks, quality and trust design going forward; change it here (with a changelog bullet) rather than in the working draft.
+Working draft (Grok Bot Page, may lag or run ahead of this file): <a href="https://cursor.com/canvas/store-bccecd49-b037-4ff7-a518-8d35f2a3202d/b3d9be1d-4261-4513-b47d-0dd0258ec165">Accounts, Stacks, Quality &amp; Trust Spec (Page)</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><em>Design spec v0.2 for registry.antora-supplemental.org: what signed-in users can do, how stacks install, how everything Antora-related gets indexed, scanned and claimed, and the quality model (ratings, tiers, flags, redemption). Draft for iteration; parts are now implemented (see commit 657c396) and this spec is recorded in the repo.</em></p>
+</div>
+<div id="toc" class="toc">
+<div id="toctitle" class="title">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#principles">Principles and decisions</a></li>
+<li><a href="#stacks">Accounts, collections and stacks</a>
+<ul class="sectlevel2">
+<li><a href="#cli">Stack install CLI</a></li>
+</ul>
+</li>
+<li><a href="#curation">Curation model</a></li>
+<li><a href="#lifecycle">Lifecycle states</a></li>
+<li><a href="#maturity">Maturity tiers and graduation</a>
+<ul class="sectlevel2">
+<li><a href="#nudge">Ready-to-graduate nudge</a></li>
+<li><a href="#new-badge">New badge</a></li>
+</ul>
+</li>
+<li><a href="#indexing">Indexing everything Antora</a>
+<ul class="sectlevel2">
+<li><a href="#outreach">Outreach PR/MR</a></li>
+<li><a href="#claim">Claim ownership</a></li>
+</ul>
+</li>
+<li><a href="#security">Security scanning</a></li>
+<li><a href="#appeals">Security appeals and bans</a>
+<ul class="sectlevel2">
+<li><a href="#bans">Bans</a></li>
+<li><a href="#ai-review">Agentic AI reviewer</a></li>
+<li><a href="#ai-providers">AI provider settings</a></li>
+</ul>
+</li>
+<li><a href="#trusted">Trusted publishers (pre-approval)</a>
+<ul class="sectlevel2">
+<li><a href="#trust-requests">Trust requests</a></li>
+</ul>
+</li>
+<li><a href="#appearance">Theme appearance</a></li>
+<li><a href="#ratings">Ratings and quality score</a></li>
+<li><a href="#flags">Low-quality flags</a>
+<ul class="sectlevel2">
+<li><a href="#reports">Reports and admin notification</a></li>
+</ul>
+</li>
+<li><a href="#redemption">Redemption review</a></li>
+<li><a href="#abuse">Abuse and sybil resistance</a></li>
+<li><a href="#admins">Admins and verdicts</a></li>
+<li><a href="#data">Data model</a></li>
+<li><a href="#flows">User flows</a>
+<ul class="sectlevel2">
+<li><a href="#_flag_dialog">Flag dialog</a></li>
+<li><a href="#_review_request_owner">Review request (owner)</a></li>
+<li><a href="#_admin_queue">Admin queue</a></li>
+</ul>
+</li>
+<li><a href="#email">Notifications and email</a></li>
+<li><a href="#ui">UI notes</a></li>
+<li><a href="#rollout">Phased rollout</a></li>
+<li><a href="#questions">Open questions</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="principles"><a class="anchor" href="#principles"></a>Principles and decisions</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Core call</div>
+<div class="paragraph">
+<p>Index everything, show what earned it. The registry knows about every Antora extension and theme it can find, but default results only show items that passed graduation or were grandfathered. Everything is security-scanned on every update.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Accounts are for using, not only uploading</strong>: Sign-in unlocks collections, stacks, ratings, flags and claiming. Sign-in copy: "Sign in to save collections, build a stack, and rate extensions."</p>
+</li>
+<li>
+<p><strong>Maturity is a registry status, not a semver claim</strong>: A 1.0.0 tag never promotes anything; graduation checks do.</p>
+</li>
+<li>
+<p><strong>Rating and quality flag are independent signals</strong>: Stars measure liking; flags measure craft. Popular-but-ugly can still be sequestered.</p>
+</li>
+<li>
+<p><strong>Thresholds need a minimum count and a rate</strong>: Small numbers alone can never crown or condemn an item.</p>
+</li>
+<li>
+<p><strong>Community polices quality; admins rule on disputes</strong>: No admin gate at graduation. Admins confirm Low quality, reinstatement and security blocks.</p>
+</li>
+</ul>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Decision</th>
+<th class="tableblock halign-left valign-top">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tier names Workshop / Listed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Existing catalog items start Listed (grandfathered)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No admin spot checks at graduation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Security scan on every update (nightly at worst, on demand at publish)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Flag rule: 5 distinct flags and 10% of 90-day installers/raters; 25 always</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Stacks may reference any npm package or git URL; reference triggers ingestion</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Index all Antora-related npm/git projects; outreach PR/MR; claim flow</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Email via Resend</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided, pending API key and domain</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Admins in the DB via /admin; two-admin concurrence once 2+ admins, 7-day single-admin fallback</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-supplemental</code> org members are trusted publishers</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Implemented</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Trust granted only by admins (verdict/quorum rules); no self-nomination; admins in the requesting org recuse</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Trusted items (incl. <code>antora-supplemental</code>) stay in Workshop until marked ready</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Versions never auto-graduate; first major tag sends a one-time ready-to-graduate nudge</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Owners may appeal a security block by resubmitting a fix commit; one queued appeal per item; non-accusatory copy</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">More than 5 rejected appeals bans the user (account + solely owned items); 1 unban appeal per 3 months, unanimous vote of the rejecting admins</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Agentic AI reviewer in a sandbox, escalations only, advisory; budget, per-item cap, SHA cache</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AI reviewer runs on Ryan&#8217;s Cursor account via the cloud agent API (latest Grok model) for now; Ryan to confirm Cursor&#8217;s terms allow an unattended service</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AI findings posted to GitHub: escalations/appeals to a registry-repo issue (redacted when sensitive, details admin-only); trust pre-checks to a Discussions thread or issue; link stored and shown on report pages</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pluggable AI providers on /admin; admins propose, Ryan alone approves; presets plus OpenRouter discovery; keys as named server-side secrets</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outreach PRs from a dedicated registry bot account; body names the org, @-mentions live admins in one line, links an 'Outreach &amp; listings' Discussions category (to be created)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">One eligible community nomination (stack inclusion or Nominate click) plus a passing scan moves an Indexed item to Listed unclaimed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No policy cap on outreach PRs; technical pacing/backoff only; one PR per repo ever; opt-out honored</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Trust requests via /trust form: stored, emailed to support, AI pre-check report (advisory), admin verdict; GitHub-issue variant optional later</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Nominated contributors become admins, trusted publishers, or both, case by case (Ryan decides, Dan suggests, or they volunteer)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unban fallback: remaining rejecting admins plus one randomly chosen eligible admin, unanimous</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CLI: command <code>antora-registry</code> from npm package <code>@antora-supplemental/registry</code> (scope kept unless Antora adopts the project)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="stacks"><a class="anchor" href="#stacks"></a>Accounts, collections and stacks</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Concept</th>
+<th class="tableblock halign-left valign-top">What it is</th>
+<th class="tableblock halign-left valign-top">Visibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Collection</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bookmark list of any items (extensions, themes, stacks)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Private by default; shareable link optional</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Stack</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ordered set of extensions plus at most one UI theme, each pinned to a version range, with optional config snippets</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Private draft, unlisted link, or published</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Published stack</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A stack listed in the catalog, rateable, forkable</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Public; subject to the same flag rules</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>A stack member can be a registry item or any npm package or git URL. An unknown reference is ingested automatically (see Indexing) and becomes an Indexed listing; the stack links to it immediately while its first scan runs. Validation on save: every member resolves, no duplicates, one theme max, a warning for Workshop, Indexed or Low-quality members. Published stacks cannot contain Low-quality or security-blocked members.</p>
+</div>
+<div class="sect2">
+<h3 id="cli"><a class="anchor" href="#cli"></a>Stack install CLI</h3>
+<div class="paragraph">
+<p>Decided: a dedicated command, <code>antora-registry</code>, published in the npm package <code>@antora-supplemental/registry</code>. The scope is only the package name; the command is always typed as <code>antora-registry</code>. The scope stays unless Antora proper adopts the project. Every stack page also offers a no-CLI fallback (copyable snippet).</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Install once (primary)</dt>
+<dd>
+<p><code>npm install -g @antora-supplemental/registry</code></p>
+</dd>
+<dt class="hdlist1">Then run</dt>
+<dd>
+<p><code>antora-registry install &lt;stack&gt;</code></p>
+</dd>
+<dt class="hdlist1">One-off, no install</dt>
+<dd>
+<p><code>npx @antora-supplemental/registry install &lt;stack&gt;</code></p>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Command</th>
+<th class="tableblock halign-left valign-top">Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-registry install @ryan/docs-starter</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Resolve stack, add npm deps to package.json, merge <code>antora.extensions</code> and <code>ui.bundle.url</code> into antora-playbook.yml (idempotent)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-registry install &lt;stack&gt; --dry-run</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Print the diff only</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-registry install &lt;stack&gt; --playbook site.yml</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Target a specific playbook</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-registry add &lt;extension&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Add one item without a stack</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-registry snapshot</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Write <code>antora-registry.lock.json</code> with resolved versions for reproducible CI</p></td>
+</tr>
+</tbody>
+</table>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Fetch manifest</strong>: GET <code>/api/stacks/:owner/:slug/manifest.json</code> (public, versioned, cacheable).</p>
+</li>
+<li>
+<p><strong>Resolve</strong>: Pin to semver ranges; warn on Workshop, Indexed, Low-quality or scan-warned members; refuse blocked ones.</p>
+</li>
+<li>
+<p><strong>Write</strong>: Use a YAML CST editor (the <code>yaml</code> package Document API) to preserve comments; never clobber existing entries; ask before replacing a theme.</p>
+</li>
+<li>
+<p><strong>Install</strong>: Run the detected package manager (npm, pnpm, yarn, bun) unless <code>--no-install</code>.</p>
+</li>
+<li>
+<p><strong>Report</strong>: Print what changed and ping an install counter (opt-out via <code>--no-telemetry</code>); signed-in installs count toward the flag-rule denominator.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="curation"><a class="anchor" href="#curation"></a>Curation model</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">State</th>
+<th class="tableblock halign-left valign-top">Who gets in</th>
+<th class="tableblock halign-left valign-top">Default browse</th>
+<th class="tableblock halign-left valign-top">Ratings / flags</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Indexed (unclaimed)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Auto-ingested by crawl or stack reference</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Hidden; appears in keyword search below Listed results, and under Include Indexed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Stars on; no flags</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Workshop</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Submissions and claimed items not yet marked ready</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Hidden; Include Workshop</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Feedback only; no public stars, no flags</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Listed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Passed graduation, or grandfathered</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Shown</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Stars and flags on</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Under review</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Listed item hitting the flag rule</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Shown, unchanged</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On; admin queue</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Low quality</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Admin-confirmed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Hidden; Include Low quality</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Stars frozen; redemption possible</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Quarantined</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Security scan blocked</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Never; install refused</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Off until cleared</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Removed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Malware, license or policy violation confirmed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Never</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">n/a</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Recommendation: a separate Indexed state</div>
+<div class="paragraph">
+<p>Unclaimed ingested items get their own Indexed state, not Workshop. Workshop means a person is working on it and chose to be here; Indexed means the registry found it and nobody has spoken for it. Indexed items are findable by name so stack references and search work, but stay out of default browse and quality sorts. An Indexed item leaves the state by being claimed (goes to Workshop, or straight to Listed if the claimant marks ready and checks pass), or by community nomination. Decided: one nomination is enough, either a signed-in user&#8217;s published stack including it or an explicit Nominate for listing click, provided the security scan passes (pass or warn). The item moves to Listed unclaimed. The nominator must meet the flag/rate eligibility (account 7+ days, verified email, linked GitHub/GitLab 30+ days) and cannot own the item.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="lifecycle"><a class="anchor" href="#lifecycle"></a>Lifecycle states</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">Lifecycle (converted from the Page diagram; arrows are transitions, (dashed) marks the dashed edges)</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">States:
+  [Indexed] - auto-ingested, unclaimed (terminal)
+  [Workshop] - hidden by default
+  [Graduation checks + ready] (decision)
+  [Listed] - default results
+  [Under review] - flag rule hit
+  [Admin verdict] (decision)
+  [Low quality] - sequestered
+  [Redemption review] - auto + admin + flagger panel
+
+Transitions:
+  Indexed -- claimed --&gt; Workshop
+  Indexed -- nominated --&gt; Graduation checks + ready  (dashed)
+  Workshop -- dev marks ready --&gt; Graduation checks + ready
+  Graduation checks + ready -- pass --&gt; Listed
+  Graduation checks + ready -- fail --&gt; Workshop  (dashed)
+  Listed -- flags --&gt; Under review
+  Under review --&gt; Admin verdict
+  Admin verdict -- dismiss --&gt; Listed  (dashed)
+  Admin verdict -- confirm --&gt; Low quality
+  Low quality -- dev updates --&gt; Redemption review
+  Redemption review -- reinstate --&gt; Listed
+  Redemption review -- not yet --&gt; Low quality  (dashed)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Any state can move to Quarantined when a scan blocks, and returns to its prior state when a later scan passes or an admin clears it. Cooldowns: a dismissed review counts only flags after the dismissal; a failed redemption blocks a new request for 30 days or until a new release.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="maturity"><a class="anchor" href="#maturity"></a>Maturity tiers and graduation</h2>
+<div class="sectionbody">
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Decided: Workshop / Listed, no admin gate</div>
+<div class="paragraph">
+<p>Neutral names that imply nothing about version numbers. Graduation is fully automated plus the dev&#8217;s opt-in; the community polices quality afterward through ratings and flags. Existing catalog items are grandfathered as Listed, but still get the security scan.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Graduation check</th>
+<th class="tableblock halign-left valign-top">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">README with usage section and screenshots (themes)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Automated</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OSI license file present</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Automated</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Repository public, release or npm publish within 12 months</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Automated</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Install test passes: clean Antora site builds with item added (sandbox)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Automated</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Latest security scan is pass or warn (not block)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Automated</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Themes: live preview URL or registry-built preview</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Automated</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora</code> peer version range declared</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Automated</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Owner clicks Ready for prime time and accepts flag/rating terms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Opt-in (not used for nominated Indexed items, which need only one nomination plus a passing security scan)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="sect2">
+<h3 id="nudge"><a class="anchor" href="#nudge"></a>Ready-to-graduate nudge</h3>
+<div class="paragraph">
+<p>A version number never graduates an item: AI-assisted repos often stay 0.x when stable. Instead, the first major release tag prompts the owner to decide.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Trigger</dt>
+<dd>
+<p>Item in Workshop or Indexed publishes its first tag or npm version at a new major, 1.0.0 or greater (2.0.0 counts as a new major too); detected at the nightly scan or on publish</p>
+</dd>
+<dt class="hdlist1">Claimed owner</dt>
+<dd>
+<p>One email via Resend once set up (respects the My items notification pref) plus an in-app banner on the listing with a one-click Mark ready button that runs the graduation checks</p>
+</dd>
+<dt class="hdlist1">Unclaimed / Indexed</dt>
+<dd>
+<p>The nudge rides on the outreach PR body (claim, then mark ready); no separate PR or comment if the PR already exists</p>
+</dd>
+<dt class="hdlist1">Frequency</dt>
+<dd>
+<p>One nudge per item per major version; never repeated if dismissed</p>
+</dd>
+<dt class="hdlist1">Not a promotion</dt>
+<dd>
+<p>Item stays in Workshop until the owner clicks Mark ready</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect2">
+<h3 id="new-badge"><a class="anchor" href="#new-badge"></a>New badge</h3>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Source</dt>
+<dd>
+<p><code>item.first_listed_at</code>: the date the item was first added to the registry, in any state</p>
+</dd>
+<dt class="hdlist1">Immutable</dt>
+<dd>
+<p>Set once on first insert; never reset by releases, metadata updates, re-imports, claims, state changes or redemption</p>
+</dd>
+<dt class="hdlist1">Shown</dt>
+<dd>
+<p>While now − first_listed_at &lt; 30 days; site setting <code>NEW_BADGE_DAYS</code>, default 30</p>
+</dd>
+<dt class="hdlist1">Filter / sort</dt>
+<dd>
+<p>New filter (inside the window) and a Newest sort by first_listed_at, descending</p>
+</dd>
+<dt class="hdlist1">Relation to tiers</dt>
+<dd>
+<p>Reflects registry age only, independent of state and quality</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Recommendation: Workshop and Indexed items show the badge too, since it is a fact about age; default results hide them anyway. Grandfathered items get first_listed_at from their original import date, so launch day does not mark the whole catalog New.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="indexing"><a class="anchor" href="#indexing"></a>Indexing everything Antora</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Goal: the registry knows every Antora extension and UI theme, whether or not it was built for the registry. A daily crawl (every 24 hours) plus event-driven ingestion feed one pipeline.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Source</th>
+<th class="tableblock halign-left valign-top">What it matches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">npm search</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Keywords <code>antora</code>, <code>antora-extension</code>, <code>antora-ui</code>; packages depending on <code>@antora/*</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GitHub / GitLab topics</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Existing topic discovery (<code>antora-extension</code>, <code>antora-ui</code>, etc.)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GitHub / GitLab code search</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>register</code> exports calling <code>this.on('contentAggregated'</code> (or other Antora events); ui-bundle layouts (<code>src/partials</code>, <code>ui.yml</code>, <code>gulpfile</code> with <code>@antora/ui-default</code> patterns); <code>supplemental-ui</code> folders</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Playbook mining</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-playbook.yml</code> files: each <code>antora.extensions</code> entry and <code>ui.bundle.url</code> is a referenced item to ingest (the playbook repo itself is not a listing)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Registry references</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Stack members and listing dependencies (e.g. a re-theme&#8217;s base theme) that are not yet in the registry</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Manual and URL-expedite submissions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">As before</p></td>
+</tr>
+</tbody>
+</table>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Normalize</strong>: Resolve to a canonical identity: npm name and/or repo host + numeric repo ID; merge npm and git records for the same project.</p>
+</li>
+<li>
+<p><strong>Classify</strong>: Extension, UI theme, or not a listing (playbook sites, docs repos). Heuristic score; low-confidence matches go to an admin triage list instead of the catalog.</p>
+</li>
+<li>
+<p><strong>Create Indexed listing</strong>: Set <code>first_listed_at</code>, record every <code>ingestion_source</code>, state Indexed, unclaimed.</p>
+</li>
+<li>
+<p><strong>Scan</strong>: Run the security scan; Quarantined if blocked.</p>
+</li>
+<li>
+<p><strong>Screen and outreach</strong>: Run graduation checks to build the public screening report; if registry files are missing, queue an outreach PR/MR.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Limits: GitHub code search allows about 10 requests per minute per token, so the crawl walks queries incrementally and stores cursors; npm search pages are cached for 24 hours. Forks are ingested only if they are published to npm separately or referenced explicitly.</p>
+</div>
+<div class="sect2">
+<h3 id="outreach"><a class="anchor" href="#outreach"></a>Outreach PR/MR</h3>
+<div class="paragraph">
+<p>During screening, if an ingested project lacks registry files, automation opens one PR (GitHub) or MR (GitLab) to add them. Topics cannot be set through a PR, so the PR adds a manifest file and a README badge.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Files</dt>
+<dd>
+<p><code>antora-registry.yml</code> (type, appearance for themes, antora version range, preview URL placeholder) and a badge line in README linking to the listing</p>
+</dd>
+<dt class="hdlist1">Title</dt>
+<dd>
+<p>"Add Antora Extension Registry metadata"</p>
+</dd>
+<dt class="hdlist1">Sender</dt>
+<dd>
+<p>Decided: a dedicated registry bot (machine user) account, never a personal account</p>
+</dd>
+<dt class="hdlist1">Body</dt>
+<dd>
+<p>Short and polite: names the <code>antora-supplemental</code> org as the registry&#8217;s maintainer; why the project was included (found on npm/GitHub or referenced by another listing); link to the public screening report; how to claim ownership; what the files do; that merging is optional and the listing exists either way</p>
+</dd>
+<dt class="hdlist1">Maintainer mentions</dt>
+<dd>
+<p>One line @-mentioning current admins, built from the <code>admin</code> table (revoked_at null) when the PR is opened, so it never goes stale. Mentioned once in the body only; never in follow-ups</p>
+</dd>
+<dt class="hdlist1">Questions</dt>
+<dd>
+<p>Link to a GitHub Discussions category, 'Outreach &amp; listings', at github.com/antora-supplemental/antora-extensions-registry/discussions (category needs creating before the first PR)</p>
+</dd>
+<dt class="hdlist1">Opt-out</dt>
+<dd>
+<p>Closing the PR or commenting <code>/registry opt-out</code> stops all future PRs; a separate <code>/registry delist</code> request hides the listing (admin-confirmed)</p>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Etiquette rule</th>
+<th class="tableblock halign-left valign-top">Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">One PR per repo, ever</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Recorded in <code>outreach_pr</code>; never reopened, never bumped, even after a rename</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Respect policies</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Skip if CONTRIBUTING, PR templates or README forbid bot or unsolicited PRs, or if the repo disables PRs</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Skip</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Archived repos, forks, repos with no commit in 2 years, repos already claimed, repos that already have the manifest</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No policy cap</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided: no daily or per-owner limit on outreach PRs</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Technical throttle</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pace PR creation (serial queue, delay between writes) and back off on 403/429 or <code>retry-after</code>, to stay under GitHub/GitLab abuse and secondary rate limits so the bot account is not flagged</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No follow-ups</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No comments after opening except replies to direct questions or commands</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Sample PR body</div>
+<div class="paragraph">
+<p>Hi! Your project is listed in the Antora Extension Registry (registry.antora-supplemental.org), a community-run index maintained by the antora-supplemental org. We found it on npm. This PR adds an optional <code>antora-registry.yml</code> and a README badge so the listing shows accurate details. Merging is optional; the listing exists either way. Screening report: [link]. Own this repo? Claim the listing: [link]. Questions: Outreach &amp; listings discussions [link]. Maintainers: @admin1 @admin2. To stop future PRs, close this or comment <code>/registry opt-out</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="title">Policy and etiquette risk</div>
+<div class="paragraph">
+<p>Unsolicited automated PRs can read as spam and can get a bot account flagged by GitHub or GitLab. GitHub Apps cannot open PRs on repos where they are not installed, so the decided dedicated machine user forks and opens PRs; naming the org, real maintainers and a Discussions link makes the bot accountable.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="claim"><a class="anchor" href="#claim"></a>Claim ownership</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Click Claim this listing</strong>: Shown on every unclaimed listing and linked from the outreach PR.</p>
+</li>
+<li>
+<p><strong>Verify via OAuth</strong>: GitHub: the signed-in user&#8217;s token shows <code>admin</code> or <code>maintain</code> permission on the repo. GitLab: access level Maintainer (40) or higher.</p>
+</li>
+<li>
+<p><strong>npm-only packages</strong>: No npm OAuth exists, so the user adds a registry-issued token to the package&#8217;s <code>package.json</code> (<code>antoraRegistry.claim</code>) and publishes; the registry checks the published manifest and the npm maintainers list.</p>
+</li>
+<li>
+<p><strong>Grant control</strong>: Claimant becomes owner: edit metadata, mark ready, request redemption, trigger scans, manage co-owners. Indexed listings move to Workshop.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Disputes (two claimants, or a transferred repo) go to the admin queue; ownership is re-verified when repo permissions change or once a year.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="security"><a class="anchor" href="#security"></a>Security scanning</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Every listing is scanned on every update: on demand when an owner publishes or clicks Scan now, and at worst in the nightly scan, which picks up any new npm version or default-branch commit since the last run, plus re-checks all listings against newly published advisories.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Check</th>
+<th class="tableblock halign-left valign-top">Method</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dependency advisories</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OSV.dev batch query and npm audit data for the full resolved tree</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Install scripts</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Flag <code>preinstall</code>, <code>install</code>, <code>postinstall</code> scripts in the package and its deps</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Obfuscated or minified source</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Entropy and line-length heuristics on shipped JS that is not a declared build artifact</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Network at build time</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Run the install test in a sandbox with egress logged; any call outside npm registry and git hosts is reported</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Secrets</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gitleaks over the package tarball and repo head</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">License</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SPDX license present and OSI-approved; mismatch between package.json and LICENSE</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Known-malicious names</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Match against OSV malicious-package (MAL) entries</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Typosquats</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Edit distance 1 to 2 from popular Antora packages (<code>@antora/*</code>, top 100 listings)</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Outcome</th>
+<th class="tableblock halign-left valign-top">Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pass</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Nothing shown beyond a scanned date</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Warn</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Warning shown on the listing and in the CLI (e.g. postinstall script, moderate advisory, unexpected network call)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Block</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Auto-Quarantined, install refused by the CLI, admin alert email to <a href="mailto:support@antora-supplemental.org">support@antora-supplemental.org</a>; owner notified</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Block triggers: critical advisory with no fixed version in range, malicious-package match, leaked live secret, or exfiltration-like network call. Owners can appeal by pushing a fix (see Security appeals and bans); admins can also clear a block with a reason.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Scan report page</dt>
+<dd>
+<p>Public page per listing (<code>/x/:slug/screening</code>): latest scan, findings by severity, graduation check results, history of runs. Linked from the outreach PR and the listing.</p>
+</dd>
+<dt class="hdlist1">Where it runs</dt>
+<dd>
+<p>GitHub Actions in a registry-owned public repo (free minutes for public repos), triggered by Netlify functions via <code>workflow_dispatch</code>; Netlify functions are too short-lived for installs.</p>
+</dd>
+<dt class="hdlist1">Cost</dt>
+<dd>
+<p>Expected $0 at current scale: Actions on a public repo and OSV are free; Turso storage of findings is small</p>
+</dd>
+<dt class="hdlist1">Rate limits</dt>
+<dd>
+<p>On-demand: 1 scan per listing per 10 minutes, 20 per account per day; nightly batch capped by Actions concurrency</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="appeals"><a class="anchor" href="#appeals"></a>Security appeals and bans</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Assume a mistake, not malice</div>
+<div class="paragraph">
+<p>Most blocks come from something committed by accident: a leaked key, a vulnerable dependency, a leftover script. Copy is non-accusatory: "Our scanner found something that needs a fix before this can be installed." Never "malicious" unless admins have decided so.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Fix first</strong>: The owner pushes a commit that removes or fixes the flagged code (and rotates any leaked secret).</p>
+</li>
+<li>
+<p><strong>Appeal = resubmit</strong>: Owner clicks Appeal on the screening page, naming the fix commit SHA. The full scan reruns on that SHA; if it passes, the block clears automatically and the appeal closes as resolved.</p>
+</li>
+<li>
+<p><strong>One queued appeal per item</strong>: While an appeal is open, Appeal is disabled. A new appeal needs a new commit SHA.</p>
+</li>
+<li>
+<p><strong>Admin review</strong>: If the rescan still blocks, or the owner disputes a finding as a false positive, the appeal goes to admins under the verdict rules (lifting a quarantine needs a second admin once there are 2+).</p>
+</li>
+<li>
+<p><strong>Outcome</strong>: Accepted: back to prior state. Rejected: stays Quarantined, with the reason and what to fix.</p>
+</li>
+</ol>
+</div>
+<div class="sect2">
+<h3 id="bans"><a class="anchor" href="#bans"></a>Bans</h3>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Trigger</dt>
+<dd>
+<p>More than 5 rejected appeals (the 6th rejection) across all items the user owns; auto-resolved appeals do not count</p>
+</dd>
+<dt class="hdlist1">Scope</dt>
+<dd>
+<p>The user account and items they solely own: items hidden, no new submissions, claims, ratings, flags or stacks. Items with other verified co-owners stay up under those co-owners</p>
+</dd>
+<dt class="hdlist1">Org risk</dt>
+<dd>
+<p>Org-owned items are not banned with the user; the user loses rights on them. Banning a whole org needs a separate admin verdict, since one member could otherwise take down a shared namespace</p>
+</dd>
+<dt class="hdlist1">Unban appeals</dt>
+<dd>
+<p>1 every 3 months (<code>next_unban_eligible_at</code>)</p>
+</dd>
+<dt class="hdlist1">Unban review</dt>
+<dd>
+<p>Decided by the admins who rejected the counted appeals, voting together; must be unanimous</p>
+</dd>
+<dt class="hdlist1">Missing reviewers</dt>
+<dd>
+<p>Decided: remaining rejecting admins plus one replacement admin chosen at random from eligible admins (not involved in the case, not recused), still unanimous</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ai-review"><a class="anchor" href="#ai-review"></a>Agentic AI reviewer</h3>
+<div class="paragraph">
+<p>A prompt-only LLM is unreliable for judging intent, because investigating means acting: cloning the repo, diffing versions, rerunning scanners, reading commit history. So the reviewer is an agent with tool access, running in a sandbox with no secrets and logged egress. It gives an advisory verdict (likely mistake, unclear, likely malicious) with evidence; admins decide.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Cost control</th>
+<th class="tableblock halign-left valign-top">Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tiered pipeline</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Static scanners on every update; AI only on escalation (a block or an appeal sent to admins); never on routine updates</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cache</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">One review per item and commit SHA; reused, never rerun for the same SHA</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Per-item cap</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Limited reviews per item per month; extra escalations go to admins without AI</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Monthly budget</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided: 25% of Ryan&#8217;s monthly Cursor plan usage, measured in plan dollars (the unit Cursor reports usage in). Each run&#8217;s cost is logged; once the month&#8217;s total hits the cap, reviews pause and admins review manually until the plan cycle resets</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Logging</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Model, tokens or run cost and evidence stored in <code>ai_review</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Decided: Cursor for now</div>
+<div class="paragraph">
+<p>Runs on Ryan&#8217;s Cursor account through the Cursor cloud agent API with the latest Grok model. Before launch Ryan confirms Cursor&#8217;s terms allow an unattended service on his plan. Other providers can be swapped in later (see AI provider settings).</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Finding type</th>
+<th class="tableblock halign-left valign-top">Where the reviewer posts</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Security escalation or appeal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Issue in the registry repo with verdict, evidence summary and links</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sensitive finding (live secret, working exploit, unpatched vuln)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Full details admin-only (admin queue, private channel); the public issue gets a redacted summary with no secret values or exploit steps</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Trust pre-check</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Thread in a Discussions category (or an issue) with the advisory recommendation and evidence</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The issue or discussion URL is stored on <code>ai_review</code> (<code>report_url</code>), and the listing&#8217;s screening page, appeal view and trust request page link to it. Posts come from the registry bot account.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ai-providers"><a class="anchor" href="#ai-providers"></a>AI provider settings</h3>
+<div class="paragraph">
+<p>A section on /admin for switching the reviewer to another provider, for example pay-as-you-go API billing instead of Ryan&#8217;s Cursor account.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Approval</dt>
+<dd>
+<p>Any admin may propose a provider or model change; it takes effect only after Ryan approves (owner-only, not the normal quorum). Ryan&#8217;s own proposals apply on confirm</p>
+</dd>
+<dt class="hdlist1">Presets</dt>
+<dd>
+<p>Cursor (current), xAI, OpenAI, Anthropic, Google (Gemini), Mistral, OpenRouter, plus a custom OpenAI-compatible endpoint (base URL + model)</p>
+</dd>
+<dt class="hdlist1">OpenRouter models</dt>
+<dd>
+<p>Searchable dropdown filled from OpenRouter&#8217;s public models list endpoint, cached (refreshed daily or on demand), showing context length and pricing as the API reports them</p>
+</dd>
+<dt class="hdlist1">API keys</dt>
+<dd>
+<p>Encrypted secrets kept server-side in env or the secret store; config references them by name. Write-only fields, never shown back or sent to the browser</p>
+</dd>
+<dt class="hdlist1">Budgets</dt>
+<dd>
+<p>Per-provider monthly and per-item caps; same pause-to-manual behaviour when hit</p>
+</dd>
+<dt class="hdlist1">Test connection</dt>
+<dd>
+<p>Button sends a tiny prompt with the referenced key and reports success, latency and errors; required to pass before approval</p>
+</dd>
+<dt class="hdlist1">Audit</dt>
+<dd>
+<p>Every proposal, approval, rejection, activation and test is logged in <code>admin_audit_log</code></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="trusted"><a class="anchor" href="#trusted"></a>Trusted publishers (pre-approval)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Admins keep an allowlist of trusted GitHub/GitLab users and orgs/groups in the database. A submission from a trusted source skips the intake review queue. <code>antora-supplemental</code> (GitHub org) is seeded as trusted.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Match rule</th>
+<th class="tableblock halign-left valign-top">Passes when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Repo owner</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The owner segment of the repo URL (e.g. <code>github.com/antora-supplemental/&#8230;&#8203;</code>) equals a trusted user or org, matched by host + immutable owner ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Submitter account</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The submitter&#8217;s linked GitHub/GitLab account is a trusted user</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Submitter org</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The submitter is a verified member of a trusted org/group (checked via the provider API at submit time)</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Intake path</th>
+<th class="tableblock halign-left valign-top">Trusted behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Manual submission</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Skips the admin intake queue; imported immediately</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL-expedite (user submits a git URL)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">If the URL meets the import criteria and the owner or submitter is trusted, auto-imports with no queue</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Daily discovery (every 24 hours)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Repos owned by trusted owners auto-import and are auto-claimed by the owner org</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Decided: trust skips intake, not Workshop</div>
+<div class="paragraph">
+<p>Trust skips the intake queue, not the tiers or the security scan. Trusted items, including those from <code>antora-supplemental</code>, stay in Workshop until the dev marks them ready; then the same automated graduation checks apply. A 1.0.0 tag only triggers the ready-to-graduate nudge (see Maturity tiers).</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Risk</th>
+<th class="tableblock halign-left valign-top">Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Org or user rename, or a freed name re-registered</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Match on the provider&#8217;s numeric owner ID; refresh the login on each sync</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Compromised trusted account</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Trust never bypasses scans or flags; admins can revoke immediately; alert on more than 5 new items in 24 hours from one trusted owner</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Revocation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Stops future auto-approval only. Existing items keep their status; admins can bulk-move them</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Audit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Every grant and revoke records the admin, a reason and a timestamp</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Decided: trust is granted, never self-nominated</div>
+<div class="paragraph">
+<p>Trust is a relationship between the antora-supplemental team and the requester, so only registry admins grant it, under the admin verdict and quorum rules. An org or user may ask through the /trust form, but cannot nominate itself. An admin who is a member of the requesting org or is the requesting user is recused and cannot propose or vote on that grant; if recusal leaves no eligible admin, the request waits.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="trust-requests"><a class="anchor" href="#trust-requests"></a>Trust requests</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Submit /trust form</strong>: Signed-in user requests permanent pre-approval for their account or an org/group they belong to (membership verified via the provider API), with an optional note. One open request per subject.</p>
+</li>
+<li>
+<p><strong>Store and notify</strong>: Insert a <code>trust_request</code> row and email <a href="mailto:support@antora-supplemental.org">support@antora-supplemental.org</a> via Resend.</p>
+</li>
+<li>
+<p><strong>AI pre-check</strong>: The agentic reviewer inspects the requester&#8217;s repos, publish and commit history and past registry record, then saves an advisory recommendation (grant, unclear, decline) with evidence on the request. Same sandbox and budget caps as security reviews; skipped if the budget is spent or AI is disabled.</p>
+</li>
+<li>
+<p><strong>Admin verdict</strong>: Admins see the full report and decide under the verdict and recusal rules (trust_grant verdict).</p>
+</li>
+<li>
+<p><strong>Tell the requester</strong>: Outcome plus a short summary of the report; evidence details stay admin-only.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>No PR to any repo is needed. Optional later variant: a GitHub issue in the registry repo triggers the same AI check and hosts the public report as a comment, for requesters who prefer a public record.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="appearance"><a class="anchor" href="#appearance"></a>Theme appearance</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Declared appearance</th>
+<th class="tableblock halign-left valign-top">Filter it appears under</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">light</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Light</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">dark</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dark (dark-only)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">both (light + dark modes)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Light + dark</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">other (high contrast, sepia, etc.)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Other</p></td>
+</tr>
+</tbody>
+</table>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Declaration</strong>: Themes declare appearance at submission or in <code>antora-registry.yml</code>; preview checks confirm it where possible.</p>
+</li>
+<li>
+<p><strong>Color re-themes</strong>: A re-theme must declare its base theme as a dependency, so it is linked to and grouped under the base.</p>
+</li>
+<li>
+<p><strong>Forks</strong>: A fork is not treated as a re-theme; it is a separate theme with its own listing and history.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="ratings"><a class="anchor" href="#ratings"></a>Ratings and quality score</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Users rate 1 to 5 stars (one rating per account per item, editable; latest wins). Map to p = (stars − 1) / 4 in [0, 1]. For a selected window, sort by a Bayesian average pulled toward the catalog mean, and display the raw mean with a confidence cue.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">Score = (C·m + Σ pᵢ) / (C + n)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>m is the catalog-wide mean p in the window, n the number of ratings in the window, C = 10. In plain terms: every item starts as if it had 10 average ratings, so a handful of 5-star votes cannot jump it past a well-rated, heavily used item.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Precise fill</dt>
+<dd>
+<p>Stars filled to the raw window mean, e.g. 3.73 / 5 = 74.6%</p>
+</dd>
+<dt class="hdlist1">Confidence</dt>
+<dd>
+<p>Fill opacity scales with n (full at n ≥ 30); label shows "74.6% · 12 ratings"</p>
+</dd>
+<dt class="hdlist1">Sort key</dt>
+<dd>
+<p>Bayesian score, so 1 rating of 5 stars never outranks 80 ratings at 4.6</p>
+</dd>
+<dt class="hdlist1">Time window</dt>
+<dd>
+<p>Ratings filtered by created_at in [start, stop]; edited ratings count at their edit time</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="flags"><a class="anchor" href="#flags"></a>Low-quality flags</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A flag is a separate action (Flag as low quality) with a required reason: broken, abandoned, poor docs, visual/craft quality, misleading. Only eligible accounts count (see abuse). Only Listed items can be flagged.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">Review if  flags ≥ 5  and  (flags) / (people who installed or rated (last 90 days)) ≥ 10%;  or flags ≥ 25</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Installed or rated (90 days)</th>
+<th class="tableblock halign-left valign-top">Distinct flags</th>
+<th class="tableblock halign-left valign-top">Share</th>
+<th class="tableblock halign-left valign-top">Review?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">20</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">20%</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No (under 5 flags)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">30</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">17%</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">100</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8%</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">100</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10%</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">400</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">25</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6%</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes (25 backstop)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Denominator: distinct signed-in accounts that installed (signed-in CLI or Mark as used) or rated the item in the trailing 90 days; flags count from all time since the last dismissal. If small items prove noisy, a small-sample correction (for example a Wilson lower bound on the flag share) can be layered on later.</p>
+</div>
+<div class="sect2">
+<h3 id="reports"><a class="anchor" href="#reports"></a>Reports and admin notification</h3>
+<div class="paragraph">
+<p>Decided: every flag or report on an extension or theme is a report with a reason and an optional message. It is stored in the admin report queue, and each new report emails <a href="mailto:support@antora-supplemental.org">support@antora-supplemental.org</a>.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>User submits</strong>: Reason (required) plus optional message, in the flag dialog.</p>
+</li>
+<li>
+<p><strong>Store</strong>: Insert a <code>report</code> row (status <code>open</code>) and, for low-quality reasons, the <code>flag</code> row, in one transaction.</p>
+</li>
+<li>
+<p><strong>Notify</strong>: Enqueue an outbox email to <a href="mailto:support@antora-supplemental.org">support@antora-supplemental.org</a> via Resend: item, reason, message, reporter handle, admin queue link.</p>
+</li>
+<li>
+<p><strong>Triage</strong>: Admin resolves or dismisses with a reason; status becomes <code>resolved</code> or <code>dismissed</code>.</p>
+</li>
+</ol>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message handling</th>
+<th class="tableblock halign-left valign-top">Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Format</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Plain text only; no markdown or HTML rendering</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Escaping</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTML-escaped in the admin UI and email body; links shown as text, not clickable</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Length</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Max 2,000 characters, trimmed; empty means no message</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Visibility</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Admins only; never public and never shown to the item&#8217;s developer verbatim</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Email volume</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">One email per report; hourly digest if more than 20 per hour</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="redemption"><a class="anchor" href="#redemption"></a>Redemption review</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Owner requests re-review</strong>: Requires a new release since the Low-quality verdict and a changelog note addressing cited reasons.</p>
+</li>
+<li>
+<p><strong>Automated review</strong>: Security scan, graduation checks and install test; failure stops here with the owner told why.</p>
+</li>
+<li>
+<p><strong>Admin queue</strong>: Entry with flag reasons, release diff, automated results.</p>
+</li>
+<li>
+<p><strong>Flagger panel</strong>: Email up to 100 random subscribed flaggers. Each answers: Is this now acceptable quality? Yes / No / Can&#8217;t tell.</p>
+</li>
+<li>
+<p><strong>Decide</strong>: Statistical rule below produces a recommendation; admin verdict is final.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Model the approval rate θ among responders with a Beta(1, 1) prior; after k Yes from n decisive responses the posterior is Beta(1 + k, 1 + n − k).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">Reinstate if  n ≥ 5  and  P(θ &gt; 0.5 | k, n) &gt; 0.8</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Responses n</th>
+<th class="tableblock halign-left valign-top">Yes needed</th>
+<th class="tableblock halign-left valign-top">P(θ &gt; 0.5)</th>
+<th class="tableblock halign-left valign-top">One fewer Yes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0.891</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0.656 (3/5)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">7</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0.887</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0.726 (6/10)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">20</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">12</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0.808</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0.668 (11/20)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Fewer than 5 responses after 14 days</strong>: Invite the next 100 subscribers; if exhausted, decide on admin verdict + automated checks alone.</p>
+</li>
+<li>
+<p><strong>Posterior between 0.3 and 0.8</strong>: Inconclusive: extend the sample once, then admin decides.</p>
+</li>
+<li>
+<p><strong>Posterior under 0.3</strong>: Stay Low quality; 30-day cooldown.</p>
+</li>
+<li>
+<p><strong>Admin and statistics disagree</strong>: Admin wins but must write a reason, logged publicly on the item&#8217;s history.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Response bias</div>
+<div class="paragraph">
+<p>Flaggers are harsher than average, so their approval is strong evidence; that justifies a simple-majority bar. Expect about 5 responses per 100 invites.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="abuse"><a class="anchor" href="#abuse"></a>Abuse and sybil resistance</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Control</th>
+<th class="tableblock halign-left valign-top">Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Eligibility to flag or rate</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Account 7+ days old, verified email, linked GitHub/GitLab account 30+ days old</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">One per account</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">One active rating and one active flag per item; unflag allowed</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Rate limits</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10 flags/day, 50 ratings/day, 20 on-demand scans/day per account</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No self-dealing</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Owners and org members of the item&#8217;s repo cannot rate or flag it</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Brigade detection</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Burst of flags (more than 3x the item&#8217;s 30-day daily mean) from new accounts is held for admin, not counted</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ingestion spam</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Stack references from accounts under 7 days old queue for ingestion but stay unpublished until scanned; cap 20 new references per account per day</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Claim hijack</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ownership tied to live repo permission; re-verified on transfer; disputes go to admins</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reputation weight</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Phase 3: weight flags by upheld-vs-dismissed history</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Panel integrity</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Random selection server-side; single-use signed links; one response per invite</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="admins"><a class="anchor" href="#admins"></a>Admins and verdicts</h2>
+<div class="sectionbody">
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Today</dt>
+<dd>
+<p>Ryan is the only admin</p>
+</dd>
+<dt class="hdlist1">Next</dt>
+<dd>
+<p>Invite Dan (via Zulip) as second admin and ask him to suggest other contributors</p>
+</dd>
+<dt class="hdlist1">Nominated contributors</dt>
+<dd>
+<p>Decided case by case: each becomes an admin, a trusted publisher (org member), or both. Ryan decides; Dan can suggest; contributors can volunteer for either or both</p>
+</dd>
+<dt class="hdlist1">Trusted publishers</dt>
+<dd>
+<p>Anyone added to the <code>antora-supplemental</code> GitHub org is a trusted publisher (already implemented); org membership does not make someone an admin</p>
+</dd>
+<dt class="hdlist1">Admin list</dt>
+<dd>
+<p>Stored in the DB with an audit log, managed at /admin; replaces the <code>ADMIN_GITHUB_LOGINS</code> env allowlist (seed Ryan from the env value once, then remove it)</p>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Verdict type</th>
+<th class="tableblock halign-left valign-top">1 admin</th>
+<th class="tableblock halign-left valign-top">2+ admins</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Low-quality sequester</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Final</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Needs second admin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reinstatement (redemption)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Final</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Needs second admin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Report resolution that unlists an item</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Final</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Needs second admin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Trusted-publisher grant or revoke</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Final</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Needs second admin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Lifting a quarantine</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Final</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Needs second admin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Security quarantine</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Immediate</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Immediate; second review pending</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dismissals and routine triage</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Final</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Single admin</p></td>
+</tr>
+</tbody>
+</table>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>First admin proposes</strong>: Verdict recorded as <code>pending</code> with a reason; other admins notified.</p>
+</li>
+<li>
+<p><strong>Day 3 reminder</strong>: Remind admins who have not voted.</p>
+</li>
+<li>
+<p><strong>Second admin concurs or objects</strong>: Concur makes it final; object keeps it open for discussion.</p>
+</li>
+<li>
+<p><strong>Day 7 fallback</strong>: No second vote: the first verdict takes effect, labeled single-admin verdict, which any admin can later reopen.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Admin grants and removals are themselves verdicts, logged in the audit trail; an admin cannot concur with their own proposal.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="data"><a class="anchor" href="#data"></a>Data model</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Drizzle/libSQL sketch; <code>user</code> comes from better-auth, <code>item</code> is the existing extension/theme table.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Table</th>
+<th class="tableblock halign-left valign-top">Key columns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">item (existing, new columns)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">first_listed_at (immutable), npm_name, repo_host, repo_id, owner_user_id (nullable = unclaimed), grandfathered (bool)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">collection</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, user_id, name, visibility, created_at</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">collection_item</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">collection_id, item_id or stack_id, added_at</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">stack</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, owner_id, slug, title, description, visibility (private|unlisted|published), theme_item_id, version, updated_at</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">stack_item</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">stack_id, item_id, version_range, position, config_json (external refs are ingested into item first)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">rating</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, item_id, user_id, stars (1-5), created_at, updated_at; unique(item_id, user_id)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">flag</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, item_id, user_id, reason, note, status (active|withdrawn|held), created_at; unique(item_id, user_id)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">report</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, item_id, user_id, reason, message (max 2000, nullable), status (open|resolved|dismissed), resolved_by, resolution_note, emailed_at, created_at</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">maturity_status</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">item_id, state (indexed|workshop|listed|under_review|low_quality|quarantined|removed), prior_state, since, checks_json, decided_by</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">review_queue</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, item_id, kind (flag|redemption|claim_dispute|scan_block|ingest_triage), status, auto_result_json, admin_id, verdict, reason, created_at</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scan_run</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, item_id, version_or_sha, trigger (nightly|publish|manual|advisory), status, outcome (pass|warn|block), started_at, finished_at, runner_url</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scan_finding</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, scan_run_id, check, severity (info|low|moderate|high|critical), title, detail, location, advisory_id, overridden_by</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ingestion_source</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, item_id, source (npm|topic|code_search|playbook|stack_ref|dependency|submission), source_ref, query, found_at</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">outreach_pr</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, item_id, repo_host, repo_id, url, status (open|merged|closed|skipped), skip_reason, opted_out, opened_at, closed_at; unique(repo_host, repo_id)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">claim</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, item_id, user_id, method (github|gitlab|npm_token), status (pending|verified|rejected|revoked), permission, token_hash, verified_at, reverify_at</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">redemption_subscription</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">item_id, user_id, created_at, unsubscribed_at</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">redemption_invite</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">review_id, user_id, token_hash, sent_at, response (yes|no|unsure), responded_at</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">notification_pref</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user_id, category, email_enabled</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">nudge</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, item_id, kind (ready_to_graduate), major_version, user_id (nullable if unclaimed), channel (email|banner|outreach_pr), status (pending|sent|dismissed|acted), emailed_at, dismissed_at, acted_at, created_at; unique(item_id, kind, major_version)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">engagement</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">item_id, user_id, kind (install|use|rate|collect), last_at; unique(item_id, user_id, kind)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">admin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user_id, granted_by, granted_at, revoked_at, revoked_by</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">verdict</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, subject_type (item|trusted_publisher|admin|report|trust_request), subject_id, kind (low_quality|reinstate|unlist|trust_grant|trust_decline|trust_revoke|lift_quarantine|quarantine|admin_grant|admin_revoke|appeal_decision|ban|unban), proposed_by, reason, status (pending|final|single_admin|objected|reopened), required_votes, reminded_at, effective_at, created_at</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">admin_vote</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">verdict_id, admin_id, vote (concur|object), note, created_at; unique(verdict_id, admin_id)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">admin_audit_log</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, actor_id, action, target_type, target_id, detail_json, created_at</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">appeal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, item_id, owner_user_id, commit_sha, kind (security|unban), status (queued|auto_resolved|in_review|accepted|rejected), finding_ids, owner_note, ai_review_id, reviewer_verdicts_json, verdict_id, created_at, closed_at; one open appeal per item</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ban</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, subject_type (user|org), subject_id, reason, rejected_appeal_ids, rejecting_admin_ids, started_at, next_unban_eligible_at, lifted_at, lifted_by_verdict_id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ai_review</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, subject_type (item|trust_request), subject_id, item_id (nullable; set when subject is an item), commit_sha (nullable; items only), trigger (block|appeal|trust_request), model, provider_config_id, provider (cursor|xai|openai|anthropic|google|mistral|openrouter|custom), verdict (likely_mistake|unclear|likely_malicious for items; grant|unclear|decline for trust requests), evidence_json, cost, run_url, report_url (GitHub issue or discussion), report_redacted (bool), created_at; unique(item_id, commit_sha) where item_id is set</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">trust_request</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, requester_user_id, provider (github|gitlab), subject_kind (user|org), subject_login, provider_owner_id, note, status (open|ai_reviewed|granted|declined|withdrawn), ai_recommendation (grant|unclear|decline), ai_report_json, requester_summary, ai_review_cost, verdict_id, emailed_at, created_at, decided_at; one open request per subject</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ai_provider_config</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, provider (cursor|xai|openai|anthropic|google|mistral|openrouter|custom), model, endpoint (nullable; custom/OpenAI-compatible), secret_ref (name only), monthly_budget, per_item_cap, status (proposed|approved|active|rejected|retired), proposed_by, approved_by (must be Ryan), last_test_at, last_test_ok, created_at, activated_at; one active row</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">nomination</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, item_id, user_id, source (stack|explicit), stack_id (nullable), status (pending_scan|accepted|rejected), created_at</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">trusted_publisher</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id, provider (github|gitlab), kind (user|org), login, provider_owner_id, granted_by, reason, created_at, revoked_at, revoked_by; unique(provider, provider_owner_id)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="flows"><a class="anchor" href="#flows"></a>User flows</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_flag_dialog"><a class="anchor" href="#_flag_dialog"></a>Flag dialog</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Click Flag as low quality</strong>: Only on Listed items; ineligible accounts see why.</p>
+</li>
+<li>
+<p><strong>Pick reason + optional message</strong>: Flags are about craft, not taste; use stars for taste. Message is plain text, up to 2,000 characters, seen only by admins.</p>
+</li>
+<li>
+<p><strong>Redemption checkbox, pre-checked</strong>: "Notify me if the developer asks for a second look." If the email category is off, show an inline toggle to enable it.</p>
+</li>
+<li>
+<p><strong>Confirm</strong>: Insert flag, report and redemption_subscription in one transaction; show undo.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_review_request_owner"><a class="anchor" href="#_review_request_owner"></a>Review request (owner)</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Item dashboard shows status, scan results and cited reasons</strong>: Aggregated reason counts, never flagger identities.</p>
+</li>
+<li>
+<p><strong>Request re-review</strong>: Enabled once a newer release exists; changelog note required.</p>
+</li>
+<li>
+<p><strong>Track progress</strong>: Automated result, panel response count, admin decision.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_admin_queue"><a class="anchor" href="#_admin_queue"></a>Admin queue</h3>
+<div class="paragraph">
+<p>One list sorted by age, filterable by kind (flag, redemption, scan block, claim dispute, ingest triage). Each entry: item preview, status history, flag count and share, panel posterior, scan findings, and actions Confirm / Dismiss / Reinstate / Extend panel / Clear block / Remove, each requiring a reason.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="email"><a class="anchor" href="#email"></a>Notifications and email</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Category</th>
+<th class="tableblock halign-left valign-top">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Redemption panel invites</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On only if the user leaves the flag-dialog box checked</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">My items: reviews, scans and status changes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Stack member status changes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Off</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Product news</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Off</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">New report or scan block (to <a href="mailto:support@antora-supplemental.org">support@antora-supplemental.org</a>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Always on</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="title">Decided: Resend (pending setup)</div>
+<div class="paragraph">
+<p>No email sending exists today. Before anything sends it needs a verified sending domain (SPF/DKIM on antora-supplemental.org), an API key in Netlify env, and a one-click unsubscribe header. Send via a Netlify scheduled function that drains an outbox table, capped per day.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="ui"><a class="anchor" href="#ui"></a>UI notes</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Precise stars</strong>: SVG with a clip rect at the exact percentage; aria-label "3.73 of 5, 12 ratings".</p>
+</li>
+<li>
+<p><strong>Time-span slider</strong>: Two-handle range over months since launch, presets (30d, 1y, all); re-sorts by Bayesian score in that window. State in the URL.</p>
+</li>
+<li>
+<p><strong>Default filters</strong>: Listed only. Toggles: Include Indexed, Include Workshop, Include Low quality.</p>
+</li>
+<li>
+<p><strong>Badges</strong>: New, Workshop, Indexed (unclaimed), Scan warning; Under review is not shown publicly; Low quality shown inside its filter.</p>
+</li>
+<li>
+<p><strong>Screening page</strong>: Public, plain language, readable by a maintainer arriving from the outreach PR; Claim button at the top.</p>
+</li>
+<li>
+<p><strong>Sign-in copy</strong>: Lead with collections and stacks, not uploading.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="rollout"><a class="anchor" href="#rollout"></a>Phased rollout</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Phase</th>
+<th class="tableblock halign-left valign-top">Scope</th>
+<th class="tableblock halign-left valign-top">Exit criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Collections, stacks, manifest API, CLI install + snippet, ratings, precise stars, time slider; security scanning (scan_run, scan_finding, screening page); grandfather existing items as Listed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10 published stacks; every listing scanned at least once</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Workshop / Listed / Indexed states, automated graduation, flags and reports, admin queue, abuse controls; ingestion pipeline and stack external refs (ingestion_source); claim flow (claim); single-nomination promotion (nomination)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Daily crawl running; first external claim verified; first nominated item Listed</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Resend email, notification prefs, redemption panel, reputation weights; /trust form with AI pre-check (trust_request); AI reviewer on Cursor with GitHub issue/discussion reports; AI provider settings (ai_provider_config); outreach PR/MR (outreach_pr) from the registry bot account, after the Discussions category exists</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">First redemption decided; first 50 outreach PRs with opt-out rate measured</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="questions"><a class="anchor" href="#questions"></a>Open questions</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Per-item monthly review cap (the monthly budget is decided at 25% of plan; a per-item default of 3 reviews per month is proposed).</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script src="../../_/js/site-dark-mode.js"></script>
+  </body>
+</html>

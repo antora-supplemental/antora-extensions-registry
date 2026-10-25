@@ -165,3 +165,19 @@ html.dark .text-slate-500 { color: #a3a3a3; }
    light #9a3412 on #fff4ed = 6.9:1; dark #ffc9a8 on #431407 = 10.6:1. */
 .new-badge { background-color: #fff4ed; color: #9a3412; border: 1px solid #ffc9a8; }
 html.dark .new-badge { background-color: #431407; color: #ffc9a8; border-color: #9a3412; }
+/*
+ * Header "Themes" link: rainbow overlay at 20% opacity. This is the one deliberate exception to the
+ * no-gradients rule. Blend mode is the default (normal).
+ */
+.nav-rainbow {
+  position: relative;
+}
+.nav-rainbow::after {
+  content: '';
+  position: absolute;
+  inset: -2px -4px;
+  border-radius: 4px;
+  background: linear-gradient(30deg, red, orange, yellow, green, blue, violet);
+  opacity: 0.2;
+  pointer-events: none;
+}

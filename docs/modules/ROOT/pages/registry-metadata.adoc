@@ -1,5 +1,5 @@
 = Registry metadata: layers, bundles and previews
-:description: The antoraRegistry field: declare which layer an extension belongs to, whether it is a bundle, and which preview images to show.
+:description: The antoraRegistry field: declare which layer an extension belongs to, whether it is a bundle, which preview images to show and the full description.
 
 The registry reads an optional `antoraRegistry` object from your `package.json`, or the same keys from the frontmatter of `antora-registry.md`.
 If both set a key, `package.json` wins.
@@ -91,6 +91,28 @@ Where previews come from, in order:
 . If you declared none, up to four non-badge images from your README.
 
 The first preview is the card thumbnail; the detail page shows them all as a gallery.
+
+== Full description
+
+The detail page shows the package `description` as the summary, and a *Full description* section below it.
+Keep the summary to the main behavior in plain, complete sentences, and put exceptions, opt-outs and optional parts in the full description.
+
+The full description comes from, in order:
+
+. `longDescription` in `antoraRegistry` (or the `antora-registry.md` frontmatter). Separate paragraphs with a blank line (`\n\n` in JSON); `code` spans in backticks are kept.
+. Otherwise, your README intro: the prose before the first second-level heading (`==` in AsciiDoc, `##` in Markdown), without the title, badges, images or HTML, capped at three paragraphs.
+
+The registry never shows the whole README; the section ends with a *Read the full README* link to the repository.
+
+[source,json]
+----
+{
+  "description": "Antora extension that adds an Ask box to Lunr search.",
+  "antoraRegistry": {
+    "longDescription": "Lunr answers first.\n\nA remote backend is optional. Without it, the box behaves as plain Lunr search."
+  }
+}
+----
 
 == Example: a compose pack
 

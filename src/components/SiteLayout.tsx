@@ -45,7 +45,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
               <A href="/extensions" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
                 Extensions
               </A>
-              <A href="/themes" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
+              <A href="/themes" class="nav-rainbow text-slate-300 hover:text-white transition-colors text-sm font-medium">
                 Themes
               </A>
               <A href="/add" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">

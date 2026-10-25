@@ -1,7 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>https://antora-extensions.org/registry/contributing.html</loc>
+<lastmod>2026-10-25T09:27:26.036Z</lastmod>
+</url>
+<url>
+<loc>https://antora-extensions.org/registry/design/trust-and-quality-spec.html</loc>
+<lastmod>2026-10-25T09:27:26.036Z</lastmod>
+</url>
+<url>
+<loc>https://antora-extensions.org/registry/filters.html</loc>
+<lastmod>2026-10-25T09:27:26.036Z</lastmod>
+</url>
+<url>
 <loc>https://antora-extensions.org/registry/index.html</loc>
-<lastmod>2026-02-07T07:21:22.853Z</lastmod>
+<lastmod>2026-10-25T09:27:26.036Z</lastmod>
+</url>
+<url>
+<loc>https://antora-extensions.org/registry/install-guide.html</loc>
+<lastmod>2026-10-25T09:27:26.036Z</lastmod>
+</url>
+<url>
+<loc>https://antora-extensions.org/registry/registry-metadata.html</loc>
+<lastmod>2026-10-25T09:27:26.036Z</lastmod>
 </url>
 </urlset>

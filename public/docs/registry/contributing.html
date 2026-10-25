@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Contributing your Extension :: Antora Extensions Registry</title>
+    <link rel="canonical" href="https://antora-extensions.org/registry/contributing.html">
+    <meta name="generator" content="Antora 3.1.14">
+    <link rel="stylesheet" href="../_/css/site.css">
+<link rel="stylesheet" href="../_/css/site-extra.css">
+<script>
+(function () {
+  const MODE = 'antora-theme-mode'
+  const LEGACY = 'antora-theme'
+  function mode() {
+    const m = localStorage.getItem(MODE)
+    if (m === 'system' || m === 'dark' || m === 'light') return m
+    const o = localStorage.getItem(LEGACY)
+    if (o === 'dark' || o === 'light') return o
+    return 'system'
+  }
+  function isDark() {
+    const m = mode()
+    if (m === 'dark') return true
+    if (m === 'light') return false
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  if (isDark()) document.documentElement.classList.add('dark-theme')
+})()
+</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://antora-extensions.org">Antora Extensions Registry</a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field">
+          <input id="search-input" type="text" placeholder="Search the docs">
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="registry" data-version="">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">Antora Extensions Registry</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Welcome</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="install-guide.html">Installing from the registry</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="registry-metadata.html">Registry metadata (layers, bundles, previews)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="filters.html">Registry filters</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Design</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="design/trust-and-quality-spec.html">Trust and quality spec</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Antora Extensions Registry</span>
+    <span class="version"></span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="index.html">Antora Extensions Registry</a></div>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Antora Extensions Registry</a></li>
+    <li><a href="contributing.html">Contributing</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///Z:/code/github.com/antora-supplemental/antora-extensions-registry/docs/modules/ROOT/pages/contributing.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Contributing your Extension</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>To list your extension in the Antora Extensions Registry, you should provide metadata files in your repository. This allows the registry to display rich information about your extension, including descriptions and screenshots.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_required_files"><a class="anchor" href="#_required_files"></a>Required Files</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>package.json</code>: Standard npm package file. The registry uses the <code>name</code>, <code>version</code>, and <code>description</code> fields.</p>
+</li>
+<li>
+<p><code>antora-registry.md</code>: A special Markdown file for registry-specific metadata.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_antora_registry_md_file"><a class="anchor" href="#_the_antora_registry_md_file"></a>The <code>antora-registry.md</code> File</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This file allows you to customize how your extension appears in the registry. It should be placed in the root of your repository.</p>
+</div>
+<div class="sect2">
+<h3 id="_frontmatter_fields"><a class="anchor" href="#_frontmatter_fields"></a>Frontmatter Fields</h3>
+<div class="paragraph">
+<p>The registry parses the YAML frontmatter for specific fields:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>name</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(Optional) Display name if different from <code>package.json</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>description</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A short, catchy summary for the extension card (limited to ~150 characters).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>screenshots</code> / <code>previews</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A list of objects containing <code>url</code> and <code>caption</code>, shown as the card thumbnail and the detail-page gallery.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>layers</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The layers the extension changes: <code>engine</code>, <code>chassis</code>, <code>body-kit</code>, <code>paint</code>, <code>bolt-on</code>. See <a href="registry-metadata.html" class="xref page">Registry metadata: layers, bundles and previews</a>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>bundle</code>, <code>kind</code>, <code>purpose</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mark a bundle (<code>bundle: true</code>, a member list, <code>kind: bundle</code> or <code>purpose: compose-pack</code>). See <a href="registry-metadata.html" class="xref page">Registry metadata: layers, bundles and previews</a>.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The same keys can go in <code>package.json</code> under <code>"antoraRegistry"</code>, which wins when both are set.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_content"><a class="anchor" href="#_content"></a>Content</h3>
+<div class="paragraph">
+<p>Everything below the frontmatter is used as the detailed description on the extension&#8217;s detail page (<code>/extensions/&lt;owner&gt;/&lt;repo&gt;/&lt;id&gt;</code>). Standard Markdown is supported.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_template"><a class="anchor" href="#_template"></a>Template</h3>
+<div class="paragraph">
+<p>You can use the following template as a starting point. <a href="https://github.com/antora-supplemental/antora-extensions-registry/blob/main/templates/antora-registry.adoc" target="_blank" rel="noopener">Download template (<code>antora-registry.adoc</code>)</a></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-markdown hljs" data-lang="markdown">---
+name: "My Awesome Extension"
+description: "Briefly explain what your extension does and why it's great."
+screenshots:
+  - url: "https://example.com/assets/screenshot1.png"
+    caption: "Desktop View - Features highlighted"
+  - url: "https://example.com/assets/screenshot2.png"
+    caption: "Responsive Mobile Layout"
+---
+
+# Overview
+
+Add a detailed description of your extension here. You can use **Markdown** to format your content.
+This content will be displayed on the extension's detail page in the Antora Extension Registry.
+
+## Key Features
+- Feature 1
+- Feature 2
+- Feature 3</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_image_guidelines"><a class="anchor" href="#_image_guidelines"></a>Image Guidelines</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><strong>External Hosting</strong>: We do <strong>not</strong> host your images. Please use stable URLs (e.g., GitHub <code>raw</code> links).</p>
+</li>
+<li>
+<p><strong>Aspect Ratio</strong>: We recommend a 16:9 aspect ratio for best display results.</p>
+</li>
+<li>
+<p><strong>Format</strong>: Standard web formats like PNG, JPG, or WebP are supported.</p>
+</li>
+<li>
+<p><strong>Count</strong>: You can provide up to 5 screenshots.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_github_topics_planned_auto_discovery"><a class="anchor" href="#_github_topics_planned_auto_discovery"></a>GitHub Topics (planned auto-discovery)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>GitHub <strong>repository topics</strong> (not Git tags) are a lightweight way to opt into discovery.
+When automated indexing is enabled for this registry, crawlers will use the public GitHub Search API, for example <code>topic:antora-extension fork:false</code>.</p>
+</div>
+<div class="sect2">
+<h3 id="_why_a_topic_can_appear_before_anyone_used_it"><a class="anchor" href="#_why_a_topic_can_appear_before_anyone_used_it"></a>Why a topic can appear before anyone used it</h3>
+<div class="paragraph">
+<p>GitHub maintains a <strong>topic catalog</strong> (<code>GET /search/topics</code>).
+Several Antora-related names (for example <code>antora-ui-theme</code>, <code>antora-ui-plugin</code>, <code>antora-theme</code>) share the same catalog <code>created_at</code> timestamp in GitHub’s API, which means GitHub added them as recognized topic strings in bulk.
+That is why the topic picker may suggest <code>antora-ui-theme</code> even when the <a href="https://github.com/topics/antora-ui-theme">topic page</a> still shows few repositories — the string exists in GitHub’s suggestion index independently of your repo.</p>
+</div>
+<div class="paragraph">
+<p>To explore the live catalog and sample repository counts from your machine, run:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">pnpm run discover:github-topics
+# optional: GITHUB_TOKEN=... pnpm run discover:github-topics
+pnpm exec tsx scripts/github-topic-discovery.ts --repos antora-extension</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_recommended_topics_by_content_type"><a class="anchor" href="#_recommended_topics_by_content_type"></a>Recommended topics by content type</h3>
+<div class="paragraph">
+<p>These are <strong>conventions for this registry</strong>; align your topics so future automation can classify listings.
+Theme gallery submissions live at <a href="https://registry.antora-supplemental.org/themes">registry.antora-supplemental.org/themes</a> — use prescribed <strong>capability</strong> topics (<code>antora-theme</code>, <code>antora-light-theme</code>, <code>antora-dark-theme</code>, …) for gallery filters.</p>
+</div>
+<div class="paragraph">
+<p>Product / dependency rediscovery uses a <strong>separate</strong> rule (see <a href="#product-dependency-topics">Product dependency topics (required for theme consumers)</a> below): the theme’s GitHub repository name as a topic on both the theme repo and every playbook that depends on it.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Registry kind</th>
+<th class="tableblock halign-left valign-top">Suggested GitHub topics</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Playbook / generator extension (npm-style)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-extension</code> (and usually <code>antora</code>)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Extension bundle</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-bundle</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Full UI theme (default-UI-style repo)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-theme</code> (or <code>antora-ui-theme</code> / <code>antora-site-theme</code>) <strong>plus</strong> appearance tags <strong>plus</strong> the product topic (repo name)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Supplemental UI, components, styles, kits</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-ui</code>, <code>antora-ui-components</code>, <code>antora-ui-styles</code>, <code>antora-ui-kit</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UI-level plugin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-ui-plugin</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Generic Antora plugin naming</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-plugin</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Documentation site or doc tooling (broad)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora-site</code>, <code>antora-docs</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Docs / playbook repo that <strong>uses</strong> a named UI theme</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">That theme’s product topic (exact GitHub repo name), for example <code>valentus-theme</code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="product-dependency-topics"><a class="anchor" href="#product-dependency-topics"></a>Product dependency topics (required for theme consumers)</h3>
+<div class="paragraph">
+<p><strong>Problem:</strong> Capability topics (<code>antora-theme</code>, …) classify <strong>what kind of thing</strong> a repo is. They do not answer “which sites pin Valentus?” when you need to roll a chrome fix.</p>
+</div>
+<div class="paragraph">
+<p><strong>Rule:</strong> Every published Antora UI theme picks a <strong>product topic</strong> equal to its GitHub repository name (kebab-case), for example <code>valentus-theme</code> or <code>architexture-theme</code>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Theme repository: carry the product topic <strong>alongside</strong> gallery/capability topics.</p>
+</li>
+<li>
+<p>Dependent repositories (Antora playbooks that set <code>ui.bundle.url</code> to that theme’s release, or vendor its <code>supplemental-ui</code>) <strong>without</strong> a compose pack: add the <strong>same</strong> product topic. Hubs on facto-stack tag the pack instead (see <a href="#direct-deps-only">Provider rule (direct deps only; packs own their members)</a>).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Rediscover with GitHub Search: <code>topic:valentus-theme</code> (or <code>gh search repos --topic valentus-theme</code>).</p>
+</div>
+<div class="sect3">
+<h4 id="direct-deps-only"><a class="anchor" href="#direct-deps-only"></a>Provider rule (direct deps only; packs own their members)</h4>
+<div class="paragraph">
+<p>Playbook / docs-hub repositories tag the <strong>provider they declare</strong>, not every package that provider supplies.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Direct</strong> — tag when the hub declares it itself: a top-level playbook <code>require:</code> of a non-pack extension, a hub <code>package.json</code> pin it genuinely owns, or <code>ui.bundle.url</code> to a named theme <strong>when no compose pack is in use</strong>.</p>
+</li>
+<li>
+<p><strong>Provided</strong> — do <strong>not</strong> tag when <code>@antora-supplemental/facto-stack</code> (or another compose pack) supplies it: every pack member extension, the maint CLIs (<code>facto-maint</code>), and the Valentus bundle that pairs with the pack. The hub does not pin them, so it does not tag them; pack releases communicate member bumps.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Example: a hub on facto-stack carries the single topic <code>facto-stack</code> — no <code>valentus-theme</code>, <code>page-context</code>, <code>site-nav-tree</code>, <code>soft-nav-page-toc</code>, <code>linkinator</code>, <code>page-edit</code>, or <code>antora-search-chat</code>. A hub that uses Valentus <strong>without</strong> a pack carries <code>valentus-theme</code> (and any extension it directly requires).</p>
+</div>
+<div class="paragraph">
+<p>Mis-tagged transitive topics pollute <code>topic:&lt;extension&gt;</code> search and imply a direct pin the hub does not own. Hub operator guide: <a href="https://github.com/antora-supplemental/docs/blob/main/docs/modules/ROOT/pages/hub-github-topics.adoc" target="_blank" rel="noopener">Hub GitHub topics</a> (antora-supplemental/docs).</p>
+</div>
+<div class="paragraph">
+<p>Theme authors should document the rule in their install guide and keep a <code>knownDependents</code> list in root <code>antora-registry-topics.json5</code> (optional seed for maintainers). Apply theme + dependent topics with:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">node scripts/apply-registry-topics.mjs path/to/antora-registry-topics.json5
+# merge-adds productTopic onto knownDependents without wiping other topics</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Example Valentus guide: <a href="https://github.com/antora-supplemental/valentus-theme/blob/main/docs/modules/guide/pages/github-topics.adoc" target="_blank" rel="noopener"><code>github-topics.adoc</code></a>.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_forks_and_ownership_policy_sketch"><a class="anchor" href="#_forks_and_ownership_policy_sketch"></a>Forks and ownership (policy sketch)</h3>
+<div class="paragraph">
+<p>Automated listing should not mirror every personal fork.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Default filter:</strong> only repositories where GitHub reports <code>fork: false</code> in search (<code>fork:false</code> in the search query).</p>
+</li>
+<li>
+<p><strong>Explicit forks:</strong> allow a fork only if maintainers later support a <strong>claim</strong> flow (for example sign in with GitHub and prove admin on the repo) or a manual allowlist (for official org splits).</p>
+</li>
+<li>
+<p><strong>Duplicate networks:</strong> prefer the repository that is the <strong>source</strong> of the fork network when both carry the same topic, unless a claimed fork is designated as canonical.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Exact rules will be documented here once the indexer ships; until then, follow the manual contributing flow above.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script id="site-script" src="../_/js/site.js" data-ui-root-path="../_"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+<script src="../_/js/vendor/lunr.js"></script>
+<script src="../_/js/search-ui.js" id="search-ui-script" data-site-root-path=".." data-snippet-length="100" data-stylesheet="../_/css/search.css"></script>
+<script async src="../search-index.js"></script>
+<script src="../_/js/site-dark-mode.js"></script>
+  </body>
+</html>

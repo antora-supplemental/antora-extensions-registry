@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Registry metadata: layers, bundles and previews :: Antora Extensions Registry</title>
+    <link rel="canonical" href="https://antora-extensions.org/registry/registry-metadata.html">
+    <meta name="description" content="The antoraRegistry field: declare which layer an extension belongs to, whether it is a bundle, which preview images to show and the full description.">
+    <meta name="generator" content="Antora 3.1.14">
+    <link rel="stylesheet" href="../_/css/site.css">
+<link rel="stylesheet" href="../_/css/site-extra.css">
+<script>
+(function () {
+  const MODE = 'antora-theme-mode'
+  const LEGACY = 'antora-theme'
+  function mode() {
+    const m = localStorage.getItem(MODE)
+    if (m === 'system' || m === 'dark' || m === 'light') return m
+    const o = localStorage.getItem(LEGACY)
+    if (o === 'dark' || o === 'light') return o
+    return 'system'
+  }
+  function isDark() {
+    const m = mode()
+    if (m === 'dark') return true
+    if (m === 'light') return false
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  if (isDark()) document.documentElement.classList.add('dark-theme')
+})()
+</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://antora-extensions.org">Antora Extensions Registry</a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field">
+          <input id="search-input" type="text" placeholder="Search the docs">
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="registry" data-version="">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">Antora Extensions Registry</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Welcome</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="install-guide.html">Installing from the registry</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="registry-metadata.html">Registry metadata (layers, bundles, previews)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="filters.html">Registry filters</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Design</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="design/trust-and-quality-spec.html">Trust and quality spec</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Antora Extensions Registry</span>
+    <span class="version"></span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="index.html">Antora Extensions Registry</a></div>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Antora Extensions Registry</a></li>
+    <li><a href="registry-metadata.html">Registry metadata (layers, bundles, previews)</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///Z:/code/github.com/antora-supplemental/antora-extensions-registry/docs/modules/ROOT/pages/registry-metadata.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Registry metadata: layers, bundles and previews</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>The registry reads an optional <code>antoraRegistry</code> object from your <code>package.json</code>, or the same keys from the frontmatter of <code>antora-registry.md</code>.
+If both set a key, <code>package.json</code> wins.
+Anything you leave out, the registry guesses and labels <strong>inferred</strong>.
+Registry admins can override any value from <code>/admin</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+  "name": "@acme/antora-ui-callouts",
+  "antoraRegistry": {
+    "layers": ["bolt-on"],
+    "previews": [
+      { "url": "docs/assets/callouts-light.png", "caption": "Callouts, light mode" },
+      { "url": "https://acme.dev/callouts-dark.png", "caption": "Callouts, dark mode" }
+    ]
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_layers"><a class="anchor" href="#_layers"></a>Layers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Layers use the names from <a href="https://github.com/antora-supplemental/antora-ui-chassis">antora-ui-chassis</a>.
+List every layer the package changes, most important first.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 60%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Id</th>
+<th class="tableblock halign-left valign-top">Shown as</th>
+<th class="tableblock halign-left valign-top">What it owns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>engine</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Engine</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The Antora pipeline and the UI model data: Antora extensions that run at build time, generators, validators.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>chassis</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Chassis</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unthemed region parts (header, nav, toolbar, footer slots) and their contracts.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>body-kit</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Body kit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Silhouette and column layout: where the regions sit.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>paint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Paint &amp; trim</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Palettes, typography, logo, dark mode and other chrome.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>bolt-on</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bolt-ons</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Features added on top, preferably through slots: search, diagrams, tabs, copy buttons.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>paint-trim</code>, <code>paint-and-trim</code>, <code>bolt-ons</code> and <code>bodykit</code> are accepted as aliases.
+Unknown ids are ignored.
+Entries with no layer, declared or inferred, appear under <strong>Unclassified</strong> in search.</p>
+</div>
+<div class="sect2">
+<h3 id="_how_the_registry_guesses"><a class="anchor" href="#_how_the_registry_guesses"></a>How the registry guesses</h3>
+<div class="paragraph">
+<p>When <code>layers</code> is missing:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A bundle takes the union of its members' layers.</p>
+</li>
+<li>
+<p>A repository named <code>antora-ui-chassis</code>, or one that describes itself as a chassis, is <code>chassis</code>.</p>
+</li>
+<li>
+<p>UI modules and recipes that mention dark mode, palettes, colors, icons, logos or fonts are <code>paint</code>; those that replace layout partials or mention layout, header, masthead or columns are <code>body-kit</code>; the rest are <code>bolt-on</code>.</p>
+</li>
+<li>
+<p>Antora extensions that mention themes or palettes are <code>paint</code>; the rest are <code>bolt-on</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Guesses show an <strong>inferred</strong> label next to the layer. Declare <code>layers</code> to remove it.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_bundles"><a class="anchor" href="#_bundles"></a>Bundles</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A bundle is a package that composes other extensions, such as a compose pack or a UI recipe.
+Bundles get a <strong>Bundle</strong> badge, a contents list on the detail page, and their own kind in search.</p>
+</div>
+<div class="paragraph">
+<p>Declare a bundle in any of these ways:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>"bundle": true</code>: members are your <code>dependencies</code>.</p>
+</li>
+<li>
+<p><code>"bundle": ["@acme/one", "@acme/two"]</code>: an explicit member list.</p>
+</li>
+<li>
+<p><code>"kind": "bundle"</code> or <code>"purpose": "compose-pack"</code> (in <code>antora-registry.md</code>).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The registry also detects bundles, marked <strong>detected</strong>, when the package has one of the keywords <code>antora-bundle</code>, <code>compose-pack</code>, <code>extension-pack</code> or <code>bundle</code>, or depends on three or more extensions already in the registry.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_previews"><a class="anchor" href="#_previews"></a>Previews</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>previews</code> (or the older <code>screenshots</code>) is a list of <code>{ url, caption }</code>.
+Relative URLs resolve against your default branch on <code>raw.githubusercontent.com</code>.
+Use PNG or WebP, at least 1200 px wide, and show light and dark mode if you support both.</p>
+</div>
+<div class="paragraph">
+<p>Where previews come from, in order:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Images an admin added in <code>/admin</code>.</p>
+</li>
+<li>
+<p>Your declared <code>previews</code>.</p>
+</li>
+<li>
+<p>If you declared none, up to four non-badge images from your README.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The first preview is the card thumbnail; the detail page shows them all as a gallery.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_full_description"><a class="anchor" href="#_full_description"></a>Full description</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The detail page shows the package <code>description</code> as the summary, and a <strong>Full description</strong> section below it.
+Keep the summary to the main behavior in plain, complete sentences, and put exceptions, opt-outs and optional parts in the full description.</p>
+</div>
+<div class="paragraph">
+<p>The full description comes from, in order:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>longDescription</code> in <code>antoraRegistry</code> (or the <code>antora-registry.md</code> frontmatter). Separate paragraphs with a blank line (<code>\n\n</code> in JSON); <code>code</code> spans in backticks are kept.</p>
+</li>
+<li>
+<p>Otherwise, your README intro: the prose before the first second-level heading (<code>==</code> in AsciiDoc, <code>##</code> in Markdown), without the title, badges, images or HTML, capped at three paragraphs.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The registry never shows the whole README; the section ends with a <strong>Read the full README</strong> link to the repository.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+  "description": "Antora extension that adds an Ask box to Lunr search.",
+  "antoraRegistry": {
+    "longDescription": "Lunr answers first.\n\nA remote backend is optional. Without it, the box behaves as plain Lunr search."
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_example_a_compose_pack"><a class="anchor" href="#_example_a_compose_pack"></a>Example: a compose pack</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-markdown hljs" data-lang="markdown">---
+name: "Facto stack"
+description: "Valentus chrome plus the Facto extensions, wired together."
+purpose: compose-pack
+layers: [chassis, body-kit, paint, bolt-on]
+previews:
+  - url: "docs/assets/facto-light.png"
+    caption: "Facto stack demo, light"
+---</code></pre>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script id="site-script" src="../_/js/site.js" data-ui-root-path="../_"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+<script src="../_/js/vendor/lunr.js"></script>
+<script src="../_/js/search-ui.js" id="search-ui-script" data-site-root-path=".." data-snippet-length="100" data-stylesheet="../_/css/search.css"></script>
+<script async src="../search-index.js"></script>
+<script src="../_/js/site-dark-mode.js"></script>
+  </body>
+</html>

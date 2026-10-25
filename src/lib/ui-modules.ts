@@ -4,6 +4,7 @@ import JSON5 from 'json5';
 import { appearanceTags } from '~/data/github-topics';
 import { parseGitHubUrl, fetchRepoInfo } from '~/lib/github';
 import { resolveKnownRepoRef } from '~/lib/repo-identity';
+import { liveImages } from '~/lib/preview-check';
 import { applyRepoMetadata, finalizeCatalog, readRepoMetadata, type PackageJson } from '~/lib/catalog-enrich';
 import { normalizeLayers } from '~/lib/layers';
 import type {
@@ -375,7 +376,8 @@ export async function indexKnownRepo(
 
   const result = await discoverUiModules(repoUrl);
   if (!result.valid) {
-    const pkgEntry = await packageJsonEntry(owner, repo, ref.branch ?? 'main', repoMeta);
+    // Preview URLs are built on this branch: the repo's real default branch (e.g. master), or HEAD when the API is unavailable.
+    const pkgEntry = await packageJsonEntry(owner, repo, ref.branch ?? repoInfo?.default_branch ?? 'HEAD', repoMeta);
     if (pkgEntry) return { modules: [pkgEntry], recipes: [] };
     console.warn(`Failed to index ${ref.owner}/${ref.repo}: ${result.error}`);
     return { modules: [], recipes: [] };
@@ -421,6 +423,10 @@ async function packageJsonEntry(
   );
   const meta = await readRepoMetadata(owner, repo, branch, (p) => fetchRawText(owner, repo, p, branch), pkg);
   const entry = applyRepoMetadata(base, meta, branch);
+  if (entry.previews?.length) {
+    entry.previews = await liveImages(entry.previews);
+    if (!entry.previews.length) delete entry.previews;
+  }
   entry.tags = [...new Set(['antora-extension', ...entry.tags.filter((t) => t !== 'ui-module')])];
   return entry;
 }

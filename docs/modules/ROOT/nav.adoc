@@ -1,4 +1,5 @@
 * xref:index.adoc[Welcome]
+* xref:install-guide.adoc[Installing from the registry]
 * xref:contributing.adoc[Contributing]
 * xref:registry-metadata.adoc[Registry metadata (layers, bundles, previews)]
 * xref:filters.adoc[Registry filters]

@@ -69,6 +69,9 @@ export interface ExtensionCatalogEntry {
   /** package.json `"private": true`: not on npm, install from the Git repository. */
   privatePackage?: boolean;
   homepage?: string;
+  /** Full description: `antoraRegistry.longDescription`, else the README intro. Plain text, paragraphs separated by blank lines. */
+  longDescription?: string;
+  longDescriptionSource?: 'declared' | 'readme';
 }
 
 export type LayerId = 'engine' | 'chassis' | 'body-kit' | 'paint' | 'bolt-on';
@@ -99,6 +102,8 @@ export interface AntoraRegistryMetadata {
   purpose?: string;
   previews?: Array<string | { url?: string; src?: string; caption?: string; alt?: string }>;
   screenshots?: Array<string | { url?: string; src?: string; caption?: string; alt?: string }>;
+  /** Full description shown below the summary. Paragraphs separated by blank lines; `code` spans allowed. */
+  longDescription?: string;
 }
 
 export interface RegistryModuleRef {

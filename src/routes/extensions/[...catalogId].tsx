@@ -8,6 +8,8 @@ import DependencyTree from '~/components/catalog/DependencyTree';
 import LayerBadges from '~/components/catalog/LayerBadges';
 import BundleContents from '~/components/catalog/BundleContents';
 import PreviewGallery from '~/components/catalog/PreviewGallery';
+import FullDescription, { inline } from '~/components/catalog/FullDescription';
+import { INSTALL_GUIDE_URL, installGuidance } from '~/lib/install-guidance';
 import { Badge } from '~/components/ui/badge';
 import { buttonVariants } from '~/components/ui/button';
 import { Card } from '~/components/ui/card';
@@ -72,6 +74,10 @@ export default function ExtensionDetailPage() {
                       <ReportButton itemKind="extension" itemId={e().catalogId} itemName={e().name} class="self-center ml-2" />
                     </div>
                   </header>
+
+                  <Show when={e().longDescription}>
+                    <FullDescription text={e().longDescription!} repository={e().repository} />
+                  </Show>
 
                   <Show when={(e().previews?.length ?? 0) > 0}>
                     <section class="mb-6" aria-label="Preview images">
@@ -148,7 +154,11 @@ export default function ExtensionDetailPage() {
                         {copied() ? 'Copied!' : 'Copy'}
                       </button>
                     </div>
+                    <For each={installGuidance(e())}>{(s) => <p class="text-sm text-slate-300 mb-2 max-w-3xl">{inline(s)}</p>}</For>
                     <pre tabIndex={0} aria-label="Install snippet" class="p-3 bg-slate-900/80 border border-slate-700/50 rounded-lg text-xs text-slate-300 overflow-x-auto font-mono whitespace-pre">{formatInstallSnippet(e())}</pre>
+                    <a href={INSTALL_GUIDE_URL} target="_blank" rel="noopener noreferrer" class="inline-block mt-3 text-sm font-medium text-primary-400 hover:text-primary-300 hover:underline underline-offset-2">
+                      Full installation guide
+                    </a>
                   </Card>
                 </>
               )}

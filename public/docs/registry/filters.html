@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Registry filters :: Antora Extensions Registry</title>
+    <link rel="canonical" href="https://antora-extensions.org/registry/filters.html">
+    <meta name="description" content="How to filter Antora pipeline extensions vs Asciidoctor extensions, lifecycle hooks, and processor subtypes.">
+    <meta name="generator" content="Antora 3.1.14">
+    <link rel="stylesheet" href="../_/css/site.css">
+<link rel="stylesheet" href="../_/css/site-extra.css">
+<script>
+(function () {
+  const MODE = 'antora-theme-mode'
+  const LEGACY = 'antora-theme'
+  function mode() {
+    const m = localStorage.getItem(MODE)
+    if (m === 'system' || m === 'dark' || m === 'light') return m
+    const o = localStorage.getItem(LEGACY)
+    if (o === 'dark' || o === 'light') return o
+    return 'system'
+  }
+  function isDark() {
+    const m = mode()
+    if (m === 'dark') return true
+    if (m === 'light') return false
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  if (isDark()) document.documentElement.classList.add('dark-theme')
+})()
+</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://antora-extensions.org">Antora Extensions Registry</a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field">
+          <input id="search-input" type="text" placeholder="Search the docs">
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="registry" data-version="">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">Antora Extensions Registry</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Welcome</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="install-guide.html">Installing from the registry</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="registry-metadata.html">Registry metadata (layers, bundles, previews)</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="filters.html">Registry filters</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Design</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="design/trust-and-quality-spec.html">Trust and quality spec</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Antora Extensions Registry</span>
+    <span class="version"></span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="index.html">Antora Extensions Registry</a></div>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Antora Extensions Registry</a></li>
+    <li><a href="filters.html">Registry filters</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///Z:/code/github.com/antora-supplemental/antora-extensions-registry/docs/modules/ROOT/pages/filters.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Registry filters</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Catalog filters help operators and authors distinguish <strong>where</strong> an extension plugs in.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_playbook_buckets"><a class="anchor" href="#_playbook_buckets"></a>Playbook buckets</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Filter / bucket</th>
+<th class="tableblock halign-left valign-top">Playbook key</th>
+<th class="tableblock halign-left valign-top">Typical metadata</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Antora / pipeline extensions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora.extensions</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pipeline: true</code>, often <code>lifecycleHooks</code> such as <code>sitePublished</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AsciiDoc / Asciidoctor extensions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>asciidoc.extensions</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>asciidoctor: true</code>, optional <code>processorSubtypes</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UI themes / bundles</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ui.bundle</code> (not an extension)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Separate catalog category — not listed under <code>antora.extensions</code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_lifecycle_hooks"><a class="anchor" href="#_lifecycle_hooks"></a>Lifecycle hooks</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Pipeline extensions should declare <code>lifecycleHooks</code> in <code>antora-registry.md</code> / <code>registryMeta</code>, for example:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>contentClassified</code></p>
+</li>
+<li>
+<p><code>documentsConverted</code></p>
+</li>
+<li>
+<p><code>sitePublished</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Filters can surface “runs at site publish” vs earlier generator phases.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_asciidoctor_subtypes"><a class="anchor" href="#_asciidoctor_subtypes"></a>Asciidoctor subtypes</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When <code>asciidoctor: true</code>, use <code>processorSubtypes</code> so the registry can filter:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>tree</code> / <code>document</code></p>
+</li>
+<li>
+<p><code>inline</code></p>
+</li>
+<li>
+<p><code>block</code></p>
+</li>
+<li>
+<p><code>include</code></p>
+</li>
+<li>
+<p><code>postprocessor</code> / <code>preprocessor</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_chassis_layer_and_purpose"><a class="anchor" href="#_chassis_layer_and_purpose"></a>Chassis layer and purpose</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Also filterable (see <a href="https://github.com/antora-supplemental/extension-lister">extension-lister</a> DESIGN notes):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Layer:</strong> <code>engine</code> · <code>chassis</code> · <code>body-kit</code> · <code>paint</code> · <code>bolt-on</code></p>
+</li>
+<li>
+<p><strong>Purpose:</strong> capability tags such as <code>link-validation</code>, <code>link-ux</code>, <code>registry</code>, <code>nav</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_self_register_sources"><a class="anchor" href="#_self_register_sources"></a>Self-register sources</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Prefer machine-readable exports (first hit wins in extension-lister):</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>require(pkg).registryMeta</code> or <code>pkg/registry</code></p>
+</li>
+<li>
+<p><code>antora-registry.md</code> YAML frontmatter</p>
+</li>
+<li>
+<p><code>package.json#antoraSupplemental</code></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script id="site-script" src="../_/js/site.js" data-ui-root-path="../_"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+<script src="../_/js/vendor/lunr.js"></script>
+<script src="../_/js/search-ui.js" id="search-ui-script" data-site-root-path=".." data-snippet-length="100" data-stylesheet="../_/css/search.css"></script>
+<script async src="../search-index.js"></script>
+<script src="../_/js/site-dark-mode.js"></script>
+  </body>
+</html>

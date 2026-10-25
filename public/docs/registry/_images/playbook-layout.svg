@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Hand-authored standalone-adaptive SVG (source of truth; edit directly). Light preset is the default; dark via prefers-color-scheme. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="t d" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+  <title id="t">Annotated antora-playbook.yml</title>
+  <desc id="d">An antora-playbook.yml file in the docs project folder. Extensions, compose packs and UI modules are added as require entries under antora.extensions. Themes replace the URL under ui.bundle.url.</desc>
+  <style>
+    .canvas { fill: var(--themed-svg-registry-canvas, #FFFFFF); }
+    .file { fill: var(--themed-svg-registry-surface-primary, #F5F5F5); stroke: var(--themed-svg-registry-border-primary, #111111); stroke-width: 1.5; }
+    .tab { fill: var(--themed-svg-registry-surface-secondary, #111111); }
+    .tabtext { fill: var(--themed-svg-registry-accent-on-primary, #FFFFFF); font-size: 13px; font-weight: 600; }
+    .code { fill: var(--themed-svg-registry-text-primary, #111111); font-family: ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 14px; }
+    .muted { fill: var(--themed-svg-registry-text-muted, #525252); }
+    .hl { fill: var(--themed-svg-registry-accent-primary, #FF5F00); fill-opacity: 0.14; stroke: var(--themed-svg-registry-accent-primary, #FF5F00); stroke-width: 1.5; }
+    .edge { stroke: var(--themed-svg-registry-accent-primary, #FF5F00); stroke-width: 2; fill: none; }
+    .head { fill: var(--themed-svg-registry-accent-primary, #FF5F00); }
+    .label { fill: var(--themed-svg-registry-text-primary, #111111); font-size: 14px; font-weight: 600; }
+    .note { fill: var(--themed-svg-registry-text-muted, #404040); font-size: 13px; }
+    @media (prefers-color-scheme: dark) {
+      .canvas { fill: #111111; }
+      .file { fill: #1C1C1C; stroke: #FFFFFF; }
+      .tab { fill: #FF5F00; }
+      .tabtext { fill: #111111; }
+      .code, .label { fill: #FFFFFF; }
+      .muted { fill: #B3B3B3; }
+      .note { fill: #D4D4D4; }
+      .hl { fill-opacity: 0.2; }
+    }
+  </style>
+  <rect class="canvas" x="0" y="0" width="760" height="420"/>
+  <rect class="tab" x="24" y="24" width="250" height="28" rx="4"/>
+  <text class="tabtext" x="36" y="43">my-docs/antora-playbook.yml</text>
+  <rect class="file" x="24" y="52" width="400" height="344" rx="4"/>
+  <text class="code" x="40" y="82">site:</text>
+  <text class="code muted" x="40" y="104">  title: My Docs</text>
+  <text class="code" x="40" y="132">content:</text>
+  <text class="code muted" x="40" y="154">  sources: [ ... ]</text>
+  <rect class="hl" x="32" y="168" width="384" height="72" rx="3"/>
+  <text class="code" x="40" y="190">ui:</text>
+  <text class="code" x="40" y="210">  bundle:</text>
+  <text class="code" x="40" y="230">    url: https://.../ui-bundle.zip</text>
+  <rect class="hl" x="32" y="256" width="384" height="124" rx="3"/>
+  <text class="code" x="40" y="278">antora:</text>
+  <text class="code" x="40" y="298">  extensions:</text>
+  <text class="code" x="40" y="318">    - require: '@antora/lunr-extension'</text>
+  <text class="code" x="40" y="338">    - require: '@scope/your-extension'</text>
+  <text class="code muted" x="40" y="358">      option: value</text>
+  <path class="edge" d="M416 204 H468"/>
+  <path class="head" d="M416 204 l10 -6 v12 z"/>
+  <text class="label" x="478" y="192">Themes</text>
+  <text class="note" x="478" y="212">Replace this URL with the</text>
+  <text class="note" x="478" y="230">theme's ui-bundle.zip.</text>
+  <path class="edge" d="M416 318 H468"/>
+  <path class="head" d="M416 318 l10 -6 v12 z"/>
+  <text class="label" x="478" y="290">Extensions, compose packs,</text>
+  <text class="label" x="478" y="308">UI modules</text>
+  <text class="note" x="478" y="328">Add the registry snippet as a</text>
+  <text class="note" x="478" y="346">new "- require:" entry here.</text>
+  <text class="note" x="478" y="76">Run pnpm add -D ... in my-docs/,</text>
+  <text class="note" x="478" y="94">the folder with the playbook.</text>
+</svg>

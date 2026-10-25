@@ -12,6 +12,7 @@ import { buildFullExtensionCatalog } from '../src/lib/extension-catalog';
 import { themesFromKnownRepos } from '../src/data/known-theme-repos';
 import { discoverThemeReposFromTopics } from '../src/lib/github-topics';
 import { checkRepository } from '../src/lib/registry-check';
+import { pruneDeadPreviews } from '../src/lib/preview-check';
 import { firstListedStatements } from '../src/lib/first-listed';
 import { SEED_TRUSTED_PUBLISHERS, repoStatus, trustedReason, upsertApprovedTheme } from '../src/lib/registry-write';
 
@@ -38,6 +39,10 @@ const repoCreated = new Map(repoRows.map((r) => [`${r.owner}/${r.name}`.toLowerC
 const catalog = await buildFullExtensionCatalog({ includeTopicDiscovery: true, live: true, extraRepos: approvedInDb, excludeRepos: rejected });
 const entries = [...catalog.modules, ...catalog.recipes];
 if (entries.length === 0) throw new Error('Catalog came back empty; refusing to wipe the database.');
+
+// Re-check every preview URL (HEAD, GET fallback; 200 + image/*) so dead screenshots never reach the site.
+const pruned = await pruneDeadPreviews(entries);
+console.log(`[registry] previews: checked ${pruned.checkedUrls} URLs, dropped ${pruned.droppedUrls.length} dead ones from ${pruned.affected.length} packages`);
 
 const curatedThemes = themesFromKnownRepos();
 const stmts = [
