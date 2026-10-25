@@ -48,7 +48,7 @@ export default function Home() {
               <div class="relative group">
                 {/* Subtle solid-accent glow, stronger on focus. */}
                 <div aria-hidden="true" class="pointer-events-none absolute -inset-1 rounded-2xl bg-brand blur-md opacity-20 dark:opacity-15 group-focus-within:opacity-45 dark:group-focus-within:opacity-35 transition duration-700" />
-                <div class="relative flex flex-col sm:flex-row gap-2 p-2 rounded-2xl bg-slate-800/60 glass-rim glass-tint backdrop-blur-sm shadow-2xl">
+                <div class="relative flex flex-col sm:flex-row gap-2 p-2 rounded-2xl bg-slate-800/60 border border-slate-700/60 shadow-2xl">
                   <input
                     id="omni-search"
                     type="search"
@@ -74,7 +74,7 @@ export default function Home() {
                       class={
                         kind() === chip
                           ? 'px-3 py-1 rounded-full text-xs font-semibold bg-primary-600 text-brand-foreground'
-                          : 'px-3 py-1 rounded-full text-xs font-semibold glass-rim glass-tint text-slate-300'
+                          : 'px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-500'
                       }
                       onClick={() => setKind(chip)}
                     >
@@ -105,14 +105,14 @@ export default function Home() {
 
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <A href="/extensions" class="p-6 bg-slate-800/30 glass-rim rounded-xl group">
+          <A href="/extensions" class="p-6 bg-slate-800/30 border border-slate-700/50 rounded-xl hover:border-primary-500/50 transition-colors group">
             <h2 class="text-xl font-semibold text-white mb-2 group-hover:text-primary-400">Extensions</h2>
             <p class="text-slate-400 text-sm">
               Build-time, CI and utility Antora extensions, plus UI-side modules indexed from <code class="text-primary-300">ui-modules/registry.json5</code> manifests.
               GitHub topic discovery for <code class="text-primary-300">antora-extension</code> repos.
             </p>
           </A>
-          <A href="/themes" class="p-6 bg-slate-800/30 glass-rim rounded-xl group">
+          <A href="/themes" class="p-6 bg-slate-800/30 border border-slate-700/50 rounded-xl hover:border-primary-500/50 transition-colors group">
             <h2 class="text-xl font-semibold text-white mb-2 group-hover:text-primary-400">Themes</h2>
             <p class="text-slate-400 text-sm">
               Gallery of full Antora UI themes (ui.bundle) with previews, demos, and appearance filters.

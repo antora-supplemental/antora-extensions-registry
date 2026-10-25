@@ -10,8 +10,6 @@ module.exports = {
         // Neutral charcoal greys everywhere the components say slate.
         slate: colors.neutral,
         brand: { DEFAULT: 'var(--brand)', foreground: 'var(--brand-foreground)' },
-        // Purple-glass trim: details only (rims, rules, dividers, underlines); orange stays the action color.
-        trim: { DEFAULT: 'rgb(var(--trim) / <alpha-value>)', foreground: 'var(--trim-foreground)', deep: 'var(--trim-deep)' },
         border: 'hsl(var(--border) / <alpha-value>)',
         input: 'hsl(var(--input) / <alpha-value>)',
         ring: 'hsl(var(--ring) / <alpha-value>)',

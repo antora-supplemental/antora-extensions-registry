@@ -76,7 +76,7 @@ export default function ThemeGallery(props: ThemeGalleryProps) {
   return (
     <div>
       <div class="flex flex-col lg:flex-row gap-4 mb-8">
-        <div class="relative flex-1 rounded-xl bg-card/50 glass-rim transition-all focus-within:ring-2 focus-within:ring-primary-500/50 focus-within:border-primary-500/50">
+        <div class="relative flex-1 rounded-xl bg-card/50 border border-border/50 transition-all focus-within:ring-2 focus-within:ring-primary-500/50 focus-within:border-primary-500/50">
           <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
@@ -93,7 +93,7 @@ export default function ThemeGallery(props: ThemeGalleryProps) {
         <select
           value={sortBy()}
           onChange={(e) => setSortBy(e.currentTarget.value as 'stars' | 'updated' | 'name')}
-          class="px-4 py-3 bg-slate-800/50 glass-rim rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 cursor-pointer"
+          class="px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 cursor-pointer"
         >
           <option value="stars">Most Stars</option>
           <option value="updated">Recently Updated</option>
@@ -103,7 +103,7 @@ export default function ThemeGallery(props: ThemeGalleryProps) {
         <select
           value={appearanceFilter()}
           onChange={(e) => setAppearanceFilter(e.currentTarget.value as AppearanceFilter)}
-          class="px-4 py-3 bg-slate-800/50 glass-rim rounded-xl text-white cursor-pointer"
+          class="px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white cursor-pointer"
         >
           <For each={THEME_APPEARANCE_OPTIONS}>
             {(opt) => <option value={opt.value}>{opt.label}</option>}

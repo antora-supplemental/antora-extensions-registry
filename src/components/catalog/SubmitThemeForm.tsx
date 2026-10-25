@@ -121,7 +121,7 @@ export default function SubmitThemeForm(props: SubmitThemeFormProps) {
               onInput={(e) => setRepoUrl(e.currentTarget.value)}
               placeholder="https://github.com/username/antora-theme"
               disabled={!!validatedTheme()}
-              class="w-full px-4 py-3 bg-slate-800/50 glass-rim rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all disabled:opacity-50"
+              class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all disabled:opacity-50"
             />
             <Show when={parsed() && !validatedTheme()}>
               <p class="mt-2 text-sm text-slate-400">
