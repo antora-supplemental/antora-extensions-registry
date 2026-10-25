@@ -137,7 +137,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
           <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <p class="text-slate-400 text-sm">
               registry.antora-supplemental.org — extensions, themes, and packages for the Antora community
-              <span class="block mt-1 text-slate-500">Unofficial, community-run. Not affiliated with or endorsed by the Antora project.</span>
+              <span id="disclaimer" class="block mt-1 text-xs text-slate-500">* Not affiliated with or endorsed by the Antora project.</span>
             </p>
             <div class="flex items-center gap-6">
               <a href="https://antora-supplemental.org" target="_blank" rel="noopener" class="text-slate-400 hover:text-white transition-colors text-sm">

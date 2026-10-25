@@ -106,3 +106,12 @@ html:not(.dark) .text-primary-300, html:not(.dark) .text-primary-400 { color: #0
   -webkit-mask-image: linear-gradient(to right, transparent 2.5rem, #000 3.5rem);
   mask-image: linear-gradient(to right, transparent 2.5rem, #000 3.5rem);
 }
+/* Homepage search: the input ends where the Search button begins; long text fades out before
+   that edge instead of hard-clipping against the button. */
+.search-fade-end {
+  -webkit-mask-image: linear-gradient(to left, transparent 0.5rem, #000 2rem);
+  mask-image: linear-gradient(to left, transparent 0.5rem, #000 2rem);
+}
+
+html:not(.dark) .bg-slate-700\/60 { background-color: #e2e8f0; }
+

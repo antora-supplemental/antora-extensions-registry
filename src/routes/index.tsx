@@ -3,6 +3,7 @@ import { buttonVariants } from '~/components/ui/button';
 import { cn } from '~/lib/utils';
 import { createSignal, For, Show, Suspense } from 'solid-js';
 import SiteLayout from '~/components/SiteLayout';
+import KnockoutText from '~/components/KnockoutText';
 import ThemeCard from '~/components/catalog/ThemeCard';
 import { loadThemes } from '~/lib/server/catalog';
 
@@ -39,37 +40,42 @@ export default function Home() {
             <p class="text-primary-400 text-sm font-semibold tracking-widest uppercase mb-4">
               Antora Extension Registry
             </p>
-            <p class="text-slate-500 text-xs mb-4">Unofficial, community-run. Not affiliated with or endorsed by the Antora project.</p>
+            <p class="text-slate-500 text-xs mb-4">
+              Unofficial<a href="#disclaimer" aria-label="See disclaimer" title="See disclaimer" class="text-primary-400 hover:text-primary-300 no-underline">*</a>
+            </p>
             <h1 class="text-4xl lg:text-6xl font-bold text-white mb-8 leading-tight">
-              Discover Antora{' '}
-              <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-primary-600">
-                extensions, themes &amp; more
-              </span>
+              Antora <KnockoutText text="Extensions" />{' '}
+              <span class="text-slate-400">themes &amp; more</span>
             </h1>
 
             <form class="max-w-2xl mx-auto mb-6" onSubmit={submitOmni}>
               <label class="sr-only" for="omni-search">Search the registry</label>
-              <div class="flex flex-col sm:flex-row gap-2 p-2 rounded-2xl bg-slate-800/60 border border-slate-700/60">
-                <input
-                  id="omni-search"
-                  type="search"
-                  value={query()}
-                  onInput={(e) => setQuery(e.currentTarget.value)}
-                  placeholder="Search extensions, themes, packages…"
-                  class="flex-1 min-w-0 bg-transparent px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  class={cn(buttonVariants({ size: 'lg' }), 'shrink-0 font-semibold')}
-                >
-                  Search
-                </button>
+              <div class="relative group">
+                {/* Bloom carried over from the old /registry search: blurred gradient halo, stronger on focus. */}
+                <div aria-hidden="true" class="pointer-events-none absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary-400 via-indigo-500 to-primary-600 blur opacity-40 dark:opacity-25 group-focus-within:opacity-70 dark:group-focus-within:opacity-50 transition duration-700" />
+                <div class="relative flex flex-col sm:flex-row gap-2 p-2 rounded-2xl bg-slate-800/60 border border-slate-700/60 shadow-2xl shadow-indigo-500/5">
+                  <input
+                    id="omni-search"
+                    type="search"
+                    value={query()}
+                    onInput={(e) => setQuery(e.currentTarget.value)}
+                    placeholder="Search extensions and themes…"
+                    class="search-fade-end flex-1 min-w-0 bg-transparent px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    class={cn(buttonVariants({ size: 'lg' }), 'shrink-0 font-semibold')}
+                  >
+                    Search
+                  </button>
+                </div>
               </div>
               <div class="flex flex-wrap justify-center gap-2 mt-3" role="group" aria-label="Search category">
                 <For each={(['all', 'extensions', 'themes'] as OmniKind[])}>
                   {(chip) => (
                     <button
                       type="button"
+                      aria-pressed={kind() === chip}
                       class={
                         kind() === chip
                           ? 'px-3 py-1 rounded-full text-xs font-semibold bg-primary-600 text-white'
