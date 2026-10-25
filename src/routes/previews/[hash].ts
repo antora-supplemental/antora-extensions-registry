@@ -23,6 +23,16 @@ export async function GET(event: { request: Request; params?: { hash?: string } 
     });
   } catch (err) {
     console.error('Preview cache read failed:', err);
-    return new Response('Preview cache unavailable', { status: 503, headers: { 'Cache-Control': 'no-store' } });
+    return new Response('Preview cache unavailable', { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Preview-Error': safeErrorTag(err) } });
   }
+}
+/** Error class/code plus a short message with anything URL- or token-like removed (safe to expose for debugging). */
+export function safeErrorTag(err: unknown): string {
+  const e = err as { name?: string; code?: string; message?: string };
+  const msg = String(e?.message ?? '')
+    .replace(/\b[a-z][a-z0-9+.-]*:\/\/\S+/gi, '<url>')
+    .replace(/[A-Za-z0-9_\-.]{24,}/g, '<redacted>')
+    .replace(/[^\w <>:.,'()-]/g, ' ')
+    .slice(0, 160);
+  return [e?.name, e?.code, msg].filter(Boolean).join(' | ') || 'unknown';
 }
