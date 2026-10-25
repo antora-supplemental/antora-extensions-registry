@@ -1,8 +1,9 @@
-import { createAsync, Navigate, useSearchParams } from "@solidjs/router";
+import { A, createAsync, Navigate, useSearchParams } from "@solidjs/router";
 import { createSignal, For, onMount, Show, Suspense } from "solid-js";
 import SiteLayout from "~/components/SiteLayout";
 import ProviderIcon from "~/components/icons/ProviderIcon";
 import { getSessionData } from "~/app";
+import { getIsAdmin } from "~/lib/server/admin";
 import { authClient, linkProvider as startLink, signInWithProvider } from "~/lib/auth-client";
 
 type ProviderId = "github" | "gitlab" | "google" | "microsoft" | "apple";
@@ -20,8 +21,10 @@ const mergeMessages: Record<string, string> = {
   same: "That sign-in already belongs to this account, so there was nothing to merge.",
   expired: "The merge request expired. Start again from this page.",
   reauth: "Both sign-ins must be recent (within 10 minutes). Start the merge again.",
-  failed: "The merge failed and nothing was changed. Try again or contact a site administrator.",
+  failed: "The merge failed and nothing was changed. Try again or contact an administrator.",
 };
+
+const CONTACT_URL = "https://github.com/antora-supplemental/antora-extensions-registry/issues";
 
 interface LinkedAccount {
   providerId: string;
@@ -30,6 +33,7 @@ interface LinkedAccount {
 
 export default function AccountPage() {
   const session = createAsync(() => getSessionData());
+  const isAdmin = createAsync(() => getIsAdmin());
   const [params] = useSearchParams();
   const [configured, setConfigured] = createSignal<string[]>([]);
   const [accounts, setAccounts] = createSignal<LinkedAccount[]>([]);
@@ -107,9 +111,9 @@ export default function AccountPage() {
 
   return (
     <SiteLayout title="Account">
-      <Suspense fallback={<div class="text-center py-16 text-slate-400">Loading account...</div>}>
+      <Suspense fallback={<div class="text-center py-16 text-slate-400">Loading…</div>}>
         <Show when={session() !== undefined}>
-          <Show when={session()?.user} fallback={<Navigate href="/auth/signin" />}>
+          <Show when={session()?.user} fallback={<Navigate href="/auth/signin?redirect=/auth/account" />}>
             {(user) => (
               <section class="py-16 lg:py-24">
                 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
@@ -118,19 +122,25 @@ export default function AccountPage() {
                     <p class="text-slate-400">
                       Signed in as <span class="text-primary-400">{user().email ?? user().name}</span>
                     </p>
+                    <Show when={isAdmin()}>
+                      <A href="/admin" class="inline-block mt-3 text-sm font-medium text-primary-400 hover:text-primary-300">Admin</A>
+                    </Show>
                   </div>
 
                   <Show when={typeof params.merge === "string" && mergeMessages[params.merge as string]}>
                     <p class="text-sm rounded-xl border border-slate-700/50 bg-slate-800/40 px-4 py-3 text-slate-200">
                       {mergeMessages[params.merge as string]}
+                      <Show when={params.merge === "failed"}>
+                        {" "}
+                        <a href={CONTACT_URL} target="_blank" rel="noopener" class="text-primary-400 hover:text-primary-300">Contact us on GitHub</a>
+                      </Show>
                     </p>
                   </Show>
 
                   <div class="rounded-2xl border border-slate-700/50 bg-slate-800/30 p-6 space-y-4">
                     <h2 class="text-lg font-semibold text-white">Linked sign-ins</h2>
                     <p class="text-sm text-slate-400">
-                      Link more providers so you can sign in to this same account with any of them. Signing in with GitHub or
-                      GitLab links automatically when that provider reports the same verified email.
+                      Add more ways to sign in to this account. GitHub and GitLab connect automatically if they use the same email.
                     </p>
 
                     <Show when={error()}>
@@ -195,7 +205,7 @@ export default function AccountPage() {
                         class="rounded-lg bg-slate-900 border border-slate-700 text-white text-sm px-3 py-1.5"
                         onChange={(e) => setMergeProvider((e.currentTarget.value || null) as ProviderId | null)}
                       >
-                        <option value="">Other account signs in with...</option>
+                        <option value="">Other account signs in with…</option>
                         <For each={providers()}>{(p) => <option value={p.id}>{p.name}</option>}</For>
                       </select>
                       <button

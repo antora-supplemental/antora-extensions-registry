@@ -27,6 +27,8 @@ export const serverScheme = z
     DB_URL: z.string().default("file:local.db"),
     DB_AUTH_TOKEN: z.string().optional(),
     GITHUB_TOKEN: z.string().optional(),
+    /** Comma-separated GitHub logins allowed into /admin (e.g. "AMDphreak"). */
+    ADMIN_GITHUB_LOGINS: z.string().optional(),
     REGISTRY_CATALOG_ONLY: z.enum(["true", "false", "0", "1"]).optional(),
   })
   .superRefine((data, ctx) => {
