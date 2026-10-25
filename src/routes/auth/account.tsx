@@ -1,6 +1,7 @@
 import { createAsync, Navigate, useSearchParams } from "@solidjs/router";
 import { createSignal, For, onMount, Show, Suspense } from "solid-js";
 import SiteLayout from "~/components/SiteLayout";
+import ProviderIcon from "~/components/icons/ProviderIcon";
 import { getSessionData } from "~/app";
 import { authClient, linkProvider as startLink, signInWithProvider } from "~/lib/auth-client";
 
@@ -140,7 +141,8 @@ export default function AccountPage() {
                       <For each={providers()}>
                         {(provider) => (
                           <div class="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/40">
-                            <span class="font-medium text-white">
+                            <span class="inline-flex items-center gap-2 font-medium text-white">
+                              <ProviderIcon provider={provider.id} />
                               {provider.name}
                               <Show when={isLinked(provider.id)}>
                                 <span class="ml-2 text-xs text-emerald-400">linked</span>
@@ -155,7 +157,7 @@ export default function AccountPage() {
                                   onClick={() => linkProvider(provider.id)}
                                   class="text-sm px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-500 text-white disabled:opacity-60"
                                 >
-                                  {loading() === provider.id ? "Linking..." : "Link"}
+                                  <span class="inline-flex items-center gap-1.5"><ProviderIcon provider={provider.id} />{loading() === provider.id ? "Linking..." : "Link"}</span>
                                 </button>
                               }
                             >
@@ -188,6 +190,7 @@ export default function AccountPage() {
                       For safety, both sign-ins must be from the last 10 minutes. If this one is older you'll be asked to sign in again first.
                     </p>
                     <div class="flex flex-wrap items-center gap-3">
+                      <Show when={mergeProvider()}>{(p) => <ProviderIcon provider={p()} class="text-white" />}</Show>
                       <select
                         class="rounded-lg bg-slate-900 border border-slate-700 text-white text-sm px-3 py-1.5"
                         onChange={(e) => setMergeProvider((e.currentTarget.value || null) as ProviderId | null)}

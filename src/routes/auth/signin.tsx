@@ -1,6 +1,6 @@
-import type { Component } from "solid-js";
 import { createSignal, For, onMount, Show } from "solid-js";
 import SiteLayout from "~/components/SiteLayout";
+import ProviderIcon from "~/components/icons/ProviderIcon";
 import { authClient, signInWithProvider as startProviderSignIn } from "~/lib/auth-client";
 
 type ProviderId = "github" | "gitlab" | "google" | "microsoft" | "apple";
@@ -86,7 +86,7 @@ export default function SignIn() {
                                     class="w-full flex items-center justify-between px-6 py-4 rounded-2xl bg-slate-800/50 hover:bg-slate-700/50 transition-all border border-slate-700/50 group disabled:opacity-60"
                                 >
                                     <div class="flex items-center gap-4">
-                                        <ProviderIcon type={provider.id} />
+                                        <ProviderIcon provider={provider.id} class="text-slate-200" />
                                         <span class="font-bold text-sm text-white/90 group-hover:text-white transition-colors">
                                             {provider.name}
                                         </span>
@@ -128,10 +128,3 @@ export default function SignIn() {
     );
 }
 
-const ProviderIcon: Component<{ type: string }> = (props) => {
-    return (
-        <div class="w-5 h-5 flex items-center justify-center text-slate-300">
-            <span class="text-xs font-bold uppercase">{props.type.slice(0, 2)}</span>
-        </div>
-    );
-};
