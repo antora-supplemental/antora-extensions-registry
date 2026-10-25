@@ -35,10 +35,10 @@ export default function SiteLayout(props: SiteLayoutProps) {
               </span>
             </A>
             <div class="hidden md:flex items-center gap-4">
-              <A href="/extensions" activeClass="!text-white border-b-2 border-trim/70" class="py-1 text-slate-300 hover:text-white transition-colors text-sm font-medium">
+              <A href="/extensions" activeClass="!text-foreground border-b-2 border-trim/70" class="py-1 text-slate-300 hover:text-white transition-colors text-sm font-medium">
                 Extensions
               </A>
-              <A href="/themes" activeClass="!text-white border-b-2 border-trim/70" class="py-1 text-slate-300 hover:text-white transition-colors text-sm font-medium">
+              <A href="/themes" activeClass="!text-foreground border-b-2 border-trim/70" class="py-1 text-slate-300 hover:text-white transition-colors text-sm font-medium">
                 Themes
               </A>
               <ThemeToggle />

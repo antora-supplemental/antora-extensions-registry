@@ -79,7 +79,7 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
         <div class="relative flex-1">
           <input
             type="text"
-            placeholder="Search modules and recipes..."
+            placeholder="Search extensions..."
             value={searchQuery()}
             onInput={(e) => setSearchQuery(e.currentTarget.value)}
             class={inputClass}
