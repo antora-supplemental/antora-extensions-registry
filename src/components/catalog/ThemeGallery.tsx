@@ -28,10 +28,10 @@ export default function ThemeGallery(props: ThemeGalleryProps) {
   const [searchQuery, setSearchQuery] = createSignal(initialQ);
   const [selectedTag, setSelectedTag] = createSignal<string | null>(null);
   const [sortBy, setSortBy] = createSignal<'stars' | 'updated' | 'name'>('stars');
-  const [appearanceFilter, setAppearanceFilter] = createSignal<AppearanceFilter>('default');
+  const [appearanceFilter, setAppearanceFilter] = createSignal<AppearanceFilter>('all');
 
   const THEME_APPEARANCE_OPTIONS = APPEARANCE_FILTER_OPTIONS.filter(
-    (o) => o.value !== 'dark-mode-only' && o.value !== 'all',
+    (o) => o.value !== 'dark-mode-only',
   );
 
   const allTags = createMemo(() => {

@@ -4,12 +4,12 @@ import { cn } from '~/lib/utils';
 import { createSignal, For, Show, Suspense } from 'solid-js';
 import SiteLayout from '~/components/SiteLayout';
 import ThemeCard from '~/components/catalog/ThemeCard';
-import { loadGalleryThemes } from '~/lib/themes/catalog';
+import { loadThemes } from '~/lib/server/catalog';
 
 type OmniKind = 'all' | 'extensions' | 'themes' | 'registry';
 
 export default function Home() {
-  const themes = createAsync(() => loadGalleryThemes());
+  const themes = createAsync(() => loadThemes());
   const navigate = useNavigate();
   const [query, setQuery] = createSignal('');
   const [kind, setKind] = createSignal<OmniKind>('all');
@@ -41,7 +41,7 @@ export default function Home() {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 relative">
           <div class="text-center max-w-3xl mx-auto">
             <p class="text-primary-400 text-sm font-semibold tracking-widest uppercase mb-4">
-              registry.antora-supplemental.org
+              Antora Extension Registry
             </p>
             <h1 class="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Discover Antora{' '}

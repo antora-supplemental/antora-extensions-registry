@@ -2,6 +2,10 @@
 
 == Unreleased
 
+* Fix: client-side navigation to `/` from any page threw "Uncaught Client Exception" (blank home). The home route imported the server-only `loadGalleryThemes` (Drizzle + `~/env/server`) directly, so env validation ran in the browser on soft-nav; it now uses the `'use server'` `loadThemes` query.
+* Themes gallery: default appearance filter is now *All* (was *Light + dark themes*, which hid every theme not tagged with both modes); *All* is selectable again.
+* Header (mobile): wordmark hidden below `sm` (logo stays the home link); Extensions/Themes/Registry/auth links move into a solid-ui Sheet hamburger menu below `md` (labelled trigger, focus trap + Escape, closes on navigation). Desktop unchanged.
+* Home hero: eyebrow heading reads *Antora Extension Registry* instead of the bare domain.
 * Auth UI: sign-in provider brand marks (GitHub mark in `currentColor`, GitLab tanuki in brand orange; Simple Icons paths inlined in `~/components/icons/ProviderIcon`, generic key fallback) on `/auth/signin` buttons, `/auth/account` linked sign-ins and Link buttons, and the merge provider picker.
 * Sign in with GitLab via OpenID Connect (better-auth genericOAuth, discovery + PKCE, scopes `openid profile email`; callback `/api/auth/oauth2/callback/gitlab`; optional GITLAB_ISSUER for self-managed GitLab) when GITLAB_ID/GITLAB_SECRET are set; GitLab auto-links only when `email_verified` is true; sign-in and account pages only show configured providers. Account page gains *Linked sign-ins* (link/unlink, last one protected; GitHub/GitLab auto-link only on matching verified email) and *Merge another account* (fresh sign-in on both accounts, transactional merge with audit row in account_merge_audit).
 * UI: adopt solid-ui (Kobalte + cva + tailwind-merge v2, Tailwind 3.4). Theme tokens mapped to the existing slate/sky palette; cards, badges/tags, buttons and search inputs now use `~/components/ui`.
