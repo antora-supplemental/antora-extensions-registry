@@ -1,4 +1,5 @@
 import { createSignal, createMemo, For, Show } from 'solid-js';
+import { splitModeTags } from './ColorModeIcons';
 import { inputClass } from '~/components/ui/text-field';
 import { cn } from '~/lib/utils';
 import type { Theme } from '~/types/theme';
