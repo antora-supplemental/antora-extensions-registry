@@ -22,7 +22,7 @@ export default function ThemeToggle(props: { showLabel?: boolean; class?: string
       aria-label={isDark() ? 'Switch to light theme' : 'Switch to dark theme'}
       aria-pressed={isDark()}
       title={isDark() ? 'Switch to light theme' : 'Switch to dark theme'}
-      class={cn('inline-flex items-center gap-2 rounded-lg p-2 text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors', props.class)}
+      class={cn('inline-flex items-center gap-2 rounded-lg p-2 text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-none', props.class)}
     >
       <svg class="size-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
         <Show
