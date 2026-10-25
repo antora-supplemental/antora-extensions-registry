@@ -1,5 +1,6 @@
 * xref:index.adoc[Welcome]
 * xref:contributing.adoc[Contributing]
+* xref:registry-metadata.adoc[Registry metadata (layers, bundles, previews)]
 * xref:filters.adoc[Registry filters]
 * Design
 ** xref:design/trust-and-quality-spec.adoc[Trust and quality spec]

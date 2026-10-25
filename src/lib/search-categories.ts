@@ -4,7 +4,9 @@ export type SearchType = 'all' | 'extensions' | 'themes';
 export const EXTENSION_KIND_LABELS: Record<string, string> = {
   'antora-extension': 'Antora extensions',
   'ui-module': 'UI modules',
-  'ui-recipe': 'Bundles',
+  'ui-recipe': 'UI recipes',
+  /** Compose packs and UI recipes: anything that bundles other entries (lib/layers.ts isBundle). */
+  bundle: 'Bundles',
 };
 
 export const SEARCH_CATEGORIES: Array<{ label: string; href: string }> = [

@@ -56,6 +56,49 @@ export interface ExtensionCatalogEntry {
   lastUpdated: string;
   githubRepoId?: number;
   githubTopics?: string[];
+  /** Layers from the antora-ui-chassis model (engine, chassis, body-kit, paint, bolt-on). */
+  layers?: LayerId[];
+  /** Where `layers` came from: the repo declared them, the sync guessed, or an admin set them. */
+  layerSource?: MetadataSource;
+  /** Set when the entry is a bundle (compose pack) of other extensions. */
+  bundle?: BundleInfo;
+  /** Preview images for cards and the detail-page gallery. */
+  previews?: PreviewImage[];
+  /** npm dependency names from package.json (bundle detection, "contains" list). */
+  dependencyNames?: string[];
+  /** package.json `"private": true`: not on npm, install from the Git repository. */
+  privatePackage?: boolean;
+  homepage?: string;
+}
+
+export type LayerId = 'engine' | 'chassis' | 'body-kit' | 'paint' | 'bolt-on';
+export type MetadataSource = 'declared' | 'inferred' | 'admin';
+
+export interface BundleInfo {
+  /** Package names (or catalog ids) of the members. */
+  members: string[];
+  source: MetadataSource;
+  /** Why the sync decided this is a bundle, e.g. "depends on 5 indexed extensions". */
+  reason?: string;
+}
+
+export interface PreviewImage {
+  url: string;
+  caption?: string;
+  /** manifest = antoraRegistry.previews / antora-registry.md screenshots; readme = first README images; upload = added in /admin. */
+  source: 'manifest' | 'readme' | 'upload' | 'curated';
+}
+
+/** The `antoraRegistry` block in package.json (or the antora-registry.md frontmatter). */
+export interface AntoraRegistryMetadata {
+  layers?: string[] | string;
+  layer?: string;
+  /** `true`, or the member package names. */
+  bundle?: boolean | string[];
+  kind?: string;
+  purpose?: string;
+  previews?: Array<string | { url?: string; src?: string; caption?: string; alt?: string }>;
+  screenshots?: Array<string | { url?: string; src?: string; caption?: string; alt?: string }>;
 }
 
 export interface RegistryModuleRef {
@@ -97,6 +140,8 @@ export interface RegistryIndex {
     slots?: UiModuleSlots;
     uiFileCount?: number;
     install?: UiModuleInstall;
+    /** Declared layers (see lib/layers.ts). */
+    layers?: string[];
   }>;
   recipes: Array<{
     id: string;
@@ -107,6 +152,7 @@ export interface RegistryIndex {
     modules: string[];
     manifestPath: string;
     install?: UiModuleInstall;
+    layers?: string[];
   }>;
 }
 
@@ -122,6 +168,8 @@ export interface UiModuleManifest {
   conflicts?: string[];
   modules?: string[];
   slots?: UiModuleSlots;
+  /** Declared layers (see lib/layers.ts). */
+  layers?: string[];
   ui?: {
     partials?: UiModulePartials;
   };

@@ -6,7 +6,9 @@ import { buttonVariants } from '~/components/ui/button';
 import { Card } from '~/components/ui/card';
 import { getSessionData } from '~/app';
 import { ANTORA_TOPICS } from '~/data/github-topics';
-import { addTrusted, loadAdminData, removeTrusted, reviewQueueItem, type AdminQueueItem } from '~/lib/server/admin';
+import { addCatalogPreview, addTrusted, loadAdminData, removeCatalogPreview, removeTrusted, reviewQueueItem, setCatalogOverride, setFeatured, type AdminData, type AdminQueueItem } from '~/lib/server/admin';
+import { loadExtensionCatalog } from '~/lib/server/catalog';
+import { LAYERS, layerLabel } from '~/lib/layers';
 import { closeReport } from '~/lib/server/reports';
 import { REPORT_REASONS } from '~/lib/report-reasons';
 
@@ -28,7 +30,7 @@ interface DiscoveryResult {
 }
 
 const field = 'px-3 py-1.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm';
-const refresh = () => revalidate(loadAdminData.key);
+const refresh = () => revalidate([loadAdminData.key, loadExtensionCatalog.key]);
 const reasonLabel = (v: string) => REPORT_REASONS.find((r) => r.value === v)?.label ?? v;
 
 function QueueRow(props: { item: AdminQueueItem }) {
@@ -151,6 +153,7 @@ export default function AdminPage() {
 
                 <ReportsCard reports={d().reports} />
                 <TrustedCard trusted={d().trusted} />
+                <MetadataCard rows={d().metadata} previews={d().previews} featured={d().featured} />
 
                 <Card class="p-6">
                   <h2 class="text-lg font-semibold text-white mb-3">Recent automatic approvals</h2>
@@ -363,6 +366,126 @@ function TrustedCard(props: { trusted: Array<{ id: string; kind: string; name: s
         <button type="submit" class={buttonVariants({ size: 'sm' })}>Add</button>
       </form>
       <Show when={msg()}>{(m) => <p role="status" class={`text-sm mt-2 ${m().ok ? 'text-emerald-400' : 'text-red-400'}`}>{m().message}</p>}</Show>
+    </Card>
+  );
+}
+
+/** Layer / bundle overrides, preview images, and the home-page featured slot. */
+function MetadataCard(props: { rows: AdminData['metadata']; previews: AdminData['previews']; featured: string[] }) {
+  const [selected, setSelected] = createSignal('');
+  const [layers, setLayers] = createSignal<string[] | null>(null);
+  const [bundle, setBundle] = createSignal('');
+  const [bundleMode, setBundleMode] = createSignal<'keep' | 'set' | 'none'>('keep');
+  const [previewUrl, setPreviewUrl] = createSignal('');
+  const [caption, setCaption] = createSignal('');
+  const [featured, setFeaturedDraft] = createSignal(props.featured.join('\n'));
+  const [msg, setMsg] = createSignal<{ ok: boolean; message: string } | null>(null);
+  const row = () => props.rows.find((r) => r.catalogId === selected());
+  const act = async (p: Promise<{ ok: boolean; message: string }>) => {
+    const r = await p.catch((e) => ({ ok: false, message: e instanceof Error ? e.message : 'Failed' }));
+    setMsg(r);
+    if (r.ok) refresh();
+    return r.ok;
+  };
+  const pick = (id: string) => {
+    setSelected(id);
+    const r = props.rows.find((x) => x.catalogId === id);
+    setLayers(r?.overridden.layers ? [...r.layers] : null);
+    setBundleMode(r?.overridden.bundle ? (r.bundleMembers?.length ? 'set' : 'none') : 'keep');
+    setBundle((r?.bundleMembers ?? []).join('\n'));
+  };
+  const toggleLayer = (id: string) => {
+    const cur = layers() ?? [...(row()?.layers ?? [])];
+    setLayers(cur.includes(id) ? cur.filter((l) => l !== id) : [...cur, id]);
+  };
+  const save = (e: Event) => {
+    e.preventDefault();
+    const members = bundleMode() === 'keep' ? null : bundleMode() === 'none' ? [] : bundle().split(/[\s,]+/).filter(Boolean);
+    act(setCatalogOverride({ catalogId: selected(), layers: layers(), bundleMembers: members }));
+  };
+  const addPreview = async (e: Event) => {
+    e.preventDefault();
+    if (await act(addCatalogPreview({ catalogId: selected(), url: previewUrl(), caption: caption() }))) {
+      setPreviewUrl('');
+      setCaption('');
+    }
+  };
+  return (
+    <Card class="p-6">
+      <h2 class="text-lg font-semibold text-white mb-1">Catalog metadata</h2>
+      <p class="text-sm text-slate-400 mb-4">Override an entry's layers or bundle contents, add preview images, and choose what the home page features. Overrides beat what the sync declared or inferred.</p>
+
+      <form onSubmit={(e) => { e.preventDefault(); act(setFeatured(featured().split(/[\s,]+/))); }} class="mb-6">
+        <label for="featured-ids" class="block text-sm font-semibold text-white mb-1">Featured on the home page</label>
+        <p class="text-xs text-slate-400 mb-2">Up to 3 catalog ids, one per line. Leave empty to use the default (facto-stack).</p>
+        <div class="flex flex-wrap gap-2 items-start">
+          <textarea id="featured-ids" rows={2} value={featured()} onInput={(e) => setFeaturedDraft(e.currentTarget.value)} class={`${field} flex-1 min-w-64 font-mono`} />
+          <button type="submit" class={buttonVariants({ size: 'sm' })}>Save featured</button>
+        </div>
+      </form>
+
+      <label for="meta-entry" class="block text-sm font-semibold text-white mb-1">Entry</label>
+      <select id="meta-entry" value={selected()} onChange={(e) => pick(e.currentTarget.value)} class={`${field} w-full mb-4`}>
+        <option value="">Choose an entry…</option>
+        <For each={props.rows}>
+          {(r) => <option value={r.catalogId}>{r.name} — {r.layers.length ? r.layers.map(layerLabel).join(', ') : 'Unclassified'} ({r.layerSource ?? 'none'}){r.bundleMembers ? ' · bundle' : ''}</option>}
+        </For>
+      </select>
+
+      <Show when={row()}>
+        {(r) => (
+          <div class="space-y-5">
+            <form onSubmit={save} class="space-y-4">
+              <fieldset>
+                <legend class="text-sm font-semibold text-white mb-1">Layers <span class="font-normal text-slate-400">(now: {r().layerSource ?? 'none'}{r().overridden.layers ? ', overridden' : ''})</span></legend>
+                <div class="flex flex-wrap gap-3">
+                  <For each={LAYERS}>
+                    {(l) => (
+                      <label class="flex items-center gap-1.5 text-sm text-slate-300">
+                        <input type="checkbox" checked={(layers() ?? r().layers).includes(l.id)} onChange={() => toggleLayer(l.id)} />
+                        {l.label}
+                      </label>
+                    )}
+                  </For>
+                  <button type="button" onClick={() => setLayers(null)} class={buttonVariants({ variant: 'ghost', size: 'sm' })} disabled={layers() === null}>Use synced value</button>
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend class="text-sm font-semibold text-white mb-1">Bundle <span class="font-normal text-slate-400">(now: {r().bundleMembers ? `${r().bundleMembers!.length} members, ${r().bundleSource}` : 'not a bundle'})</span></legend>
+                <div class="flex flex-wrap gap-3 mb-2 text-sm text-slate-300">
+                  <label class="flex items-center gap-1.5"><input type="radio" name="bundle-mode" checked={bundleMode() === 'keep'} onChange={() => setBundleMode('keep')} /> Use synced value</label>
+                  <label class="flex items-center gap-1.5"><input type="radio" name="bundle-mode" checked={bundleMode() === 'set'} onChange={() => setBundleMode('set')} /> Bundle of…</label>
+                  <label class="flex items-center gap-1.5"><input type="radio" name="bundle-mode" checked={bundleMode() === 'none'} onChange={() => setBundleMode('none')} /> Not a bundle</label>
+                </div>
+                <Show when={bundleMode() === 'set'}>
+                  <textarea aria-label="Bundle members, one package name per line" rows={4} value={bundle()} onInput={(e) => setBundle(e.currentTarget.value)} class={`${field} w-full font-mono`} />
+                </Show>
+              </fieldset>
+              <button type="submit" class={buttonVariants({ size: 'sm' })}>Save overrides</button>
+            </form>
+
+            <div>
+              <h3 class="text-sm font-semibold text-white mb-2">Preview images</h3>
+              <ul class="space-y-1 text-sm mb-3">
+                <For each={props.previews.filter((p) => p.catalogId === r().catalogId)} fallback={<li class="text-slate-400">No admin-added previews (manifest or README images are used if present).</li>}>
+                  {(p) => (
+                    <li class="flex items-center gap-2">
+                      <a href={p.url} target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300 truncate">{p.caption ?? p.url}</a>
+                      <button type="button" onClick={() => act(removeCatalogPreview(p.id))} class={`${buttonVariants({ variant: 'ghost', size: 'sm' })} ml-auto`}>Remove</button>
+                    </li>
+                  )}
+                </For>
+              </ul>
+              <form onSubmit={addPreview} class="flex flex-wrap gap-2">
+                <input type="url" required aria-label="Image URL (https)" placeholder="https://…/screenshot.png" value={previewUrl()} onInput={(e) => setPreviewUrl(e.currentTarget.value)} class={`${field} flex-1 min-w-56`} />
+                <input aria-label="Caption (optional)" placeholder="Caption (optional)" value={caption()} onInput={(e) => setCaption(e.currentTarget.value)} class={field} />
+                <button type="submit" class={buttonVariants({ size: 'sm' })}>Add preview</button>
+              </form>
+            </div>
+          </div>
+        )}
+      </Show>
+      <Show when={msg()}>{(m) => <p role="status" class={`text-sm mt-3 ${m().ok ? 'text-emerald-400' : 'text-red-400'}`}>{m().message}</p>}</Show>
     </Card>
   );
 }

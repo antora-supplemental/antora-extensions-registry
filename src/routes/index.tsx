@@ -5,10 +5,19 @@ import { For, Show, Suspense } from 'solid-js';
 import SearchCombobox from '~/components/SearchCombobox';
 import SiteLayout from '~/components/SiteLayout';
 import ThemeCard from '~/components/catalog/ThemeCard';
-import { loadThemes } from '~/lib/server/catalog';
+import { loadExtensionCatalog, loadThemes } from '~/lib/server/catalog';
+import FeaturedExtension from '~/components/catalog/FeaturedExtension';
 
 export default function Home() {
   const themes = createAsync(() => loadThemes());
+  const catalog = createAsync(() => loadExtensionCatalog());
+  const featured = () => {
+    const c = catalog();
+    if (!c) return [];
+    const all = [...c.modules, ...c.recipes];
+    return c.featured.map((id) => all.find((e) => e.catalogId === id)).filter((e): e is NonNullable<typeof e> => Boolean(e));
+  };
+  const allEntries = () => (catalog() ? [...catalog()!.modules, ...catalog()!.recipes] : []);
 
   return (
     <SiteLayout>
@@ -59,6 +68,17 @@ export default function Home() {
           <A href="/add" class="text-primary-400 hover:text-primary-300 font-medium">Add it to the registry</A>
         </p>
       </section>
+
+      <Suspense>
+        <Show when={featured().length > 0}>
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12" aria-labelledby="featured-heading">
+            <h2 id="featured-heading" class="text-2xl font-bold text-white mb-6">Featured</h2>
+            <div class="grid gap-6">
+              <For each={featured()}>{(e) => <FeaturedExtension entry={e} all={allEntries()} />}</For>
+            </div>
+          </section>
+        </Show>
+      </Suspense>
 
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div class="flex items-center justify-between mb-8">

@@ -1,6 +1,7 @@
 import { createClient, type Client } from '@libsql/client';
 import type { ExtensionCatalogResult } from '~/lib/ui-modules';
-import type { ExtensionCatalogEntry } from '~/types/ui-module';
+import type { ExtensionCatalogEntry, PreviewImage } from '~/types/ui-module';
+import { DEFAULT_FEATURED, emptyOverlay, type CatalogOverlay } from '~/lib/catalog-overlay';
 
 export type DbCatalog = ExtensionCatalogResult & {
   discoveredRepoCount: number;
@@ -61,4 +62,46 @@ export async function readCatalogFromDb(): Promise<DbCatalog | null> {
     console.error('[registry] catalog DB read failed; using snapshot:', error);
     return null;
   }
+}
+
+function parseList(v: unknown): string[] | null {
+  if (v === null || v === undefined) return null;
+  try {
+    const parsed = JSON.parse(String(v));
+    return Array.isArray(parsed) ? parsed.map(String) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Admin overrides, uploaded previews and the featured slot. Each table is optional:
+ * before the schema push adds them, this returns the defaults.
+ */
+export async function readCatalogOverlay(): Promise<CatalogOverlay> {
+  const overlay = emptyOverlay();
+  if (!catalogDbConfigured()) return overlay;
+  const c = getClient();
+  try {
+    const rows = await c.execute('SELECT catalogId, layers, bundleMembers FROM catalog_override');
+    for (const r of rows.rows) {
+      const catalogId = String(r.catalogId);
+      overlay.overrides.set(catalogId, { catalogId, layers: parseList(r.layers), bundleMembers: parseList(r.bundleMembers) });
+    }
+  } catch { /* table not created yet */ }
+  try {
+    const rows = await c.execute('SELECT catalogId, url, caption FROM catalog_preview ORDER BY position, createdAt');
+    for (const r of rows.rows) {
+      const id = String(r.catalogId);
+      const list = overlay.uploads.get(id) ?? [];
+      list.push({ url: String(r.url), caption: (r.caption as string | null) ?? undefined, source: 'upload' } satisfies PreviewImage);
+      overlay.uploads.set(id, list);
+    }
+  } catch { /* table not created yet */ }
+  try {
+    const rows = await c.execute({ sql: "SELECT value FROM catalog_meta WHERE key = 'featured'", args: [] });
+    const featured = rows.rows.length ? parseList(rows.rows[0].value) : null;
+    overlay.featured = featured ?? DEFAULT_FEATURED;
+  } catch { /* keep default */ }
+  return overlay;
 }

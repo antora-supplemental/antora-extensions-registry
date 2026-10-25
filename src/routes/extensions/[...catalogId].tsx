@@ -5,12 +5,16 @@ import SiteLayout from '~/components/SiteLayout';
 import NewBadge from '~/components/catalog/NewBadge';
 import ReportButton from '~/components/catalog/ReportButton';
 import DependencyTree from '~/components/catalog/DependencyTree';
+import LayerBadges from '~/components/catalog/LayerBadges';
+import BundleContents from '~/components/catalog/BundleContents';
+import PreviewGallery from '~/components/catalog/PreviewGallery';
 import { Badge } from '~/components/ui/badge';
 import { buttonVariants } from '~/components/ui/button';
 import { Card } from '~/components/ui/card';
 import { buildDependencyTree, dependents } from '~/lib/extension-deps';
 import { loadExtensionCatalog } from '~/lib/server/catalog';
 import { formatInstallSnippet } from '~/lib/ui-modules';
+import { layerLabel } from '~/lib/layers';
 
 export default function ExtensionDetailPage() {
   const params = useParams();
@@ -54,11 +58,13 @@ export default function ExtensionDetailPage() {
                   <header class="mt-6 mb-8">
                     <div class="flex flex-wrap items-center gap-2 mb-2">
                       <Badge variant="primary">{e().type}</Badge>
+                      <Show when={e().bundle}><Badge variant="primary">Bundle · {e().bundle!.members.length}</Badge></Show>
                       <span class="font-mono text-sm text-slate-500">v{e().version}</span>
                       <NewBadge firstListedAt={e().firstListedAt} />
                     </div>
                     <h1 class="text-3xl lg:text-4xl font-bold text-white mb-4">{e().name}</h1>
                     <p class="text-slate-300 text-lg max-w-3xl">{e().description}</p>
+                    <LayerBadges entry={e()} class="mt-3" />
                     <div class="mt-4 flex flex-wrap gap-2">
                       <a href={e().repository} target="_blank" rel="noopener noreferrer" class={buttonVariants({ variant: 'secondary', size: 'sm' })}>
                         Repository
@@ -66,6 +72,24 @@ export default function ExtensionDetailPage() {
                       <ReportButton itemKind="extension" itemId={e().catalogId} itemName={e().name} class="self-center ml-2" />
                     </div>
                   </header>
+
+                  <Show when={(e().previews?.length ?? 0) > 0}>
+                    <section class="mb-6" aria-label="Preview images">
+                      <PreviewGallery previews={e().previews!} name={e().name} />
+                    </section>
+                  </Show>
+
+                  <Show when={e().bundle}>
+                    <Card class="p-6 mb-6">
+                      <h2 class="text-lg font-semibold text-white mb-1">Bundle contents</h2>
+                      <p class="text-sm text-slate-400 mb-4">
+                        {e().bundle!.members.length} packages.{' '}
+                        {e().bundle!.source === 'declared' ? 'Declared by the repository.' : e().bundle!.source === 'admin' ? 'Set by a registry admin.' : `Detected: ${e().bundle!.reason ?? 'depends on several indexed extensions'}.`}{' '}
+                        Linked names are listed in this registry.
+                      </p>
+                      <BundleContents entry={e()} all={all()} />
+                    </Card>
+                  </Show>
 
                   <div class="grid gap-6 lg:grid-cols-3">
                     <Card class="p-6 lg:col-span-2">
@@ -95,6 +119,13 @@ export default function ExtensionDetailPage() {
                         <div><dt class="text-slate-500">Author</dt><dd class="text-slate-300">{e().author}</dd></div>
                         <div><dt class="text-slate-500">Updated</dt><dd class="text-slate-300">{new Date(e().lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</dd></div>
                         <div><dt class="text-slate-500">Stars</dt><dd class="text-slate-300">{e().stars}</dd></div>
+                        <div>
+                          <dt class="text-slate-500">Layer</dt>
+                          <dd class="text-slate-300">
+                            {e().layers?.length ? e().layers!.map(layerLabel).join(', ') : 'Unclassified'}
+                            <Show when={e().layerSource}>{' '}<span class="text-slate-500">({e().layerSource})</span></Show>
+                          </dd>
+                        </div>
                         <Show when={(e().conflicts?.length ?? 0) > 0}>
                           <div><dt class="text-slate-500">Conflicts</dt><dd class="text-slate-300">{e().conflicts.join(', ')}</dd></div>
                         </Show>

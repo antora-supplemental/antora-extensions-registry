@@ -2,6 +2,8 @@ import { cache } from '@solidjs/router';
 import { buildFullExtensionCatalog } from '~/lib/extension-catalog';
 import { loadGalleryThemes } from '~/lib/themes/catalog';
 import { isNewListing } from '~/lib/new-items';
+import { readCatalogOverlay } from '~/lib/catalog-db';
+import { applyOverlay, DEFAULT_FEATURED } from '~/lib/catalog-overlay';
 import type { Theme } from '~/types/theme';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 
@@ -10,17 +12,23 @@ export interface ExtensionCatalogPayload {
   recipes: ExtensionCatalogEntry[];
   discoveredRepoCount: number;
   catalogError: string | null;
+  /** Catalog ids for the home-page featured slot (admin-configurable). */
+  featured: string[];
 }
 
 export const loadExtensionCatalog = cache(async (): Promise<ExtensionCatalogPayload> => {
   'use server';
   try {
-    const catalog = await buildFullExtensionCatalog({ includeTopicDiscovery: true });
+    const [catalog, overlay] = await Promise.all([
+      buildFullExtensionCatalog({ includeTopicDiscovery: true }),
+      readCatalogOverlay(),
+    ]);
     return {
-      modules: catalog.modules,
-      recipes: catalog.recipes,
+      modules: applyOverlay(catalog.modules, overlay),
+      recipes: applyOverlay(catalog.recipes, overlay),
       discoveredRepoCount: catalog.discoveredRepoCount,
       catalogError: null,
+      featured: overlay.featured,
     };
   } catch (error) {
     console.error('Failed to load extension catalog:', error);
@@ -28,6 +36,7 @@ export const loadExtensionCatalog = cache(async (): Promise<ExtensionCatalogPayl
       modules: [],
       recipes: [],
       discoveredRepoCount: 0,
+      featured: DEFAULT_FEATURED,
       catalogError: "Some extensions couldn't be loaded. Try again later.",
     };
   }
@@ -41,7 +50,7 @@ export const loadThemes = cache(async (): Promise<Theme[]> => {
 /** Compact name index for search typeahead: just enough to label and link each suggestion. */
 export interface SearchIndexItem {
   kind: 'extension' | 'theme';
-  /** Extension type (antora-extension, ui-module, ui-recipe, ui-bundle) or 'theme'. */
+  /** Extension type (antora-extension, ui-module, ui-recipe, ui-bundle), 'bundle', or 'theme'. */
   type: string;
   id: string;
   name: string;
@@ -55,7 +64,7 @@ export const loadSearchIndex = cache(async (): Promise<SearchIndexItem[]> => {
   const [catalog, themes] = await Promise.all([loadExtensionCatalog(), loadThemes()]);
   const ext = [...catalog.modules, ...catalog.recipes].map((e) => ({
     kind: 'extension' as const,
-    type: e.type,
+    type: e.bundle ? 'bundle' : e.type,
     id: e.catalogId,
     name: e.name,
     href: `/extensions/${e.catalogId}`,

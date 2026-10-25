@@ -25,9 +25,17 @@ The registry parses the YAML frontmatter for specific fields:
 | `description`
 | A short, catchy summary for the extension card (limited to ~150 characters).
 
-| `screenshots`
-| A list of objects containing `url` and `caption`. These will be displayed in the screenshot carousel.
+| `screenshots` / `previews`
+| A list of objects containing `url` and `caption`, shown as the card thumbnail and the detail-page gallery.
+
+| `layers`
+| The layers the extension changes: `engine`, `chassis`, `body-kit`, `paint`, `bolt-on`. See xref:registry-metadata.adoc[].
+
+| `bundle`, `kind`, `purpose`
+| Mark a bundle (`bundle: true`, a member list, `kind: bundle` or `purpose: compose-pack`). See xref:registry-metadata.adoc[].
 |===
+
+The same keys can go in `package.json` under `"antoraRegistry"`, which wins when both are set.
 
 === Content
 

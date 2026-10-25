@@ -4,6 +4,8 @@ import JSON5 from 'json5';
 import { appearanceTags } from '~/data/github-topics';
 import { parseGitHubUrl, fetchRepoInfo } from '~/lib/github';
 import { resolveKnownRepoRef } from '~/lib/repo-identity';
+import { applyRepoMetadata, finalizeCatalog, readRepoMetadata, type PackageJson } from '~/lib/catalog-enrich';
+import { normalizeLayers } from '~/lib/layers';
 import type {
   ExtensionCatalogEntry,
   ExtensionDiscoveryResult,
@@ -119,6 +121,11 @@ function enrichEntry(
   };
 }
 
+function declaredLayerFields(value: unknown): Pick<ExtensionCatalogEntry, 'layers' | 'layerSource'> {
+  const layers = normalizeLayers(value);
+  return layers.length ? { layers, layerSource: 'declared' } : {};
+}
+
 function indexToCatalog(
   index: RegistryIndex,
   owner: string,
@@ -153,6 +160,7 @@ function indexToCatalog(
         slots: mod.slots,
         uiFileCount: mod.uiFileCount,
         install: mod.install,
+        ...declaredLayerFields(mod.layers),
       },
       owner,
       repo,
@@ -177,6 +185,7 @@ function indexToCatalog(
         conflicts: [],
         modules: recipe.modules,
         install: recipe.install,
+        ...declaredLayerFields(recipe.layers),
       },
       owner,
       repo,
@@ -219,6 +228,7 @@ async function buildIndexFromRegistry(
       conflicts: manifest.conflicts ?? [],
       partials: manifest.ui?.partials,
       slots: manifest.slots,
+      layers: manifest.layers,
       install: {
         orchestrator: {
           registry: `./${REGISTRY_PATH}`,
@@ -244,6 +254,7 @@ async function buildIndexFromRegistry(
       description: recipe.description ?? '',
       modules: recipe.modules,
       manifestPath: recipeEntry.path,
+      layers: recipe.layers,
       install: {
         orchestrator: {
           registry: `./${REGISTRY_PATH}`,
@@ -383,13 +394,13 @@ async function packageJsonEntry(
 ): Promise<ExtensionCatalogEntry | null> {
   const text = await fetchRawText(owner, repo, 'package.json', branch);
   if (!text) return null;
-  let pkg: { name?: string; version?: string; description?: string };
+  let pkg: PackageJson;
   try {
     pkg = JSON.parse(text);
   } catch {
     return null;
   }
-  const entry = enrichEntry(
+  const base = enrichEntry(
     {
       id: repo,
       name: pkg.name ?? repo,
@@ -408,6 +419,8 @@ async function packageJsonEntry(
     repo,
     repoMeta,
   );
+  const meta = await readRepoMetadata(owner, repo, branch, (p) => fetchRawText(owner, repo, p, branch), pkg);
+  const entry = applyRepoMetadata(base, meta, branch);
   entry.tags = [...new Set(['antora-extension', ...entry.tags.filter((t) => t !== 'ui-module')])];
   return entry;
 }
@@ -489,7 +502,13 @@ export async function buildExtensionCatalog(
     }
   }
 
-  return { modules, recipes, indexedRepos };
+  const finalized = finalizeCatalog([...modules, ...recipes]);
+  const byId = new Map(finalized.map((e) => [e.catalogId, e]));
+  return {
+    modules: modules.map((e) => byId.get(e.catalogId)!),
+    recipes: recipes.map((e) => byId.get(e.catalogId)!),
+    indexedRepos,
+  };
 }
 
 export function formatInstallSnippet(entry: ExtensionCatalogEntry): string {
@@ -502,7 +521,13 @@ export function formatInstallSnippet(entry: ExtensionCatalogEntry): string {
   ];
 
   if (entry.type === 'antora-extension') {
-    return ['antora:', '  extensions:', `    - require: '${entry.name}'`].join('\n');
+    const snippet = ['antora:', '  extensions:', `    - require: '${entry.name}'`];
+    if (entry.privatePackage) {
+      // Not published to npm: install from the Git repository first.
+      const repoRef = `${entry.repositoryOwner}/${entry.repositoryName}`;
+      return [`# Not on npm yet: pnpm add github:${repoRef}`, ...snippet].join('\n');
+    }
+    return snippet.join('\n');
   }
 
   if (entry.install?.orchestrator?.recipe) {

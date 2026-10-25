@@ -5,6 +5,8 @@ import { Badge } from '~/components/ui/badge';
 import { buttonVariants } from '~/components/ui/button';
 import { ColorModeIcons, splitModeTags } from './ColorModeIcons';
 import NewBadge from './NewBadge';
+import LayerBadges from './LayerBadges';
+import { isBundle } from '~/lib/layers';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 import { formatInstallSnippet } from '~/lib/ui-modules';
 
@@ -32,14 +34,24 @@ export default function ExtensionCard(props: ExtensionCardProps) {
   };
 
   const typeLabel = () => {
+    if (props.entry.bundle) return 'Bundle';
     if (props.entry.type === 'ui-recipe') return 'Recipe';
     if (props.entry.type === 'antora-extension') return 'Extension';
     if (props.entry.tags.includes('fragment')) return 'Fragment';
     return 'Module';
   };
 
+  const members = () => props.entry.bundle?.members ?? props.entry.modules ?? [];
+  const shortName = (n: string) => n.replace(/^@[^/]+\//, '');
+  const thumb = () => props.entry.previews?.[0];
+
   return (
-    <Card>
+    <Card class="overflow-hidden">
+      <Show when={thumb()}>
+        <A href={`/extensions/${props.entry.catalogId}`} tabIndex={-1} aria-hidden="true" class="block border-b border-slate-700/50 bg-white">
+          <img src={thumb()!.url} alt="" loading="lazy" class="h-36 w-full object-cover object-top" />
+        </A>
+      </Show>
       <div class="p-5">
         <div class="flex items-start justify-between gap-3 mb-3">
           <div class="min-w-0">
@@ -60,6 +72,18 @@ export default function ExtensionCard(props: ExtensionCardProps) {
         </div>
 
         <p class="text-slate-400 text-sm mb-4 line-clamp-3">{props.entry.description}</p>
+
+        <LayerBadges entry={props.entry} class="mb-3" />
+
+        <Show when={isBundle(props.entry) && members().length > 0}>
+          <div class="mb-3">
+            <p class="text-xs text-slate-400 mb-1">
+              Contains {members().length} {members().length === 1 ? 'item' : 'items'}
+              <Show when={props.entry.bundle?.source === 'inferred'}> <span class="italic">(detected)</span></Show>
+            </p>
+            <p class="text-xs font-mono text-slate-300 line-clamp-2">{members().map(shortName).join(', ')}</p>
+          </div>
+        </Show>
 
         <Show when={(props.entry.requires?.length ?? 0) > 0}>
           <div class="mb-3">

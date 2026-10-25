@@ -167,3 +167,26 @@ export const firstListed = sqliteTable("first_listed", {
     itemId: text("itemId").notNull(),
     firstListedAt: integer("firstListedAt", { mode: "timestamp" }).notNull(),
 });
+
+/**
+ * Admin overrides for sync-time metadata. NULL columns mean "keep what the sync found".
+ * Applied on read (lib/catalog-db.ts), so a daily sync never undoes them.
+ */
+export const catalogOverrides = sqliteTable("catalog_override", {
+    catalogId: text("catalogId").primaryKey(),
+    layers: text("layers"), // JSON LayerId[]; "[]" = explicitly unclassified
+    bundleMembers: text("bundleMembers"), // JSON string[]; "[]" = explicitly not a bundle
+    updatedBy: text("updatedBy"),
+    updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
+/** Preview images added in /admin (by URL). Shown before manifest and README images. */
+export const catalogPreviews = sqliteTable("catalog_preview", {
+    id: text("id").primaryKey(),
+    catalogId: text("catalogId").notNull(),
+    url: text("url").notNull(),
+    caption: text("caption"),
+    position: integer("position").notNull().default(0),
+    addedBy: text("addedBy"),
+    createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});

@@ -1,0 +1,108 @@
+= Registry metadata: layers, bundles and previews
+:description: The antoraRegistry field: declare which layer an extension belongs to, whether it is a bundle, and which preview images to show.
+
+The registry reads an optional `antoraRegistry` object from your `package.json`, or the same keys from the frontmatter of `antora-registry.md`.
+If both set a key, `package.json` wins.
+Anything you leave out, the registry guesses and labels *inferred*.
+Registry admins can override any value from `/admin`.
+
+[source,json]
+----
+{
+  "name": "@acme/antora-ui-callouts",
+  "antoraRegistry": {
+    "layers": ["bolt-on"],
+    "previews": [
+      { "url": "docs/assets/callouts-light.png", "caption": "Callouts, light mode" },
+      { "url": "https://acme.dev/callouts-dark.png", "caption": "Callouts, dark mode" }
+    ]
+  }
+}
+----
+
+== Layers
+
+Layers use the names from https://github.com/antora-supplemental/antora-ui-chassis[antora-ui-chassis].
+List every layer the package changes, most important first.
+
+[cols="1,1,3"]
+|===
+| Id | Shown as | What it owns
+
+| `engine`
+| Engine
+| The Antora pipeline and the UI model data: Antora extensions that run at build time, generators, validators.
+
+| `chassis`
+| Chassis
+| Unthemed region parts (header, nav, toolbar, footer slots) and their contracts.
+
+| `body-kit`
+| Body kit
+| Silhouette and column layout: where the regions sit.
+
+| `paint`
+| Paint & trim
+| Palettes, typography, logo, dark mode and other chrome.
+
+| `bolt-on`
+| Bolt-ons
+| Features added on top, preferably through slots: search, diagrams, tabs, copy buttons.
+|===
+
+`paint-trim`, `paint-and-trim`, `bolt-ons` and `bodykit` are accepted as aliases.
+Unknown ids are ignored.
+Entries with no layer, declared or inferred, appear under *Unclassified* in search.
+
+=== How the registry guesses
+
+When `layers` is missing:
+
+* A bundle takes the union of its members' layers.
+* A repository named `antora-ui-chassis`, or one that describes itself as a chassis, is `chassis`.
+* UI modules and recipes that mention dark mode, palettes, colors, icons, logos or fonts are `paint`; those that replace layout partials or mention layout, header, masthead or columns are `body-kit`; the rest are `bolt-on`.
+* Antora extensions that mention themes or palettes are `paint`; the rest are `bolt-on`.
+
+Guesses show an *inferred* label next to the layer. Declare `layers` to remove it.
+
+== Bundles
+
+A bundle is a package that composes other extensions, such as a compose pack or a UI recipe.
+Bundles get a *Bundle* badge, a contents list on the detail page, and their own kind in search.
+
+Declare a bundle in any of these ways:
+
+* `"bundle": true`: members are your `dependencies`.
+* `"bundle": ["@acme/one", "@acme/two"]`: an explicit member list.
+* `"kind": "bundle"` or `"purpose": "compose-pack"` (in `antora-registry.md`).
+
+The registry also detects bundles, marked *detected*, when the package has one of the keywords `antora-bundle`, `compose-pack`, `extension-pack` or `bundle`, or depends on three or more extensions already in the registry.
+
+== Previews
+
+`previews` (or the older `screenshots`) is a list of `{ url, caption }`.
+Relative URLs resolve against your default branch on `raw.githubusercontent.com`.
+Use PNG or WebP, at least 1200 px wide, and show light and dark mode if you support both.
+
+Where previews come from, in order:
+
+. Images an admin added in `/admin`.
+. Your declared `previews`.
+. If you declared none, up to four non-badge images from your README.
+
+The first preview is the card thumbnail; the detail page shows them all as a gallery.
+
+== Example: a compose pack
+
+[source,markdown]
+----
+---
+name: "Facto stack"
+description: "Valentus chrome plus the Facto extensions, wired together."
+purpose: compose-pack
+layers: [chassis, body-kit, paint, bolt-on]
+previews:
+  - url: "docs/assets/facto-light.png"
+    caption: "Facto stack demo, light"
+---
+----

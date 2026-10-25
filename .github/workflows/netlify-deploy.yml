@@ -33,6 +33,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Apply database schema
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: pnpm exec drizzle-kit push --force
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_AUTH_TOKEN: ${{ secrets.DB_AUTH_TOKEN }}
+
       - name: Snapshot extension catalog
         run: pnpm catalog:snapshot
         env:
