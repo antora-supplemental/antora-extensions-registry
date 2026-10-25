@@ -24,7 +24,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
   const navLinks = [
     { href: '/extensions', label: 'Extensions' },
     { href: '/themes', label: 'Themes' },
-    { href: '/add', label: 'Add to registry' },
+    { href: '/add', label: 'Submit' },
   ];
   const mobileLink = 'block rounded-lg px-3 py-2 text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
@@ -49,7 +49,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
                 Themes
               </A>
               <A href="/add" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
-                Add to registry
+                Submit
               </A>
               <ThemeToggle />
               <Suspense fallback={null}>
