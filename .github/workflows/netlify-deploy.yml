@@ -43,7 +43,8 @@ jobs:
         env:
           NODE_ENV: production
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-          BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL || 'https://antora-extensions-registry.netlify.app' }}
+          REGISTRY_CATALOG_ONLY: "false"
+          BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL || 'https://registry.antora-supplemental.org' }}
           DB_URL: ${{ secrets.DB_URL }}
           DB_AUTH_TOKEN: ${{ secrets.DB_AUTH_TOKEN }}
 

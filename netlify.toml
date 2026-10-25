@@ -4,9 +4,9 @@
 
 [build.environment]
   NODE_VERSION = "22"
-  REGISTRY_CATALOG_ONLY = "true"
+  REGISTRY_CATALOG_ONLY = "false"
   # Full mode: set in Netlify UI (runtime): BETTER_AUTH_SECRET, DB_URL, DB_AUTH_TOKEN, then REGISTRY_CATALOG_ONLY=false.
 
 [context.production.environment]
-  REGISTRY_CATALOG_ONLY = "true"
+  REGISTRY_CATALOG_ONLY = "false"
 

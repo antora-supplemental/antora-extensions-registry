@@ -13,7 +13,8 @@
     "discover:github-topics": "pnpm exec tsx scripts/github-topic-discovery.ts",
     "extensions:sync": "node scripts/sync-extension-catalog.mjs",
     "apply:registry-topics": "node scripts/apply-registry-topics.mjs --discover",
-    "catalog:snapshot": "tsx scripts/build-catalog-snapshot.ts"
+    "catalog:snapshot": "tsx scripts/build-catalog-snapshot.ts",
+    "catalog:sync": "tsx scripts/sync-catalog-db.ts"
   },
   "type": "module",
   "devDependencies": {

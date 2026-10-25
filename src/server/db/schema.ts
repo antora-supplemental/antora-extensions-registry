@@ -80,3 +80,21 @@ export const themes = sqliteTable("theme", {
     createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
     updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
+
+/** One row per catalog module/recipe/extension, written by scripts/sync-catalog-db.ts. */
+export const catalogEntries = sqliteTable("catalog_entry", {
+    catalogId: text("catalogId").primaryKey(),
+    repoOwner: text("repoOwner").notNull(),
+    repoName: text("repoName").notNull(),
+    type: text("type").notNull(),
+    name: text("name").notNull(),
+    version: text("version").notNull(),
+    payload: text("payload").notNull(), // JSON ExtensionCatalogEntry
+    syncedAt: integer("syncedAt", { mode: "timestamp" }).notNull(),
+});
+
+/** Sync bookkeeping (last run, counts). */
+export const catalogMeta = sqliteTable("catalog_meta", {
+    key: text("key").primaryKey(),
+    value: text("value").notNull(),
+});

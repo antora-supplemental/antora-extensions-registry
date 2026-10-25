@@ -13,6 +13,8 @@ export async function GET({ request }: { request: Request }) {
         schema: '1.0',
         generatedAt: new Date().toISOString(),
         source: 'manifest',
+        dataSource: catalog.source ?? 'live',
+        syncedAt: catalog.syncedAt ?? null,
         topicDiscovery: includeTopics,
         topicQuery: EXTENSION_DISCOVERY_QUERY,
         discoveredRepoCount: catalog.discoveredRepoCount,

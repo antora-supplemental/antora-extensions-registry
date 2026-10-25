@@ -1,0 +1,40 @@
+name: Sync catalog to database
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+  repository_dispatch:
+    types: [catalog-sync, link-cache-invalidate]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: catalog-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply schema (drizzle-kit push)
+        run: pnpm exec drizzle-kit push --force
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_AUTH_TOKEN: ${{ secrets.DB_AUTH_TOKEN }}
+      - name: Fetch catalog and upsert
+        run: pnpm catalog:sync
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_AUTH_TOKEN: ${{ secrets.DB_AUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
