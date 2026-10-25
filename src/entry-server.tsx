@@ -8,7 +8,9 @@ export default createHandler(() => (
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <meta name="description" content="Unofficial, community-run catalog of Antora extensions and themes. Not affiliated with or endorsed by the Antora project." />
+          <meta name="description" content="Unofficial, community-run catalog of Antora playbook extensions, UI themes, and UI modules with install guidance. Not affiliated with the Antora project." />
+          <meta property="og:description" content="Unofficial, community-run catalog of Antora playbook extensions, UI themes, and UI modules with install guidance. Not affiliated with the Antora project." />
+          <meta name="twitter:description" content="Unofficial, community-run catalog of Antora playbook extensions, UI themes, and UI modules with install guidance. Not affiliated with the Antora project." />
           {/* Apply the stored or system color scheme before first paint (no flash). */}
           <script innerHTML={COLOR_SCHEME_BOOT} />
           <link rel="icon" href="/favicon.ico" />

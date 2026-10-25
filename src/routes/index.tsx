@@ -40,16 +40,12 @@ export default function Home() {
               Antora Extension Registry
             </p>
             <p class="text-slate-500 text-xs mb-4">Unofficial, community-run. Not affiliated with or endorsed by the Antora project.</p>
-            <h1 class="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+            <h1 class="text-4xl lg:text-6xl font-bold text-white mb-8 leading-tight">
               Discover Antora{' '}
               <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-primary-600">
                 extensions, themes &amp; more
               </span>
             </h1>
-            <p class="text-slate-400 text-lg lg:text-xl mb-8">
-              One catalog for the Antora ecosystem — playbook extensions, UI themes, UI modules, and install guidance.
-              Themes are not extensions; both live here under clear categories.
-            </p>
 
             <form class="max-w-2xl mx-auto mb-6" onSubmit={submitOmni}>
               <label class="sr-only" for="omni-search">Search the registry</label>
