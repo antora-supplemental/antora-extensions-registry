@@ -1,4 +1,6 @@
 import { A, createAsync, useNavigate } from '@solidjs/router';
+import { buttonVariants } from '~/components/ui/button';
+import { cn } from '~/lib/utils';
 import { createSignal, For, Show, Suspense } from 'solid-js';
 import SiteLayout from '~/components/SiteLayout';
 import ThemeCard from '~/components/catalog/ThemeCard';
@@ -65,7 +67,7 @@ export default function Home() {
                 />
                 <button
                   type="submit"
-                  class="shrink-0 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white font-semibold rounded-xl transition-colors"
+                  class={cn(buttonVariants({ size: 'lg' }), 'shrink-0 font-semibold')}
                 >
                   Search
                 </button>
@@ -92,19 +94,19 @@ export default function Home() {
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
               <A
                 href="/extensions"
-                class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary-600 hover:bg-primary-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-primary-600/25"
+                class={cn(buttonVariants({ size: 'xl' }), 'shadow-lg shadow-primary-600/25')}
               >
                 UI Extensions
               </A>
               <A
                 href="/themes"
-                class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl transition-colors"
+                class={buttonVariants({ variant: 'secondary', size: 'xl' })}
               >
                 Theme Gallery
               </A>
               <A
                 href="/registry"
-                class="inline-flex items-center justify-center gap-2 px-8 py-4 border border-slate-600 hover:border-slate-500 text-slate-300 hover:text-white font-semibold rounded-xl transition-colors"
+                class={buttonVariants({ variant: 'outline', size: 'xl' })}
               >
                 Package search
               </A>

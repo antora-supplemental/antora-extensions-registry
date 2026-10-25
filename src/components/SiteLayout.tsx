@@ -1,4 +1,5 @@
 import { A, createAsync } from '@solidjs/router';
+import { buttonVariants } from '~/components/ui/button';
 import { Show, Suspense, type ParentProps } from 'solid-js';
 import { getSessionData } from '~/app';
 import { authClient } from '~/lib/auth-client';
@@ -42,7 +43,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
                   fallback={
                     <A
                       href="/auth/signin"
-                      class="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      class={buttonVariants()}
                     >
                       Sign in
                     </A>
@@ -52,7 +53,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
                     <div class="flex items-center gap-3">
                       <A
                         href="/themes/submit"
-                        class="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        class={buttonVariants()}
                       >
                         Submit Theme
                       </A>

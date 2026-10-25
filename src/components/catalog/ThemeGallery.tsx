@@ -1,4 +1,6 @@
 import { createSignal, createMemo, For, Show } from 'solid-js';
+import { inputClass } from '~/components/ui/text-field';
+import { cn } from '~/lib/utils';
 import type { Theme } from '~/types/theme';
 import { matchesAppearanceFilter, type AppearanceFilter } from '~/data/github-topics';
 import { APPEARANCE_FILTER_OPTIONS } from '~/lib/appearance-filter';
@@ -79,7 +81,7 @@ export default function ThemeGallery(props: ThemeGalleryProps) {
             placeholder="Search themes..."
             value={searchQuery()}
             onInput={(e) => setSearchQuery(e.currentTarget.value)}
-            class="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
+            class={cn(inputClass, 'pl-12 pr-4')}
           />
         </div>
 

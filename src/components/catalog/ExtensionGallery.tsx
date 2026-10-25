@@ -1,4 +1,5 @@
 import { createSignal, createMemo, For, Show } from 'solid-js';
+import { inputClass } from '~/components/ui/text-field';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 import {
   isDarkModeOverlayOnly,
@@ -80,7 +81,7 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
             placeholder="Search modules and recipes..."
             value={searchQuery()}
             onInput={(e) => setSearchQuery(e.currentTarget.value)}
-            class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+            class={inputClass}
           />
         </div>
 
