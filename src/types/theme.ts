@@ -41,6 +41,9 @@ export interface GitHubRepo {
   homepage: string | null;
   private?: boolean;
   fork?: boolean;
+  pushed_at?: string;
+  parent?: { full_name: string; default_branch?: string };
+  source?: { full_name: string; default_branch?: string };
   default_branch?: string;
   topics?: string[];
   license?: { spdx_id: string | null; name: string } | null;

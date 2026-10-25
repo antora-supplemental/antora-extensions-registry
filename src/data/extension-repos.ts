@@ -36,4 +36,13 @@ export const knownExtensionRepos: KnownExtensionRepo[] = [
     discoveredVia: 'curated',
     githubTopics: ['facto-stack'],
   },
+  {
+    // Monorepo: diagram-lightbox and mermaid-client, listed by registry-index.json at the repo root.
+    owner: 'antora-supplemental',
+    repo: 'antora-diagram-engines',
+    branch: 'main',
+    discoveredVia: 'curated',
+    githubTopics: [ANTORA_TOPICS.EXTENSION],
+    localRegistryIndex: '../antora-diagram-engines/registry-index.json',
+  },
 ];

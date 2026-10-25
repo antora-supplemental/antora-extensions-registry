@@ -68,6 +68,10 @@ export interface ExtensionCatalogEntry {
   dependencyNames?: string[];
   /** package.json `dependencies` specs by name (e.g. `github:owner/repo#tag`), used to link members that are not in the registry. */
   dependencySpecs?: Record<string, string>;
+  /** Set when the repository is a GitHub fork listed in its own right (it has the `antora-extension` topic). */
+  forkOf?: ForkInfo;
+  /** Last push to the repository (GitHub `pushed_at`). */
+  pushedAt?: string;
   /** package.json `"private": true`: not on npm, install from the Git repository. */
   privatePackage?: boolean;
   homepage?: string;
@@ -92,6 +96,10 @@ export interface PreviewImage {
   caption?: string;
   /** manifest = antoraRegistry.previews / antora-registry.md screenshots; readme = first README images; upload = added in /admin. */
   source: 'manifest' | 'readme' | 'upload' | 'curated';
+  /** Original URL when `url` points at the registry's cached copy (/previews/<hash>). */
+  sourceUrl?: string;
+  /** Internal: the source URL no longer serves this image (or is no longer referenced); the cached copy is shown. */
+  stale?: boolean;
 }
 
 /** The `antoraRegistry` block in package.json (or the antora-registry.md frontmatter). */
@@ -203,4 +211,15 @@ export interface KnownExtensionRepo {
   githubTopics?: string[];
   /** Stable GitHub repo id — survives renames within GitHub */
   githubRepoId?: number;
+}
+
+export interface ForkInfo {
+  /** Direct parent, `owner/repo`. */
+  parent: string;
+  /** Root of the fork network, `owner/repo`; forks of the same source are grouped. */
+  source: string;
+  /** Commits the fork's default branch is ahead of / behind the source default branch. */
+  aheadBy?: number;
+  behindBy?: number;
+  compareUrl?: string;
 }

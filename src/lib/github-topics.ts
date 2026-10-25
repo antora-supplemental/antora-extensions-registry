@@ -64,8 +64,20 @@ export async function fetchRepoTopics(owner: string, repo: string): Promise<stri
 export async function searchReposByTopicQuery(
   query: string,
   perPage = 30,
+  maxPages = 1,
 ): Promise<GitHubSearchRepo[]> {
+  const all: GitHubSearchRepo[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const items = await searchPage(query, perPage, page);
+    all.push(...items);
+    if (items.length < perPage) break;
+  }
+  return all;
+}
+
+async function searchPage(query: string, perPage: number, page: number): Promise<GitHubSearchRepo[]> {
   const url = new URL(`${GITHUB_API}/search/repositories`);
+  url.searchParams.set('page', String(page));
   url.searchParams.set('q', query);
   url.searchParams.set('sort', 'updated');
   url.searchParams.set('order', 'desc');
@@ -110,7 +122,8 @@ async function enrichDiscoveredRepo(item: GitHubSearchRepo): Promise<TopicDiscov
 export async function discoverExtensionReposFromTopics(
   perPage = 30,
 ): Promise<TopicDiscoveredRepo[]> {
-  const items = await searchReposByTopicQuery(EXTENSION_DISCOVERY_QUERY, perPage);
+  // fork:true: forks are only returned when they carry the topic themselves (explicit intent).
+  const items = await searchReposByTopicQuery(`${EXTENSION_DISCOVERY_QUERY} fork:true`, Math.max(perPage, 100), 3);
   const results: TopicDiscoveredRepo[] = [];
 
   for (const item of items) {

@@ -7,6 +7,8 @@ import ReportButton from '~/components/catalog/ReportButton';
 import DependencyTree from '~/components/catalog/DependencyTree';
 import LayerBadges from '~/components/catalog/LayerBadges';
 import BundleContents from '~/components/catalog/BundleContents';
+import ForkVersions from '~/components/catalog/ForkVersions';
+import { forkVariants } from '~/lib/fork-groups';
 import PreviewGallery from '~/components/catalog/PreviewGallery';
 import FullDescription, { inline } from '~/components/catalog/FullDescription';
 import { INSTALL_GUIDE_URL, installGuidance } from '~/lib/install-guidance';
@@ -67,6 +69,7 @@ export default function ExtensionDetailPage() {
                     <h1 class="text-3xl lg:text-4xl font-bold text-white mb-4">{e().name}</h1>
                     <p class="text-slate-300 text-lg max-w-3xl">{e().description}</p>
                     <LayerBadges entry={e()} class="mt-3" />
+                    <ForkVersions current={e()} variants={forkVariants(e(), all())} />
                     <div class="mt-4 flex flex-wrap gap-2">
                       <a href={e().repository} target="_blank" rel="noopener noreferrer" class={buttonVariants({ variant: 'secondary', size: 'sm' })}>
                         Repository

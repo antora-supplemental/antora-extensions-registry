@@ -7,6 +7,7 @@ import { resolveKnownRepoRef } from '~/lib/repo-identity';
 import { liveImages } from '~/lib/preview-check';
 import { applyRepoMetadata, finalizeCatalog, readRepoMetadata, type PackageJson } from '~/lib/catalog-enrich';
 import { normalizeLayers } from '~/lib/layers';
+import { forkAllowed, forkInfoFrom, type CompareFields } from '~/lib/fork-groups';
 import type {
   ExtensionCatalogEntry,
   ExtensionDiscoveryResult,
@@ -462,6 +463,21 @@ function applyRepoCanonicalNames(
   }));
 }
 
+/** Ahead/behind of a fork's default branch against its source (GitHub compare API); null when unavailable. */
+async function fetchCompare(info: { source?: { full_name: string; default_branch?: string }; default_branch?: string }, owner: string): Promise<CompareFields | null> {
+  if (!info.source) return null;
+  const base = info.source.default_branch ?? 'HEAD';
+  const head = `${owner}:${info.default_branch ?? 'HEAD'}`;
+  try {
+    const headers: Record<string, string> = { Accept: 'application/vnd.github+json', 'User-Agent': 'Antora-Extensions-Registry' };
+    if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+    const res = await fetch(`https://api.github.com/repos/${info.source.full_name}/compare/${encodeURIComponent(base)}...${head}`, { headers });
+    return res.ok ? ((await res.json()) as CompareFields) : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function buildExtensionCatalog(
   repos: KnownExtensionRepo[],
   siteRoot = process.cwd(),
@@ -476,9 +492,17 @@ export async function buildExtensionCatalog(
     const owner = resolved?.owner ?? ref.owner;
     const repo = resolved?.name ?? ref.repo;
 
+    const info = await fetchRepoInfo(owner, repo);
+    if (info && !forkAllowed(info, ref.discoveredVia)) {
+      console.log(`[registry] skipping fork ${owner}/${repo}: no antora-extension topic of its own`);
+      continue;
+    }
+    const forkOf = info ? forkInfoFrom(info, info.fork ? await fetchCompare(info, owner) : null) : undefined;
     const result = await indexKnownRepo(ref, siteRoot);
-    const canonicalModules = applyRepoCanonicalNames(result.modules, ref, owner, repo);
-    const canonicalRecipes = applyRepoCanonicalNames(result.recipes, ref, owner, repo);
+    const withRepoInfo = (list: ExtensionCatalogEntry[]) =>
+      list.map((e) => ({ ...e, ...(forkOf ? { forkOf } : {}), ...(info?.pushed_at ? { pushedAt: info.pushed_at } : {}) }));
+    const canonicalModules = withRepoInfo(applyRepoCanonicalNames(result.modules, ref, owner, repo));
+    const canonicalRecipes = withRepoInfo(applyRepoCanonicalNames(result.recipes, ref, owner, repo));
 
     let modCount = 0;
     let recCount = 0;

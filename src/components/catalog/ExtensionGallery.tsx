@@ -4,6 +4,7 @@ import { inputClass } from '~/components/ui/text-field';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 import { hasDarkModeAddonTopic } from '~/data/github-topics';
 import ExtensionCard from './ExtensionCard';
+import { collapseForks } from '~/lib/fork-groups';
 
 interface ExtensionGalleryProps {
   initialQuery?: string;
@@ -157,7 +158,7 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
         }
       >
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <For each={filteredEntries()}>{(entry) => <ExtensionCard entry={entry} />}</For>
+          <For each={collapseForks(filteredEntries(), allEntries())}>{(g) => <ExtensionCard entry={g.entry} forkCount={g.forkCount} />}</For>
         </div>
       </Show>
     </div>
