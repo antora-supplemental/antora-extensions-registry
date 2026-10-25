@@ -112,7 +112,7 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
         <button
           onClick={() => setSelectedTag(null)}
           class={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-            selectedTag() === null ? 'bg-primary-600 text-white' : 'bg-slate-800/50 text-slate-300'
+            selectedTag() === null ? 'bg-primary-600 text-brand-foreground' : 'bg-slate-800/50 text-slate-300'
           }`}
         >
           All tags
@@ -122,7 +122,7 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
             <button
               onClick={() => setSelectedTag(tag === selectedTag() ? null : tag)}
               class={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-                selectedTag() === tag ? 'bg-primary-600 text-white' : 'bg-slate-800/50 text-slate-300'
+                selectedTag() === tag ? 'bg-primary-600 text-brand-foreground' : 'bg-slate-800/50 text-slate-300'
               }`}
             >
               {tag}

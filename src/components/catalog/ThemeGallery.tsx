@@ -116,7 +116,7 @@ export default function ThemeGallery(props: ThemeGalleryProps) {
           onClick={() => setSelectedTag(null)}
           class={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
             selectedTag() === null
-              ? 'bg-primary-600 text-white'
+              ? 'bg-primary-600 text-brand-foreground'
               : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'
           }`}
         >
@@ -128,7 +128,7 @@ export default function ThemeGallery(props: ThemeGalleryProps) {
               onClick={() => setSelectedTag(tag === selectedTag() ? null : tag)}
               class={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 selectedTag() === tag
-                  ? 'bg-primary-600 text-white'
+                  ? 'bg-primary-600 text-brand-foreground'
                   : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'
               }`}
             >

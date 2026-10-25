@@ -70,7 +70,7 @@ export default function SubmitThemePage() {
                           href="https://github.com/antora-supplemental/valentus-theme"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-primary-600 hover:bg-primary-500 text-white font-medium rounded-lg transition-colors shadow-lg shadow-primary-600/25"
+                          class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-primary-600 hover:bg-primary-500 text-brand-foreground font-medium rounded-lg transition-colors shadow-lg shadow-primary-600/25"
                         >
                           View valentus-theme
                         </a>

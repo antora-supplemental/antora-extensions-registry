@@ -112,7 +112,7 @@ export default function SignIn() {
                         <button
                             type="submit"
                             disabled={loading() !== null}
-                            class="w-full px-6 py-3 rounded-xl bg-primary-600 hover:bg-primary-500 text-white font-medium disabled:opacity-60"
+                            class="w-full px-6 py-3 rounded-xl bg-primary-600 hover:bg-primary-500 text-brand-foreground font-medium disabled:opacity-60"
                         >
                             {loading() === "email" ? "Sending..." : "Send magic link"}
                         </button>

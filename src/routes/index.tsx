@@ -3,7 +3,6 @@ import { buttonVariants } from '~/components/ui/button';
 import { cn } from '~/lib/utils';
 import { createSignal, For, Show, Suspense } from 'solid-js';
 import SiteLayout from '~/components/SiteLayout';
-import KnockoutText from '~/components/KnockoutText';
 import ThemeCard from '~/components/catalog/ThemeCard';
 import { loadThemes } from '~/lib/server/catalog';
 
@@ -34,26 +33,22 @@ export default function Home() {
   return (
     <SiteLayout title="Antora Supplemental Registry">
       <section class="relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-b from-primary-600/10 via-transparent to-transparent" />
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 relative">
           <div class="text-center max-w-3xl mx-auto">
             <p class="text-primary-400 text-sm font-semibold tracking-widest uppercase mb-4">
-              Antora Extension Registry
-            </p>
-            <p class="text-slate-500 text-xs mb-4">
-              Unofficial<a href="#disclaimer" aria-label="See disclaimer" title="See disclaimer" class="text-primary-400 hover:text-primary-300 no-underline">*</a>
+              Unofficial Registry
             </p>
             <h1 class="font-bold text-white mb-8 leading-tight">
-              <span class="block whitespace-nowrap text-[1.7rem] sm:text-5xl lg:text-6xl">Extensions &amp; themes for</span>{' '}
-              <KnockoutText text="Antora" class="mt-3 text-6xl sm:text-7xl lg:text-8xl" />
+              <span class="block text-6xl sm:text-7xl lg:text-8xl tracking-tight">Antora</span>{' '}
+              <span class="block mt-2 whitespace-nowrap text-[2rem] sm:text-5xl lg:text-6xl">Extensions &amp; Themes</span>
             </h1>
 
             <form class="max-w-2xl mx-auto mb-6" onSubmit={submitOmni}>
               <label class="sr-only" for="omni-search">Search the registry</label>
               <div class="relative group">
-                {/* Bloom carried over from the old /registry search: blurred gradient halo, stronger on focus. */}
-                <div aria-hidden="true" class="pointer-events-none absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary-400 via-indigo-500 to-primary-600 blur opacity-40 dark:opacity-25 group-focus-within:opacity-70 dark:group-focus-within:opacity-50 transition duration-700" />
-                <div class="relative flex flex-col sm:flex-row gap-2 p-2 rounded-2xl bg-slate-800/60 border border-slate-700/60 shadow-2xl shadow-indigo-500/5">
+                {/* Subtle solid-accent glow, stronger on focus. */}
+                <div aria-hidden="true" class="pointer-events-none absolute -inset-1 rounded-2xl bg-brand blur-md opacity-20 dark:opacity-15 group-focus-within:opacity-45 dark:group-focus-within:opacity-35 transition duration-700" />
+                <div class="relative flex flex-col sm:flex-row gap-2 p-2 rounded-2xl bg-slate-800/60 border border-slate-700/60 shadow-2xl">
                   <input
                     id="omni-search"
                     type="search"
@@ -78,7 +73,7 @@ export default function Home() {
                       aria-pressed={kind() === chip}
                       class={
                         kind() === chip
-                          ? 'px-3 py-1 rounded-full text-xs font-semibold bg-primary-600 text-white'
+                          ? 'px-3 py-1 rounded-full text-xs font-semibold bg-primary-600 text-brand-foreground'
                           : 'px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-500'
                       }
                       onClick={() => setKind(chip)}

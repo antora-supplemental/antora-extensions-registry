@@ -2,6 +2,8 @@
 
 == Unreleased
 
+* Hero: eyebrow now reads "Unofficial Registry" (asterisk link removed); the heading is a large plain "Antora" followed by "Extensions & Themes". The ANTORA knockout and the `KnockoutText` component are removed. The footer disclaimer drops its leading asterisk.
+* Palette: replaced the sky/indigo gradient branding with solid colors only: neutral charcoal greys (#111111 base), white text, and one signal-orange accent, `--brand` #FF5F00 with `--brand-foreground` #111111, for buttons, active states, the logo tile, focus rings and links. The solid-ui `primary`/`accent`/`ring` tokens and the Tailwind `primary` scale map to the orange; the `--brand-grad-*` variables are gone. Light-mode orange text uses #C2410C for AA contrast. The search glow is a subtle solid-orange blur.
 * Unknown routes (including the removed `/registry`) now render a *Page not found* page with HTTP 404 via a `[...404].tsx` catch-all and `HttpStatusCode`. Previously no route matched, so SolidStart served an empty app shell with HTTP 200 (an earlier attempt never wrote the file because PowerShell treated `[...404]` as a wildcard).
 * Native search clear buttons (`::-webkit-search-cancel-button`, `::-ms-clear`) are hidden so long queries fade cleanly at the input edge.
 * Footer tagline: "extensions and themes for the Antora community" (was "extensions, themes, and packages").

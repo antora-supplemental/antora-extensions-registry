@@ -161,7 +161,7 @@ export default function SubmitThemeForm(props: SubmitThemeFormProps) {
             <button
               type="submit"
               disabled={isLoading()}
-              class="w-full py-3 px-4 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 text-white font-medium rounded-xl transition-colors"
+              class="w-full py-3 px-4 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 text-brand-foreground font-medium rounded-xl transition-colors"
             >
               {isLoading() ? 'Validating...' : 'Validate Theme'}
             </button>

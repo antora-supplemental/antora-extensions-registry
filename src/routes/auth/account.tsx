@@ -155,7 +155,7 @@ export default function AccountPage() {
                                   type="button"
                                   disabled={loading() !== null}
                                   onClick={() => linkProvider(provider.id)}
-                                  class="text-sm px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-500 text-white disabled:opacity-60"
+                                  class="text-sm px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-500 text-brand-foreground disabled:opacity-60"
                                 >
                                   <span class="inline-flex items-center gap-1.5"><ProviderIcon provider={provider.id} />{loading() === provider.id ? "Linking..." : "Link"}</span>
                                 </button>

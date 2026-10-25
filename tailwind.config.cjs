@@ -1,10 +1,15 @@
 /** @type {import('tailwindcss').Config} */
+const colors = require('tailwindcss/colors');
+
 module.exports = {
   darkMode: ['variant', ['&:is(.dark *)', '&:is([data-theme="dark"] *)']],
   content: ['./src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
+        // Neutral charcoal greys everywhere the components say slate.
+        slate: colors.neutral,
+        brand: { DEFAULT: 'var(--brand)', foreground: 'var(--brand-foreground)' },
         border: 'hsl(var(--border) / <alpha-value>)',
         input: 'hsl(var(--input) / <alpha-value>)',
         ring: 'hsl(var(--ring) / <alpha-value>)',
@@ -13,8 +18,9 @@ module.exports = {
         primary: {
           DEFAULT: 'hsl(var(--primary) / <alpha-value>)',
           foreground: 'hsl(var(--primary-foreground) / <alpha-value>)',
-          50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8',
-          500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e', 950: '#082f49',
+          // Solid signal-orange brand scale (600 = --brand #FF5F00).
+          50: '#fff4ed', 100: '#ffe6d4', 200: '#ffc9a8', 300: '#ffa370', 400: '#ff7a33',
+          500: '#ff7314', 600: '#ff5f00', 700: '#c2410c', 800: '#9a3412', 900: '#7c2d12', 950: '#431407',
         },
         secondary: { DEFAULT: 'hsl(var(--secondary) / <alpha-value>)', foreground: 'hsl(var(--secondary-foreground) / <alpha-value>)' },
         destructive: { DEFAULT: 'hsl(var(--destructive) / <alpha-value>)', foreground: 'hsl(var(--destructive-foreground) / <alpha-value>)' },

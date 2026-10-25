@@ -21,7 +21,7 @@ export default function ThemesPage() {
           </div>
           <A
             href="/themes/submit"
-            class="inline-flex items-center justify-center px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white font-medium rounded-xl transition-colors shrink-0"
+            class="inline-flex items-center justify-center px-6 py-3 bg-primary-600 hover:bg-primary-500 text-brand-foreground font-medium rounded-xl transition-colors shrink-0"
           >
             Submit a Theme
           </A>
