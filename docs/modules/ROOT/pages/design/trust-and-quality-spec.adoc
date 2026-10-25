@@ -1,0 +1,710 @@
+= Antora Extension Registry: Accounts, Stacks, Quality & Trust
+:navtitle: Trust and quality spec
+:description: Design spec v0.2 for registry.antora-supplemental.org: what signed-in users can do, how stacks install, how everything Antora-related gets indexed, scanned and claimed, and the quality model (ratings, tiers, flags, redemption). Draft for iteration; nothing is implemented and the repo is unchanged.
+:page-version: v0.2+
+:revdate: 2026-10-25
+:toc: macro
+:toclevels: 2
+
+[IMPORTANT]
+.Source of truth
+====
+Spec version v0.2+, recorded 2026-10-25. This page is the source of truth for the registry accounts, stacks, quality and trust design going forward; change it here (with a changelog bullet) rather than in the working draft.
+Working draft (Grok Bot Page, may lag or run ahead of this file): https://cursor.com/canvas/store-bccecd49-b037-4ff7-a518-8d35f2a3202d/b3d9be1d-4261-4513-b47d-0dd0258ec165[Accounts, Stacks, Quality & Trust Spec (Page)].
+====
+
+_Design spec v0.2 for registry.antora-supplemental.org: what signed-in users can do, how stacks install, how everything Antora-related gets indexed, scanned and claimed, and the quality model (ratings, tiers, flags, redemption). Draft for iteration; nothing is implemented and the repo is unchanged._
+
+toc::[]
+
+[#principles]
+== Principles and decisions
+
+[NOTE]
+.Core call
+====
+Index everything, show what earned it. The registry knows about every Antora extension and theme it can find, but default results only show items that passed graduation or were grandfathered. Everything is security-scanned on every update.
+====
+
+* *Accounts are for using, not only uploading*: Sign-in unlocks collections, stacks, ratings, flags and claiming. Sign-in copy: "Sign in to save collections, build a stack, and rate extensions."
+* *Maturity is a registry status, not a semver claim*: A 1.0.0 tag never promotes anything; graduation checks do.
+* *Rating and quality flag are independent signals*: Stars measure liking; flags measure craft. Popular-but-ugly can still be sequestered.
+* *Thresholds need a minimum count and a rate*: Small numbers alone can never crown or condemn an item.
+* *Community polices quality; admins rule on disputes*: No admin gate at graduation. Admins confirm Low quality, reinstatement and security blocks.
+
+[cols="1,1",options="header"]
+|===
+|Decision |Status
+
+|Tier names Workshop / Listed |Decided
+|Existing catalog items start Listed (grandfathered) |Decided
+|No admin spot checks at graduation |Decided
+|Security scan on every update (nightly at worst, on demand at publish) |Decided
+|Flag rule: 5 distinct flags and 10% of 90-day installers/raters; 25 always |Decided
+|Stacks may reference any npm package or git URL; reference triggers ingestion |Decided
+|Index all Antora-related npm/git projects; outreach PR/MR; claim flow |Decided
+|Email via Resend |Decided, pending API key and domain
+|Admins in the DB via /admin; two-admin concurrence once 2+ admins, 7-day single-admin fallback |Decided
+|`antora-supplemental` org members are trusted publishers |Implemented
+|Trust granted only by admins (verdict/quorum rules); no self-nomination; admins in the requesting org recuse |Decided
+|Trusted items (incl. `antora-supplemental`) stay in Workshop until marked ready |Decided
+|Versions never auto-graduate; first major tag sends a one-time ready-to-graduate nudge |Decided
+|Owners may appeal a security block by resubmitting a fix commit; one queued appeal per item; non-accusatory copy |Decided
+|More than 5 rejected appeals bans the user (account + solely owned items); 1 unban appeal per 3 months, unanimous vote of the rejecting admins |Decided
+|Agentic AI reviewer in a sandbox, escalations only, advisory; budget, per-item cap, SHA cache |Decided
+|AI reviewer runs on Ryan's Cursor account via the cloud agent API (latest Grok model) for now; Ryan to confirm Cursor's terms allow an unattended service |Decided
+|AI findings posted to GitHub: escalations/appeals to a registry-repo issue (redacted when sensitive, details admin-only); trust pre-checks to a Discussions thread or issue; link stored and shown on report pages |Decided
+|Pluggable AI providers on /admin; admins propose, Ryan alone approves; presets plus OpenRouter discovery; keys as named server-side secrets |Decided
+|Outreach PRs from a dedicated registry bot account; body names the org, @-mentions live admins in one line, links an 'Outreach & listings' Discussions category (to be created) |Decided
+|One eligible community nomination (stack inclusion or Nominate click) plus a passing scan moves an Indexed item to Listed unclaimed |Decided
+|No policy cap on outreach PRs; technical pacing/backoff only; one PR per repo ever; opt-out honored |Decided
+|Trust requests via /trust form: stored, emailed to support, AI pre-check report (advisory), admin verdict; GitHub-issue variant optional later |Decided
+|Nominated contributors become admins, trusted publishers, or both, case by case (Ryan decides, Dan suggests, or they volunteer) |Decided
+|Unban fallback: remaining rejecting admins plus one randomly chosen eligible admin, unanimous |Decided
+|CLI: command `antora-registry` from npm package `@antora-supplemental/registry` (scope kept unless Antora adopts the project) |Decided
+|===
+
+[#stacks]
+== Accounts, collections and stacks
+
+[cols="1,1,1",options="header"]
+|===
+|Concept |What it is |Visibility
+
+|Collection |Bookmark list of any items (extensions, themes, stacks) |Private by default; shareable link optional
+|Stack |Ordered set of extensions plus at most one UI theme, each pinned to a version range, with optional config snippets |Private draft, unlisted link, or published
+|Published stack |A stack listed in the catalog, rateable, forkable |Public; subject to the same flag rules
+|===
+
+A stack member can be a registry item or any npm package or git URL. An unknown reference is ingested automatically (see Indexing) and becomes an Indexed listing; the stack links to it immediately while its first scan runs. Validation on save: every member resolves, no duplicates, one theme max, a warning for Workshop, Indexed or Low-quality members. Published stacks cannot contain Low-quality or security-blocked members.
+
+[#cli]
+=== Stack install CLI
+
+Decided: a dedicated command, `antora-registry`, published in the npm package `@antora-supplemental/registry`. The scope is only the package name; the command is always typed as `antora-registry`. The scope stays unless Antora proper adopts the project. Every stack page also offers a no-CLI fallback (copyable snippet).
+
+Install once (primary):: `npm install -g @antora-supplemental/registry`
+Then run:: `antora-registry install <stack>`
+One-off, no install:: `npx @antora-supplemental/registry install <stack>`
+
+[cols="1,1",options="header"]
+|===
+|Command |Effect
+
+|`antora-registry install @ryan/docs-starter` |Resolve stack, add npm deps to package.json, merge `antora.extensions` and `ui.bundle.url` into antora-playbook.yml (idempotent)
+|`antora-registry install <stack> --dry-run` |Print the diff only
+|`antora-registry install <stack> --playbook site.yml` |Target a specific playbook
+|`antora-registry add <extension>` |Add one item without a stack
+|`antora-registry snapshot` |Write `antora-registry.lock.json` with resolved versions for reproducible CI
+|===
+
+. *Fetch manifest*: GET `/api/stacks/:owner/:slug/manifest.json` (public, versioned, cacheable).
+. *Resolve*: Pin to semver ranges; warn on Workshop, Indexed, Low-quality or scan-warned members; refuse blocked ones.
+. *Write*: Use a YAML CST editor (the `yaml` package Document API) to preserve comments; never clobber existing entries; ask before replacing a theme.
+. *Install*: Run the detected package manager (npm, pnpm, yarn, bun) unless `--no-install`.
+. *Report*: Print what changed and ping an install counter (opt-out via `--no-telemetry`); signed-in installs count toward the flag-rule denominator.
+
+[#curation]
+== Curation model
+
+[cols="1,1,1,1",options="header"]
+|===
+|State |Who gets in |Default browse |Ratings / flags
+
+|Indexed (unclaimed) |Auto-ingested by crawl or stack reference |Hidden; appears in keyword search below Listed results, and under Include Indexed |Stars on; no flags
+|Workshop |Submissions and claimed items not yet marked ready |Hidden; Include Workshop |Feedback only; no public stars, no flags
+|Listed |Passed graduation, or grandfathered |Shown |Stars and flags on
+|Under review |Listed item hitting the flag rule |Shown, unchanged |On; admin queue
+|Low quality |Admin-confirmed |Hidden; Include Low quality |Stars frozen; redemption possible
+|Quarantined |Security scan blocked |Never; install refused |Off until cleared
+|Removed |Malware, license or policy violation confirmed |Never |n/a
+|===
+
+[NOTE]
+.Recommendation: a separate Indexed state
+====
+Unclaimed ingested items get their own Indexed state, not Workshop. Workshop means a person is working on it and chose to be here; Indexed means the registry found it and nobody has spoken for it. Indexed items are findable by name so stack references and search work, but stay out of default browse and quality sorts. An Indexed item leaves the state by being claimed (goes to Workshop, or straight to Listed if the claimant marks ready and checks pass), or by community nomination. Decided: one nomination is enough, either a signed-in user's published stack including it or an explicit Nominate for listing click, provided the security scan passes (pass or warn). The item moves to Listed unclaimed. The nominator must meet the flag/rate eligibility (account 7+ days, verified email, linked GitHub/GitLab 30+ days) and cannot own the item.
+====
+
+[#lifecycle]
+== Lifecycle states
+
+.Lifecycle (converted from the Page diagram; arrows are transitions, (dashed) marks the dashed edges)
+[source,text]
+----
+States:
+  [Indexed] - auto-ingested, unclaimed (terminal)
+  [Workshop] - hidden by default
+  [Graduation checks + ready] (decision)
+  [Listed] - default results
+  [Under review] - flag rule hit
+  [Admin verdict] (decision)
+  [Low quality] - sequestered
+  [Redemption review] - auto + admin + flagger panel
+
+Transitions:
+  Indexed -- claimed --> Workshop
+  Indexed -- nominated --> Graduation checks + ready  (dashed)
+  Workshop -- dev marks ready --> Graduation checks + ready
+  Graduation checks + ready -- pass --> Listed
+  Graduation checks + ready -- fail --> Workshop  (dashed)
+  Listed -- flags --> Under review
+  Under review --> Admin verdict
+  Admin verdict -- dismiss --> Listed  (dashed)
+  Admin verdict -- confirm --> Low quality
+  Low quality -- dev updates --> Redemption review
+  Redemption review -- reinstate --> Listed
+  Redemption review -- not yet --> Low quality  (dashed)
+----
+
+Any state can move to Quarantined when a scan blocks, and returns to its prior state when a later scan passes or an admin clears it. Cooldowns: a dismissed review counts only flags after the dismissal; a failed redemption blocks a new request for 30 days or until a new release.
+
+[#maturity]
+== Maturity tiers and graduation
+
+[TIP]
+.Decided: Workshop / Listed, no admin gate
+====
+Neutral names that imply nothing about version numbers. Graduation is fully automated plus the dev's opt-in; the community polices quality afterward through ratings and flags. Existing catalog items are grandfathered as Listed, but still get the security scan.
+====
+
+[cols="1,1",options="header"]
+|===
+|Graduation check |Type
+
+|README with usage section and screenshots (themes) |Automated
+|OSI license file present |Automated
+|Repository public, release or npm publish within 12 months |Automated
+|Install test passes: clean Antora site builds with item added (sandbox) |Automated
+|Latest security scan is pass or warn (not block) |Automated
+|Themes: live preview URL or registry-built preview |Automated
+|`antora` peer version range declared |Automated
+|Owner clicks Ready for prime time and accepts flag/rating terms |Opt-in (not used for nominated Indexed items, which need only one nomination plus a passing security scan)
+|===
+
+[#nudge]
+=== Ready-to-graduate nudge
+
+A version number never graduates an item: AI-assisted repos often stay 0.x when stable. Instead, the first major release tag prompts the owner to decide.
+
+Trigger:: Item in Workshop or Indexed publishes its first tag or npm version at a new major, 1.0.0 or greater (2.0.0 counts as a new major too); detected at the nightly scan or on publish
+Claimed owner:: One email via Resend once set up (respects the My items notification pref) plus an in-app banner on the listing with a one-click Mark ready button that runs the graduation checks
+Unclaimed / Indexed:: The nudge rides on the outreach PR body (claim, then mark ready); no separate PR or comment if the PR already exists
+Frequency:: One nudge per item per major version; never repeated if dismissed
+Not a promotion:: Item stays in Workshop until the owner clicks Mark ready
+
+[#new-badge]
+=== New badge
+
+Source:: `item.first_listed_at`: the date the item was first added to the registry, in any state
+Immutable:: Set once on first insert; never reset by releases, metadata updates, re-imports, claims, state changes or redemption
+Shown:: While now − first_listed_at < 30 days; site setting `NEW_BADGE_DAYS`, default 30
+Filter / sort:: New filter (inside the window) and a Newest sort by first_listed_at, descending
+Relation to tiers:: Reflects registry age only, independent of state and quality
+
+Recommendation: Workshop and Indexed items show the badge too, since it is a fact about age; default results hide them anyway. Grandfathered items get first_listed_at from their original import date, so launch day does not mark the whole catalog New.
+
+[#indexing]
+== Indexing everything Antora
+
+Goal: the registry knows every Antora extension and UI theme, whether or not it was built for the registry. A daily crawl (every 24 hours) plus event-driven ingestion feed one pipeline.
+
+[cols="1,1",options="header"]
+|===
+|Source |What it matches
+
+|npm search |Keywords `antora`, `antora-extension`, `antora-ui`; packages depending on `@antora/*`
+|GitHub / GitLab topics |Existing topic discovery (`antora-extension`, `antora-ui`, etc.)
+|GitHub / GitLab code search |`register` exports calling `this.on('contentAggregated'` (or other Antora events); ui-bundle layouts (`src/partials`, `ui.yml`, `gulpfile` with `@antora/ui-default` patterns); `supplemental-ui` folders
+|Playbook mining |`antora-playbook.yml` files: each `antora.extensions` entry and `ui.bundle.url` is a referenced item to ingest (the playbook repo itself is not a listing)
+|Registry references |Stack members and listing dependencies (e.g. a re-theme's base theme) that are not yet in the registry
+|Manual and URL-expedite submissions |As before
+|===
+
+. *Normalize*: Resolve to a canonical identity: npm name and/or repo host + numeric repo ID; merge npm and git records for the same project.
+. *Classify*: Extension, UI theme, or not a listing (playbook sites, docs repos). Heuristic score; low-confidence matches go to an admin triage list instead of the catalog.
+. *Create Indexed listing*: Set `first_listed_at`, record every `ingestion_source`, state Indexed, unclaimed.
+. *Scan*: Run the security scan; Quarantined if blocked.
+. *Screen and outreach*: Run graduation checks to build the public screening report; if registry files are missing, queue an outreach PR/MR.
+
+Limits: GitHub code search allows about 10 requests per minute per token, so the crawl walks queries incrementally and stores cursors; npm search pages are cached for 24 hours. Forks are ingested only if they are published to npm separately or referenced explicitly.
+
+[#outreach]
+=== Outreach PR/MR
+
+During screening, if an ingested project lacks registry files, automation opens one PR (GitHub) or MR (GitLab) to add them. Topics cannot be set through a PR, so the PR adds a manifest file and a README badge.
+
+Files:: `antora-registry.yml` (type, appearance for themes, antora version range, preview URL placeholder) and a badge line in README linking to the listing
+Title:: "Add Antora Extension Registry metadata"
+Sender:: Decided: a dedicated registry bot (machine user) account, never a personal account
+Body:: Short and polite: names the `antora-supplemental` org as the registry's maintainer; why the project was included (found on npm/GitHub or referenced by another listing); link to the public screening report; how to claim ownership; what the files do; that merging is optional and the listing exists either way
+Maintainer mentions:: One line @-mentioning current admins, built from the `admin` table (revoked_at null) when the PR is opened, so it never goes stale. Mentioned once in the body only; never in follow-ups
+Questions:: Link to a GitHub Discussions category, 'Outreach & listings', at github.com/antora-supplemental/antora-extensions-registry/discussions (category needs creating before the first PR)
+Opt-out:: Closing the PR or commenting `/registry opt-out` stops all future PRs; a separate `/registry delist` request hides the listing (admin-confirmed)
+
+[cols="1,1",options="header"]
+|===
+|Etiquette rule |Behavior
+
+|One PR per repo, ever |Recorded in `outreach_pr`; never reopened, never bumped, even after a rename
+|Respect policies |Skip if CONTRIBUTING, PR templates or README forbid bot or unsolicited PRs, or if the repo disables PRs
+|Skip |Archived repos, forks, repos with no commit in 2 years, repos already claimed, repos that already have the manifest
+|No policy cap |Decided: no daily or per-owner limit on outreach PRs
+|Technical throttle |Pace PR creation (serial queue, delay between writes) and back off on 403/429 or `retry-after`, to stay under GitHub/GitLab abuse and secondary rate limits so the bot account is not flagged
+|No follow-ups |No comments after opening except replies to direct questions or commands
+|===
+
+[NOTE]
+.Sample PR body
+====
+Hi! Your project is listed in the Antora Extension Registry (registry.antora-supplemental.org), a community-run index maintained by the antora-supplemental org. We found it on npm. This PR adds an optional `antora-registry.yml` and a README badge so the listing shows accurate details. Merging is optional; the listing exists either way. Screening report: [link]. Own this repo? Claim the listing: [link]. Questions: Outreach & listings discussions [link]. Maintainers: @admin1 @admin2. To stop future PRs, close this or comment `/registry opt-out`.
+====
+
+[WARNING]
+.Policy and etiquette risk
+====
+Unsolicited automated PRs can read as spam and can get a bot account flagged by GitHub or GitLab. GitHub Apps cannot open PRs on repos where they are not installed, so the decided dedicated machine user forks and opens PRs; naming the org, real maintainers and a Discussions link makes the bot accountable.
+====
+
+[#claim]
+=== Claim ownership
+
+. *Click Claim this listing*: Shown on every unclaimed listing and linked from the outreach PR.
+. *Verify via OAuth*: GitHub: the signed-in user's token shows `admin` or `maintain` permission on the repo. GitLab: access level Maintainer (40) or higher.
+. *npm-only packages*: No npm OAuth exists, so the user adds a registry-issued token to the package's `package.json` (`antoraRegistry.claim`) and publishes; the registry checks the published manifest and the npm maintainers list.
+. *Grant control*: Claimant becomes owner: edit metadata, mark ready, request redemption, trigger scans, manage co-owners. Indexed listings move to Workshop.
+
+Disputes (two claimants, or a transferred repo) go to the admin queue; ownership is re-verified when repo permissions change or once a year.
+
+[#security]
+== Security scanning
+
+Every listing is scanned on every update: on demand when an owner publishes or clicks Scan now, and at worst in the nightly scan, which picks up any new npm version or default-branch commit since the last run, plus re-checks all listings against newly published advisories.
+
+[cols="1,1",options="header"]
+|===
+|Check |Method
+
+|Dependency advisories |OSV.dev batch query and npm audit data for the full resolved tree
+|Install scripts |Flag `preinstall`, `install`, `postinstall` scripts in the package and its deps
+|Obfuscated or minified source |Entropy and line-length heuristics on shipped JS that is not a declared build artifact
+|Network at build time |Run the install test in a sandbox with egress logged; any call outside npm registry and git hosts is reported
+|Secrets |gitleaks over the package tarball and repo head
+|License |SPDX license present and OSI-approved; mismatch between package.json and LICENSE
+|Known-malicious names |Match against OSV malicious-package (MAL) entries
+|Typosquats |Edit distance 1 to 2 from popular Antora packages (`@antora/*`, top 100 listings)
+|===
+
+[cols="1,1",options="header"]
+|===
+|Outcome |Effect
+
+|Pass |Nothing shown beyond a scanned date
+|Warn |Warning shown on the listing and in the CLI (e.g. postinstall script, moderate advisory, unexpected network call)
+|Block |Auto-Quarantined, install refused by the CLI, admin alert email to support@antora-supplemental.org; owner notified
+|===
+
+Block triggers: critical advisory with no fixed version in range, malicious-package match, leaked live secret, or exfiltration-like network call. Owners can appeal by pushing a fix (see Security appeals and bans); admins can also clear a block with a reason.
+
+Scan report page:: Public page per listing (`/x/:slug/screening`): latest scan, findings by severity, graduation check results, history of runs. Linked from the outreach PR and the listing.
+Where it runs:: GitHub Actions in a registry-owned public repo (free minutes for public repos), triggered by Netlify functions via `workflow_dispatch`; Netlify functions are too short-lived for installs.
+Cost:: Expected $0 at current scale: Actions on a public repo and OSV are free; Turso storage of findings is small
+Rate limits:: On-demand: 1 scan per listing per 10 minutes, 20 per account per day; nightly batch capped by Actions concurrency
+
+[#appeals]
+== Security appeals and bans
+
+[NOTE]
+.Assume a mistake, not malice
+====
+Most blocks come from something committed by accident: a leaked key, a vulnerable dependency, a leftover script. Copy is non-accusatory: "Our scanner found something that needs a fix before this can be installed." Never "malicious" unless admins have decided so.
+====
+
+. *Fix first*: The owner pushes a commit that removes or fixes the flagged code (and rotates any leaked secret).
+. *Appeal = resubmit*: Owner clicks Appeal on the screening page, naming the fix commit SHA. The full scan reruns on that SHA; if it passes, the block clears automatically and the appeal closes as resolved.
+. *One queued appeal per item*: While an appeal is open, Appeal is disabled. A new appeal needs a new commit SHA.
+. *Admin review*: If the rescan still blocks, or the owner disputes a finding as a false positive, the appeal goes to admins under the verdict rules (lifting a quarantine needs a second admin once there are 2+).
+. *Outcome*: Accepted: back to prior state. Rejected: stays Quarantined, with the reason and what to fix.
+
+[#bans]
+=== Bans
+
+Trigger:: More than 5 rejected appeals (the 6th rejection) across all items the user owns; auto-resolved appeals do not count
+Scope:: The user account and items they solely own: items hidden, no new submissions, claims, ratings, flags or stacks. Items with other verified co-owners stay up under those co-owners
+Org risk:: Org-owned items are not banned with the user; the user loses rights on them. Banning a whole org needs a separate admin verdict, since one member could otherwise take down a shared namespace
+Unban appeals:: 1 every 3 months (`next_unban_eligible_at`)
+Unban review:: Decided by the admins who rejected the counted appeals, voting together; must be unanimous
+Missing reviewers:: Decided: remaining rejecting admins plus one replacement admin chosen at random from eligible admins (not involved in the case, not recused), still unanimous
+
+[#ai-review]
+=== Agentic AI reviewer
+
+A prompt-only LLM is unreliable for judging intent, because investigating means acting: cloning the repo, diffing versions, rerunning scanners, reading commit history. So the reviewer is an agent with tool access, running in a sandbox with no secrets and logged egress. It gives an advisory verdict (likely mistake, unclear, likely malicious) with evidence; admins decide.
+
+[cols="1,1",options="header"]
+|===
+|Cost control |Rule
+
+|Tiered pipeline |Static scanners on every update; AI only on escalation (a block or an appeal sent to admins); never on routine updates
+|Cache |One review per item and commit SHA; reused, never rerun for the same SHA
+|Per-item cap |Limited reviews per item per month; extra escalations go to admins without AI
+|Monthly budget |Hard cap; once hit, reviews pause and admins review manually
+|Logging |Model, tokens or run cost and evidence stored in `ai_review`
+|===
+
+[TIP]
+.Decided: Cursor for now
+====
+Runs on Ryan's Cursor account through the Cursor cloud agent API with the latest Grok model. Before launch Ryan confirms Cursor's terms allow an unattended service on his plan. Other providers can be swapped in later (see AI provider settings).
+====
+
+[cols="1,1",options="header"]
+|===
+|Finding type |Where the reviewer posts
+
+|Security escalation or appeal |Issue in the registry repo with verdict, evidence summary and links
+|Sensitive finding (live secret, working exploit, unpatched vuln) |Full details admin-only (admin queue, private channel); the public issue gets a redacted summary with no secret values or exploit steps
+|Trust pre-check |Thread in a Discussions category (or an issue) with the advisory recommendation and evidence
+|===
+
+The issue or discussion URL is stored on `ai_review` (`report_url`), and the listing's screening page, appeal view and trust request page link to it. Posts come from the registry bot account.
+
+[#ai-providers]
+=== AI provider settings
+
+A section on /admin for switching the reviewer to another provider, for example pay-as-you-go API billing instead of Ryan's Cursor account.
+
+Approval:: Any admin may propose a provider or model change; it takes effect only after Ryan approves (owner-only, not the normal quorum). Ryan's own proposals apply on confirm
+Presets:: Cursor (current), xAI, OpenAI, Anthropic, Google (Gemini), Mistral, OpenRouter, plus a custom OpenAI-compatible endpoint (base URL + model)
+OpenRouter models:: Searchable dropdown filled from OpenRouter's public models list endpoint, cached (refreshed daily or on demand), showing context length and pricing as the API reports them
+API keys:: Encrypted secrets kept server-side in env or the secret store; config references them by name. Write-only fields, never shown back or sent to the browser
+Budgets:: Per-provider monthly and per-item caps; same pause-to-manual behaviour when hit
+Test connection:: Button sends a tiny prompt with the referenced key and reports success, latency and errors; required to pass before approval
+Audit:: Every proposal, approval, rejection, activation and test is logged in `admin_audit_log`
+
+[#trusted]
+== Trusted publishers (pre-approval)
+
+Admins keep an allowlist of trusted GitHub/GitLab users and orgs/groups in the database. A submission from a trusted source skips the intake review queue. `antora-supplemental` (GitHub org) is seeded as trusted.
+
+[cols="1,1",options="header"]
+|===
+|Match rule |Passes when
+
+|Repo owner |The owner segment of the repo URL (e.g. `github.com/antora-supplemental/...`) equals a trusted user or org, matched by host + immutable owner ID
+|Submitter account |The submitter's linked GitHub/GitLab account is a trusted user
+|Submitter org |The submitter is a verified member of a trusted org/group (checked via the provider API at submit time)
+|===
+
+[cols="1,1",options="header"]
+|===
+|Intake path |Trusted behavior
+
+|Manual submission |Skips the admin intake queue; imported immediately
+|URL-expedite (user submits a git URL) |If the URL meets the import criteria and the owner or submitter is trusted, auto-imports with no queue
+|Daily discovery (every 24 hours) |Repos owned by trusted owners auto-import and are auto-claimed by the owner org
+|===
+
+[TIP]
+.Decided: trust skips intake, not Workshop
+====
+Trust skips the intake queue, not the tiers or the security scan. Trusted items, including those from `antora-supplemental`, stay in Workshop until the dev marks them ready; then the same automated graduation checks apply. A 1.0.0 tag only triggers the ready-to-graduate nudge (see Maturity tiers).
+====
+
+[cols="1,1",options="header"]
+|===
+|Risk |Mitigation
+
+|Org or user rename, or a freed name re-registered |Match on the provider's numeric owner ID; refresh the login on each sync
+|Compromised trusted account |Trust never bypasses scans or flags; admins can revoke immediately; alert on more than 5 new items in 24 hours from one trusted owner
+|Revocation |Stops future auto-approval only. Existing items keep their status; admins can bulk-move them
+|Audit |Every grant and revoke records the admin, a reason and a timestamp
+|===
+
+[TIP]
+.Decided: trust is granted, never self-nominated
+====
+Trust is a relationship between the antora-supplemental team and the requester, so only registry admins grant it, under the admin verdict and quorum rules. An org or user may ask through the /trust form, but cannot nominate itself. An admin who is a member of the requesting org or is the requesting user is recused and cannot propose or vote on that grant; if recusal leaves no eligible admin, the request waits.
+====
+
+[#trust-requests]
+=== Trust requests
+
+. *Submit /trust form*: Signed-in user requests permanent pre-approval for their account or an org/group they belong to (membership verified via the provider API), with an optional note. One open request per subject.
+. *Store and notify*: Insert a `trust_request` row and email support@antora-supplemental.org via Resend.
+. *AI pre-check*: The agentic reviewer inspects the requester's repos, publish and commit history and past registry record, then saves an advisory recommendation (grant, unclear, decline) with evidence on the request. Same sandbox and budget caps as security reviews; skipped if the budget is spent or AI is disabled.
+. *Admin verdict*: Admins see the full report and decide under the verdict and recusal rules (trust_grant verdict).
+. *Tell the requester*: Outcome plus a short summary of the report; evidence details stay admin-only.
+
+No PR to any repo is needed. Optional later variant: a GitHub issue in the registry repo triggers the same AI check and hosts the public report as a comment, for requesters who prefer a public record.
+
+[#appearance]
+== Theme appearance
+
+[cols="1,1",options="header"]
+|===
+|Declared appearance |Filter it appears under
+
+|light |Light
+|dark |Dark (dark-only)
+|both (light + dark modes) |Light + dark
+|other (high contrast, sepia, etc.) |Other
+|===
+
+* *Declaration*: Themes declare appearance at submission or in `antora-registry.yml`; preview checks confirm it where possible.
+* *Color re-themes*: A re-theme must declare its base theme as a dependency, so it is linked to and grouped under the base.
+* *Forks*: A fork is not treated as a re-theme; it is a separate theme with its own listing and history.
+
+[#ratings]
+== Ratings and quality score
+
+Users rate 1 to 5 stars (one rating per account per item, editable; latest wins). Map to p = (stars − 1) / 4 in [0, 1]. For a selected window, sort by a Bayesian average pulled toward the catalog mean, and display the raw mean with a confidence cue.
+
+[source,text]
+----
+Score = (C·m + Σ pᵢ) / (C + n)
+----
+
+m is the catalog-wide mean p in the window, n the number of ratings in the window, C = 10. In plain terms: every item starts as if it had 10 average ratings, so a handful of 5-star votes cannot jump it past a well-rated, heavily used item.
+
+Precise fill:: Stars filled to the raw window mean, e.g. 3.73 / 5 = 74.6%
+Confidence:: Fill opacity scales with n (full at n ≥ 30); label shows "74.6% · 12 ratings"
+Sort key:: Bayesian score, so 1 rating of 5 stars never outranks 80 ratings at 4.6
+Time window:: Ratings filtered by created_at in [start, stop]; edited ratings count at their edit time
+
+[#flags]
+== Low-quality flags
+
+A flag is a separate action (Flag as low quality) with a required reason: broken, abandoned, poor docs, visual/craft quality, misleading. Only eligible accounts count (see abuse). Only Listed items can be flagged.
+
+[source,text]
+----
+Review if  flags ≥ 5  and  (flags) / (people who installed or rated (last 90 days)) ≥ 10%;  or flags ≥ 25
+----
+
+[cols="1,1,1,1",options="header"]
+|===
+|Installed or rated (90 days) |Distinct flags |Share |Review?
+
+|20 |4 |20% |No (under 5 flags)
+|30 |5 |17% |Yes
+|100 |8 |8% |No
+|100 |10 |10% |Yes
+|400 |25 |6% |Yes (25 backstop)
+|===
+
+Denominator: distinct signed-in accounts that installed (signed-in CLI or Mark as used) or rated the item in the trailing 90 days; flags count from all time since the last dismissal. If small items prove noisy, a small-sample correction (for example a Wilson lower bound on the flag share) can be layered on later.
+
+[#reports]
+=== Reports and admin notification
+
+Decided: every flag or report on an extension or theme is a report with a reason and an optional message. It is stored in the admin report queue, and each new report emails support@antora-supplemental.org.
+
+. *User submits*: Reason (required) plus optional message, in the flag dialog.
+. *Store*: Insert a `report` row (status `open`) and, for low-quality reasons, the `flag` row, in one transaction.
+. *Notify*: Enqueue an outbox email to support@antora-supplemental.org via Resend: item, reason, message, reporter handle, admin queue link.
+. *Triage*: Admin resolves or dismisses with a reason; status becomes `resolved` or `dismissed`.
+
+[cols="1,1",options="header"]
+|===
+|Message handling |Rule
+
+|Format |Plain text only; no markdown or HTML rendering
+|Escaping |HTML-escaped in the admin UI and email body; links shown as text, not clickable
+|Length |Max 2,000 characters, trimmed; empty means no message
+|Visibility |Admins only; never public and never shown to the item's developer verbatim
+|Email volume |One email per report; hourly digest if more than 20 per hour
+|===
+
+[#redemption]
+== Redemption review
+
+. *Owner requests re-review*: Requires a new release since the Low-quality verdict and a changelog note addressing cited reasons.
+. *Automated review*: Security scan, graduation checks and install test; failure stops here with the owner told why.
+. *Admin queue*: Entry with flag reasons, release diff, automated results.
+. *Flagger panel*: Email up to 100 random subscribed flaggers. Each answers: Is this now acceptable quality? Yes / No / Can't tell.
+. *Decide*: Statistical rule below produces a recommendation; admin verdict is final.
+
+Model the approval rate θ among responders with a Beta(1, 1) prior; after k Yes from n decisive responses the posterior is Beta(1 + k, 1 + n − k).
+
+[source,text]
+----
+Reinstate if  n ≥ 5  and  P(θ > 0.5 | k, n) > 0.8
+----
+
+[cols="1,1,1,1",options="header"]
+|===
+|Responses n |Yes needed |P(θ > 0.5) |One fewer Yes
+
+|5 |4 |0.891 |0.656 (3/5)
+|10 |7 |0.887 |0.726 (6/10)
+|20 |12 |0.808 |0.668 (11/20)
+|===
+
+* *Fewer than 5 responses after 14 days*: Invite the next 100 subscribers; if exhausted, decide on admin verdict + automated checks alone.
+* *Posterior between 0.3 and 0.8*: Inconclusive: extend the sample once, then admin decides.
+* *Posterior under 0.3*: Stay Low quality; 30-day cooldown.
+* *Admin and statistics disagree*: Admin wins but must write a reason, logged publicly on the item's history.
+
+[NOTE]
+.Response bias
+====
+Flaggers are harsher than average, so their approval is strong evidence; that justifies a simple-majority bar. Expect about 5 responses per 100 invites.
+====
+
+[#abuse]
+== Abuse and sybil resistance
+
+[cols="1,1",options="header"]
+|===
+|Control |Rule
+
+|Eligibility to flag or rate |Account 7+ days old, verified email, linked GitHub/GitLab account 30+ days old
+|One per account |One active rating and one active flag per item; unflag allowed
+|Rate limits |10 flags/day, 50 ratings/day, 20 on-demand scans/day per account
+|No self-dealing |Owners and org members of the item's repo cannot rate or flag it
+|Brigade detection |Burst of flags (more than 3x the item's 30-day daily mean) from new accounts is held for admin, not counted
+|Ingestion spam |Stack references from accounts under 7 days old queue for ingestion but stay unpublished until scanned; cap 20 new references per account per day
+|Claim hijack |Ownership tied to live repo permission; re-verified on transfer; disputes go to admins
+|Reputation weight |Phase 3: weight flags by upheld-vs-dismissed history
+|Panel integrity |Random selection server-side; single-use signed links; one response per invite
+|===
+
+[#admins]
+== Admins and verdicts
+
+Today:: Ryan is the only admin
+Next:: Invite Dan (via Zulip) as second admin and ask him to suggest other contributors
+Nominated contributors:: Decided case by case: each becomes an admin, a trusted publisher (org member), or both. Ryan decides; Dan can suggest; contributors can volunteer for either or both
+Trusted publishers:: Anyone added to the `antora-supplemental` GitHub org is a trusted publisher (already implemented); org membership does not make someone an admin
+Admin list:: Stored in the DB with an audit log, managed at /admin; replaces the `ADMIN_GITHUB_LOGINS` env allowlist (seed Ryan from the env value once, then remove it)
+
+[cols="1,1,1",options="header"]
+|===
+|Verdict type |1 admin |2+ admins
+
+|Low-quality sequester |Final |Needs second admin
+|Reinstatement (redemption) |Final |Needs second admin
+|Report resolution that unlists an item |Final |Needs second admin
+|Trusted-publisher grant or revoke |Final |Needs second admin
+|Lifting a quarantine |Final |Needs second admin
+|Security quarantine |Immediate |Immediate; second review pending
+|Dismissals and routine triage |Final |Single admin
+|===
+
+. *First admin proposes*: Verdict recorded as `pending` with a reason; other admins notified.
+. *Day 3 reminder*: Remind admins who have not voted.
+. *Second admin concurs or objects*: Concur makes it final; object keeps it open for discussion.
+. *Day 7 fallback*: No second vote: the first verdict takes effect, labeled single-admin verdict, which any admin can later reopen.
+
+Admin grants and removals are themselves verdicts, logged in the audit trail; an admin cannot concur with their own proposal.
+
+[#data]
+== Data model
+
+Drizzle/libSQL sketch; `user` comes from better-auth, `item` is the existing extension/theme table.
+
+[cols="1,1",options="header"]
+|===
+|Table |Key columns
+
+|item (existing, new columns) |first_listed_at (immutable), npm_name, repo_host, repo_id, owner_user_id (nullable = unclaimed), grandfathered (bool)
+|collection |id, user_id, name, visibility, created_at
+|collection_item |collection_id, item_id or stack_id, added_at
+|stack |id, owner_id, slug, title, description, visibility (private\|unlisted\|published), theme_item_id, version, updated_at
+|stack_item |stack_id, item_id, version_range, position, config_json (external refs are ingested into item first)
+|rating |id, item_id, user_id, stars (1-5), created_at, updated_at; unique(item_id, user_id)
+|flag |id, item_id, user_id, reason, note, status (active\|withdrawn\|held), created_at; unique(item_id, user_id)
+|report |id, item_id, user_id, reason, message (max 2000, nullable), status (open\|resolved\|dismissed), resolved_by, resolution_note, emailed_at, created_at
+|maturity_status |item_id, state (indexed\|workshop\|listed\|under_review\|low_quality\|quarantined\|removed), prior_state, since, checks_json, decided_by
+|review_queue |id, item_id, kind (flag\|redemption\|claim_dispute\|scan_block\|ingest_triage), status, auto_result_json, admin_id, verdict, reason, created_at
+|scan_run |id, item_id, version_or_sha, trigger (nightly\|publish\|manual\|advisory), status, outcome (pass\|warn\|block), started_at, finished_at, runner_url
+|scan_finding |id, scan_run_id, check, severity (info\|low\|moderate\|high\|critical), title, detail, location, advisory_id, overridden_by
+|ingestion_source |id, item_id, source (npm\|topic\|code_search\|playbook\|stack_ref\|dependency\|submission), source_ref, query, found_at
+|outreach_pr |id, item_id, repo_host, repo_id, url, status (open\|merged\|closed\|skipped), skip_reason, opted_out, opened_at, closed_at; unique(repo_host, repo_id)
+|claim |id, item_id, user_id, method (github\|gitlab\|npm_token), status (pending\|verified\|rejected\|revoked), permission, token_hash, verified_at, reverify_at
+|redemption_subscription |item_id, user_id, created_at, unsubscribed_at
+|redemption_invite |review_id, user_id, token_hash, sent_at, response (yes\|no\|unsure), responded_at
+|notification_pref |user_id, category, email_enabled
+|nudge |id, item_id, kind (ready_to_graduate), major_version, user_id (nullable if unclaimed), channel (email\|banner\|outreach_pr), status (pending\|sent\|dismissed\|acted), emailed_at, dismissed_at, acted_at, created_at; unique(item_id, kind, major_version)
+|engagement |item_id, user_id, kind (install\|use\|rate\|collect), last_at; unique(item_id, user_id, kind)
+|admin |user_id, granted_by, granted_at, revoked_at, revoked_by
+|verdict |id, subject_type (item\|trusted_publisher\|admin\|report\|trust_request), subject_id, kind (low_quality\|reinstate\|unlist\|trust_grant\|trust_decline\|trust_revoke\|lift_quarantine\|quarantine\|admin_grant\|admin_revoke\|appeal_decision\|ban\|unban), proposed_by, reason, status (pending\|final\|single_admin\|objected\|reopened), required_votes, reminded_at, effective_at, created_at
+|admin_vote |verdict_id, admin_id, vote (concur\|object), note, created_at; unique(verdict_id, admin_id)
+|admin_audit_log |id, actor_id, action, target_type, target_id, detail_json, created_at
+|appeal |id, item_id, owner_user_id, commit_sha, kind (security\|unban), status (queued\|auto_resolved\|in_review\|accepted\|rejected), finding_ids, owner_note, ai_review_id, reviewer_verdicts_json, verdict_id, created_at, closed_at; one open appeal per item
+|ban |id, subject_type (user\|org), subject_id, reason, rejected_appeal_ids, rejecting_admin_ids, started_at, next_unban_eligible_at, lifted_at, lifted_by_verdict_id
+|ai_review |id, subject_type (item\|trust_request), subject_id, item_id (nullable; set when subject is an item), commit_sha (nullable; items only), trigger (block\|appeal\|trust_request), model, provider_config_id, provider (cursor\|xai\|openai\|anthropic\|google\|mistral\|openrouter\|custom), verdict (likely_mistake\|unclear\|likely_malicious for items; grant\|unclear\|decline for trust requests), evidence_json, cost, run_url, report_url (GitHub issue or discussion), report_redacted (bool), created_at; unique(item_id, commit_sha) where item_id is set
+|trust_request |id, requester_user_id, provider (github\|gitlab), subject_kind (user\|org), subject_login, provider_owner_id, note, status (open\|ai_reviewed\|granted\|declined\|withdrawn), ai_recommendation (grant\|unclear\|decline), ai_report_json, requester_summary, ai_review_cost, verdict_id, emailed_at, created_at, decided_at; one open request per subject
+|ai_provider_config |id, provider (cursor\|xai\|openai\|anthropic\|google\|mistral\|openrouter\|custom), model, endpoint (nullable; custom/OpenAI-compatible), secret_ref (name only), monthly_budget, per_item_cap, status (proposed\|approved\|active\|rejected\|retired), proposed_by, approved_by (must be Ryan), last_test_at, last_test_ok, created_at, activated_at; one active row
+|nomination |id, item_id, user_id, source (stack\|explicit), stack_id (nullable), status (pending_scan\|accepted\|rejected), created_at
+|trusted_publisher |id, provider (github\|gitlab), kind (user\|org), login, provider_owner_id, granted_by, reason, created_at, revoked_at, revoked_by; unique(provider, provider_owner_id)
+|===
+
+[#flows]
+== User flows
+
+=== Flag dialog
+
+. *Click Flag as low quality*: Only on Listed items; ineligible accounts see why.
+. *Pick reason + optional message*: Flags are about craft, not taste; use stars for taste. Message is plain text, up to 2,000 characters, seen only by admins.
+. *Redemption checkbox, pre-checked*: "Notify me if the developer asks for a second look." If the email category is off, show an inline toggle to enable it.
+. *Confirm*: Insert flag, report and redemption_subscription in one transaction; show undo.
+
+=== Review request (owner)
+
+. *Item dashboard shows status, scan results and cited reasons*: Aggregated reason counts, never flagger identities.
+. *Request re-review*: Enabled once a newer release exists; changelog note required.
+. *Track progress*: Automated result, panel response count, admin decision.
+
+=== Admin queue
+
+One list sorted by age, filterable by kind (flag, redemption, scan block, claim dispute, ingest triage). Each entry: item preview, status history, flag count and share, panel posterior, scan findings, and actions Confirm / Dismiss / Reinstate / Extend panel / Clear block / Remove, each requiring a reason.
+
+[#email]
+== Notifications and email
+
+[cols="1,1",options="header"]
+|===
+|Category |Default
+
+|Redemption panel invites |On only if the user leaves the flag-dialog box checked
+|My items: reviews, scans and status changes |On
+|Stack member status changes |Off
+|Product news |Off
+|New report or scan block (to support@antora-supplemental.org) |Always on
+|===
+
+[WARNING]
+.Decided: Resend (pending setup)
+====
+No email sending exists today. Before anything sends it needs a verified sending domain (SPF/DKIM on antora-supplemental.org), an API key in Netlify env, and a one-click unsubscribe header. Send via a Netlify scheduled function that drains an outbox table, capped per day.
+====
+
+[#ui]
+== UI notes
+
+* *Precise stars*: SVG with a clip rect at the exact percentage; aria-label "3.73 of 5, 12 ratings".
+* *Time-span slider*: Two-handle range over months since launch, presets (30d, 1y, all); re-sorts by Bayesian score in that window. State in the URL.
+* *Default filters*: Listed only. Toggles: Include Indexed, Include Workshop, Include Low quality.
+* *Badges*: New, Workshop, Indexed (unclaimed), Scan warning; Under review is not shown publicly; Low quality shown inside its filter.
+* *Screening page*: Public, plain language, readable by a maintainer arriving from the outreach PR; Claim button at the top.
+* *Sign-in copy*: Lead with collections and stacks, not uploading.
+
+[#rollout]
+== Phased rollout
+
+[cols="1,1,1",options="header"]
+|===
+|Phase |Scope |Exit criterion
+
+|1 |Collections, stacks, manifest API, CLI install + snippet, ratings, precise stars, time slider; security scanning (scan_run, scan_finding, screening page); grandfather existing items as Listed |10 published stacks; every listing scanned at least once
+|2 |Workshop / Listed / Indexed states, automated graduation, flags and reports, admin queue, abuse controls; ingestion pipeline and stack external refs (ingestion_source); claim flow (claim); single-nomination promotion (nomination) |Daily crawl running; first external claim verified; first nominated item Listed
+|3 |Resend email, notification prefs, redemption panel, reputation weights; /trust form with AI pre-check (trust_request); AI reviewer on Cursor with GitHub issue/discussion reports; AI provider settings (ai_provider_config); outreach PR/MR (outreach_pr) from the registry bot account, after the Discussions category exists |First redemption decided; first 50 outreach PRs with opt-out rate measured
+|===
+
+[#questions]
+== Open questions
+
+. Budget numbers: monthly cap and per-item monthly review cap for the Cursor provider (and per-provider caps if another is approved later).
+
