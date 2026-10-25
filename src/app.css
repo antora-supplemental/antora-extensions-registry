@@ -166,18 +166,24 @@ html.dark .text-slate-500 { color: #a3a3a3; }
 .new-badge { background-color: #fff4ed; color: #9a3412; border: 1px solid #ffc9a8; }
 html.dark .new-badge { background-color: #431407; color: #ffc9a8; border-color: #9a3412; }
 /*
- * Header "Themes" link: rainbow overlay at 20% opacity. This is the one deliberate exception to the
- * no-gradients rule. Blend mode is the default (normal).
+ * Header "Themes" link: rainbow on the letters only, at 20% opacity over the normal text color. A duplicate,
+ * aria-hidden copy of the label sits exactly on top with the gradient clipped to its glyphs, so nothing paints
+ * outside the letters. The one deliberate exception to the no-gradients rule.
  */
 .nav-rainbow {
   position: relative;
+  display: inline-block;
+  white-space: nowrap;
 }
-.nav-rainbow::after {
-  content: '';
+.nav-rainbow-overlay {
   position: absolute;
-  inset: -2px -4px;
-  border-radius: 4px;
-  background: linear-gradient(30deg, red, orange, yellow, green, blue, violet);
+  inset: 0;
+  background-image: linear-gradient(30deg, red, orange, yellow, green, blue, violet);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
   opacity: 0.2;
   pointer-events: none;
+  user-select: none;
 }

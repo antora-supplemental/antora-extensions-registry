@@ -45,8 +45,8 @@ export default function SiteLayout(props: SiteLayoutProps) {
               <A href="/extensions" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
                 Extensions
               </A>
-              <A href="/themes" class="nav-rainbow text-slate-300 hover:text-white transition-colors text-sm font-medium">
-                Themes
+              <A href="/themes" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
+                <RainbowLabel label="Themes" />
               </A>
               <A href="/add" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
                 Submit
@@ -107,7 +107,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
                   <For each={navLinks}>
                     {(link) => (
                       <A href={link.href} class={mobileLink} onClick={() => setMenuOpen(false)}>
-                        {link.label}
+                        {link.href === '/themes' ? <RainbowLabel label={link.label} /> : link.label}
                       </A>
                     )}
                   </For>
@@ -158,5 +158,15 @@ export default function SiteLayout(props: SiteLayoutProps) {
         </div>
       </footer>
     </div>
+  );
+}
+
+/** Rainbow tint on the glyphs only (see .nav-rainbow in app.css); the overlay copy is hidden from assistive tech. */
+function RainbowLabel(props: { label: string }) {
+  return (
+    <span class="nav-rainbow">
+      {props.label}
+      <span class="nav-rainbow-overlay" aria-hidden="true">{props.label}</span>
+    </span>
   );
 }
