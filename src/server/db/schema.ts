@@ -98,3 +98,14 @@ export const catalogMeta = sqliteTable("catalog_meta", {
     key: text("key").primaryKey(),
     value: text("value").notNull(),
 });
+
+
+/** One row per self-service account merge (source user B folded into target user A). */
+export const accountMergeAudit = sqliteTable("account_merge_audit", {
+    id: text("id").primaryKey(),
+    targetUserId: text("targetUserId").notNull(),
+    sourceUserId: text("sourceUserId").notNull(),
+    sourceEmail: text("sourceEmail"),
+    movedProviders: text("movedProviders").notNull(), // JSON string[]
+    createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+});

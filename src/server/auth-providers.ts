@@ -17,6 +17,8 @@ export function buildSocialProviders(): SocialProviders {
     providers.gitlab = {
       clientId: serverEnv.GITLAB_ID,
       clientSecret: serverEnv.GITLAB_SECRET,
+      issuer: "https://gitlab.com",
+      scope: ["read_user"],
     };
   }
 

@@ -27,8 +27,9 @@ export const auth = betterAuth({
   account: {
     accountLinking: {
       enabled: true,
-      allowDifferentEmails: true,
-      trustedProviders: configuredProviderIds(),
+      // Auto-link only when the provider reports a verified email that matches the existing user.
+      allowDifferentEmails: false,
+      trustedProviders: configuredProviderIds().filter((id) => id === "github" || id === "gitlab"),
     },
   },
   socialProviders: buildSocialProviders(),

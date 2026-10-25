@@ -1,5 +1,5 @@
 import type { Component } from "solid-js";
-import { createSignal, For, Show } from "solid-js";
+import { createSignal, For, onMount, Show } from "solid-js";
 import SiteLayout from "~/components/SiteLayout";
 import { authClient } from "~/lib/auth-client";
 
@@ -18,6 +18,20 @@ export default function SignIn() {
     const [emailSent, setEmailSent] = createSignal(false);
     const [error, setError] = createSignal<string | null>(null);
     const [loading, setLoading] = createSignal<ProviderId | "email" | null>(null);
+    // Only offer providers that are configured on the server (e.g. GitLab appears once GITLAB_ID/SECRET are set).
+    const [configured, setConfigured] = createSignal<string[] | null>(null);
+    onMount(async () => {
+        try {
+            const res = await fetch("/api/account/providers");
+            if (res.ok) setConfigured(((await res.json()) as { providers: string[] }).providers);
+        } catch {
+            setConfigured(null);
+        }
+    });
+    const visibleProviders = () => {
+        const ids = configured();
+        return ids ? socialProviders.filter((p) => ids.includes(p.id)) : socialProviders.filter((p) => p.id === "github");
+    };
 
     const signInWithProvider = async (provider: ProviderId) => {
         setError(null);
@@ -66,7 +80,7 @@ export default function SignIn() {
                     </Show>
 
                     <div class="grid gap-3">
-                        <For each={socialProviders}>
+                        <For each={visibleProviders()}>
                             {(provider) => (
                                 <button
                                     type="button"
