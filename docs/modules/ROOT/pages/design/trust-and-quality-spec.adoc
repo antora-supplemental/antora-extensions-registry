@@ -1,6 +1,6 @@
 = Antora Extension Registry: Accounts, Stacks, Quality & Trust
 :navtitle: Trust and quality spec
-:description: Design spec v0.2 for registry.antora-supplemental.org: what signed-in users can do, how stacks install, how everything Antora-related gets indexed, scanned and claimed, and the quality model (ratings, tiers, flags, redemption). Draft for iteration; nothing is implemented and the repo is unchanged.
+:description: Design spec v0.2 for registry.antora-supplemental.org: what signed-in users can do, how stacks install, how everything Antora-related gets indexed, scanned and claimed, and the quality model (ratings, tiers, flags, redemption). Draft for iteration; parts are now implemented (see commit 657c396) and this spec is recorded in the repo.
 :page-version: v0.2+
 :revdate: 2026-10-25
 :toc: macro
@@ -13,7 +13,7 @@ Spec version v0.2+, recorded 2026-10-25. This page is the source of truth for th
 Working draft (Grok Bot Page, may lag or run ahead of this file): https://cursor.com/canvas/store-bccecd49-b037-4ff7-a518-8d35f2a3202d/b3d9be1d-4261-4513-b47d-0dd0258ec165[Accounts, Stacks, Quality & Trust Spec (Page)].
 ====
 
-_Design spec v0.2 for registry.antora-supplemental.org: what signed-in users can do, how stacks install, how everything Antora-related gets indexed, scanned and claimed, and the quality model (ratings, tiers, flags, redemption). Draft for iteration; nothing is implemented and the repo is unchanged._
+_Design spec v0.2 for registry.antora-supplemental.org: what signed-in users can do, how stacks install, how everything Antora-related gets indexed, scanned and claimed, and the quality model (ratings, tiers, flags, redemption). Draft for iteration; parts are now implemented (see commit 657c396) and this spec is recorded in the repo._
 
 toc::[]
 
@@ -348,7 +348,7 @@ A prompt-only LLM is unreliable for judging intent, because investigating means 
 |Tiered pipeline |Static scanners on every update; AI only on escalation (a block or an appeal sent to admins); never on routine updates
 |Cache |One review per item and commit SHA; reused, never rerun for the same SHA
 |Per-item cap |Limited reviews per item per month; extra escalations go to admins without AI
-|Monthly budget |Hard cap; once hit, reviews pause and admins review manually
+|Monthly budget |Decided: 25% of Ryan's monthly Cursor plan usage, measured in plan dollars (the unit Cursor reports usage in). Each run's cost is logged; once the month's total hits the cap, reviews pause and admins review manually until the plan cycle resets
 |Logging |Model, tokens or run cost and evidence stored in `ai_review`
 |===
 
@@ -706,5 +706,5 @@ No email sending exists today. Before anything sends it needs a verified sending
 [#questions]
 == Open questions
 
-. Budget numbers: monthly cap and per-item monthly review cap for the Cursor provider (and per-provider caps if another is approved later).
+. Per-item monthly review cap (the monthly budget is decided at 25% of plan; a per-item default of 3 reviews per month is proposed).
 
