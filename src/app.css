@@ -80,7 +80,7 @@ body {
 }
 
 .premium-gradient {
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  background-image: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
 }
 
 .animate-in {
@@ -139,4 +139,15 @@ body {
   font-family: 'Outfit', sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+
+/* Search inputs with an overlaid icon: the icon side is reserved by padding and typed text
+   fades out before it reaches the icon. The input is transparent; its wrapper draws the box. */
+.search-fade-left {
+  -webkit-mask-image: linear-gradient(to right, transparent 2.5rem, #000 3.5rem);
+  mask-image: linear-gradient(to right, transparent 2.5rem, #000 3.5rem);
+}
+.search-fade-right {
+  -webkit-mask-image: linear-gradient(to left, transparent 3rem, #000 4rem);
+  mask-image: linear-gradient(to left, transparent 3rem, #000 4rem);
 }

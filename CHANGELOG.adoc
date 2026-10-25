@@ -2,6 +2,8 @@
 
 == Unreleased
 
+* Search inputs with an icon (`/registry`, themes gallery): padding reserves the icon area and long queries fade out (CSS `mask-image`) before running under the icon; the box chrome moved to a wrapper with `focus-within` ring.
+* `/registry` hero: *EXTENSIONS* is now a true knockout (letters cut out of a gradient pill via an SVG mask, real text kept for screen readers). It was invisible because `.premium-gradient` used the `background` shorthand, which reset `bg-clip-text` to `border-box` on `text-transparent` text; the class now sets `background-image` only.
 * Fix: client-side navigation to `/` from any page threw "Uncaught Client Exception" (blank home). The home route imported the server-only `loadGalleryThemes` (Drizzle + `~/env/server`) directly, so env validation ran in the browser on soft-nav; it now uses the `'use server'` `loadThemes` query.
 * Themes gallery: default appearance filter is now *All* (was *Light + dark themes*, which hid every theme not tagged with both modes); *All* is selectable again.
 * Header (mobile): wordmark hidden below `sm` (logo stays the home link); Extensions/Themes/Registry/auth links move into a solid-ui Sheet hamburger menu below `md` (labelled trigger, focus trap + Escape, closes on navigation). Desktop unchanged.

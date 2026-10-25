@@ -81,7 +81,39 @@ export default function Registry() {
                         Official Registry
                     </div>
                     <h1 class="text-6xl md:text-7xl font-black tracking-tighter text-foreground leading-tight font-outfit">
-                        ANTORA <span class="bg-clip-text text-transparent premium-gradient">EXTENSIONS</span>
+                        ANTORA{' '}
+                        <span class="sr-only">EXTENSIONS</span>
+                        {/* Knockout: letters are holes in a gradient pill, so the page background shows through. */}
+                        <svg
+                            aria-hidden="true"
+                            class="inline-block h-[1.1em] w-auto max-w-full align-middle"
+                            viewBox="0 0 560 110"
+                        >
+                            <defs>
+                                <linearGradient id="registry-knockout-fill" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%" stop-color="#6366f1" />
+                                    <stop offset="50%" stop-color="#a855f7" />
+                                    <stop offset="100%" stop-color="#ec4899" />
+                                </linearGradient>
+                                <mask id="registry-knockout-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="560" height="110">
+                                    <rect width="560" height="110" fill="white" />
+                                    <text
+                                        x="280"
+                                        y="80"
+                                        text-anchor="middle"
+                                        font-size="78"
+                                        font-weight="900"
+                                        font-family="Outfit, Inter, system-ui, sans-serif"
+                                        textLength="480"
+                                        lengthAdjust="spacingAndGlyphs"
+                                        fill="black"
+                                    >
+                                        EXTENSIONS
+                                    </text>
+                                </mask>
+                            </defs>
+                            <rect width="560" height="110" rx="55" fill="url(#registry-knockout-fill)" mask="url(#registry-knockout-mask)" />
+                        </svg>
                     </h1>
                     <p class="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
                         The central hub for Antora extensions and bundles. Discover, analyze, and integrate with confidence.
@@ -91,13 +123,16 @@ export default function Registry() {
                 <section class="max-w-2xl mx-auto">
                     <div class="relative group">
                         <div class="absolute -inset-1 premium-gradient rounded-2xl blur opacity-25 group-focus-within:opacity-50 transition duration-1000" />
+                        <div class="relative rounded-2xl bg-card border border-border shadow-2xl shadow-indigo-500/5 transition-all focus-within:ring-2 focus-within:ring-indigo-500/50">
                         <input
                             type="text"
                             placeholder="Search extensions, bundles, or keywords..."
-                            class="relative w-full px-8 py-5 bg-card rounded-2xl border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-xl font-medium shadow-2xl shadow-indigo-500/5"
+                            aria-label="Search the registry"
+                            class="search-fade-right relative w-full pl-8 pr-16 py-5 bg-transparent rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none text-xl font-medium"
                             onInput={(e) => setQuery(e.currentTarget.value)}
                         />
-                        <div class="absolute right-6 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        </div>
+                        <div class="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 text-muted-foreground">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
