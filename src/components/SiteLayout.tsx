@@ -29,11 +29,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex items-center justify-between h-16">
             <A href="/" aria-label="Antora Registry home" class="flex items-center gap-3 group">
-              <div class="w-10 h-10 bg-brand rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-brand-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-              </div>
+              <img src="/brand/registry-glyph.svg" alt="" width="40" height="37" class="h-9 w-auto shrink-0" />
               <span class="hidden sm:inline font-semibold text-lg group-hover:text-primary-400 transition-colors">
                 Antora Registry
               </span>
