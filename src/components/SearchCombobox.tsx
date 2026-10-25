@@ -20,7 +20,7 @@ function score(q: string, item: SearchIndexItem): number | null {
   return i === q.length ? 4 + (name.length - q.length) / 100 : null;
 }
 
-type Option = { key: string; label: string; meta: string; href: string };
+type Option = { key: string; label: string; meta: string; href: string; isNew?: boolean };
 
 export default function SearchCombobox() {
   const navigate = useNavigate();
@@ -57,6 +57,7 @@ export default function SearchCombobox() {
         label: item.name,
         meta: item.kind === 'theme' ? 'Theme' : (EXTENSION_KIND_LABELS[item.type]?.replace(/s$/, '') ?? 'Extension'),
         href: item.href,
+        isNew: item.isNew,
       }));
   });
 
@@ -183,7 +184,12 @@ export default function SearchCombobox() {
                 onMouseMove={() => setActive(i())}
                 onClick={() => go(opt.href)}
               >
-                <span class="truncate font-medium">{opt.label}</span>
+                <span class="flex min-w-0 items-center gap-2">
+                  <span class="truncate font-medium">{opt.label}</span>
+                  <Show when={opt.isNew}>
+                    <span class="new-badge shrink-0 rounded-md px-1.5 py-0.5 text-xs font-semibold leading-none">New</span>
+                  </Show>
+                </span>
                 <span class="search-pop-meta shrink-0 text-xs font-semibold uppercase tracking-wide">{opt.meta}</span>
               </li>
             )}

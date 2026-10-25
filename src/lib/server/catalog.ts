@@ -1,6 +1,7 @@
 import { cache } from '@solidjs/router';
 import { buildFullExtensionCatalog } from '~/lib/extension-catalog';
 import { loadGalleryThemes } from '~/lib/themes/catalog';
+import { isNewListing } from '~/lib/new-items';
 import type { Theme } from '~/types/theme';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 
@@ -45,6 +46,8 @@ export interface SearchIndexItem {
   id: string;
   name: string;
   href: string;
+  /** First listed within NEW_WINDOW_DAYS. */
+  isNew: boolean;
 }
 
 export const loadSearchIndex = cache(async (): Promise<SearchIndexItem[]> => {
@@ -56,6 +59,7 @@ export const loadSearchIndex = cache(async (): Promise<SearchIndexItem[]> => {
     id: e.catalogId,
     name: e.name,
     href: `/extensions/${e.catalogId}`,
+    isNew: isNewListing(e.firstListedAt),
   }));
   // Themes have no detail page; a suggestion opens the theme-filtered results for that name.
   const th = themes.map((t) => ({
@@ -64,6 +68,7 @@ export const loadSearchIndex = cache(async (): Promise<SearchIndexItem[]> => {
     id: t.id,
     name: t.name,
     href: `/search?q=${encodeURIComponent(t.name)}&type=themes`,
+    isNew: isNewListing(t.firstListedAt),
   }));
   return [...ext, ...th];
 }, 'search-index');

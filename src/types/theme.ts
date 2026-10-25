@@ -1,3 +1,5 @@
+import type { ThemeAppearance } from '~/data/github-topics';
+
 export interface Theme {
   id: string;
   name: string;
@@ -9,8 +11,14 @@ export interface Theme {
   stars: number;
   tags: string[];
   lastUpdated: string;
+  /** ISO date this theme was first listed in the registry (never changes). */
+  firstListedAt?: string;
   githubTopics?: string[];
   githubRepoId?: number;
+  /** Declared appearance (topic or antora-theme.json); undefined when undeclared. */
+  appearance?: ThemeAppearance | null;
+  /** owner/repo of the theme this one re-colors (declared in antora-theme.json). */
+  baseTheme?: string | null;
 }
 
 export interface ThemeSubmission {
@@ -31,6 +39,11 @@ export interface GitHubRepo {
   };
   updated_at: string;
   homepage: string | null;
+  private?: boolean;
+  fork?: boolean;
+  default_branch?: string;
+  topics?: string[];
+  license?: { spdx_id: string | null; name: string } | null;
 }
 
 export interface ValidationResult {

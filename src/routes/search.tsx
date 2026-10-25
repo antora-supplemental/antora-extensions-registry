@@ -6,6 +6,7 @@ import ThemeCard from '~/components/catalog/ThemeCard';
 import { inputClass } from '~/components/ui/text-field';
 import { EXTENSION_KIND_LABELS, searchHref, type SearchType } from '~/lib/search-categories';
 import { loadExtensionCatalog, loadThemes } from '~/lib/server/catalog';
+import { byFirstListedDesc, isNewListing, NEW_WINDOW_DAYS } from '~/lib/new-items';
 
 function matches(q: string, fields: Array<string | undefined>, tags: string[]): boolean {
   if (!q) return true;
@@ -30,6 +31,14 @@ export default function SearchPage() {
   const query = () => (typeof params.q === 'string' ? params.q.trim() : '');
   const type = (): SearchType => (params.type === 'extensions' || params.type === 'themes' ? params.type : 'all');
   const kind = () => (type() === 'extensions' && typeof params.kind === 'string' && params.kind in EXTENSION_KIND_LABELS ? params.kind : undefined);
+  const newOnly = () => params.new === '1';
+  /** Current URL with the `new` flag toggled. */
+  const newHref = () => {
+    const base = searchHref(query(), type(), kind());
+    const u = new URL(base, 'http://x');
+    if (!newOnly()) u.searchParams.set('new', '1');
+    return u.pathname + u.search;
+  };
   const [draft, setDraft] = createSignal(query());
   const catalog = createAsync(() => loadExtensionCatalog());
   const themes = createAsync(() => loadThemes());
@@ -39,13 +48,15 @@ export default function SearchPage() {
     if (!c) return [];
     const q = query().toLowerCase();
     const k = kind();
-    return [...c.modules, ...c.recipes].filter(
-      (e) => (!k || e.type === k) && matches(q, [e.name, e.id, e.description], e.tags),
+    const hits = [...c.modules, ...c.recipes].filter(
+      (e) => (!k || e.type === k) && matches(q, [e.name, e.id, e.description], e.tags) && (!newOnly() || isNewListing(e.firstListedAt)),
     );
+    return newOnly() ? hits.sort(byFirstListedDesc) : hits;
   });
   const themeHits = createMemo(() => {
     const q = query().toLowerCase();
-    return (themes() ?? []).filter((t) => matches(q, [t.name, t.description], t.tags));
+    const hits = (themes() ?? []).filter((t) => matches(q, [t.name, t.description], t.tags) && (!newOnly() || isNewListing(t.firstListedAt)));
+    return newOnly() ? hits.sort(byFirstListedDesc) : hits;
   });
 
   const onSubmit = (e: Event) => {
@@ -80,6 +91,14 @@ export default function SearchPage() {
                 </A>
               )}
             </For>
+            <A
+              href={newHref()}
+              aria-current={newOnly() ? 'true' : undefined}
+              title={`Added in the last ${NEW_WINDOW_DAYS} days`}
+              class={chipClass(newOnly())}
+            >
+              New
+            </A>
           </div>
           <Show when={type() === 'extensions'}>
             <div class="flex flex-wrap gap-2" aria-label="Extension kind">

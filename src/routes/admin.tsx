@@ -1,11 +1,14 @@
-import { A, createAsync } from '@solidjs/router';
+import type { AdminReport } from '~/lib/server/reports';
+import { A, createAsync, revalidate } from '@solidjs/router';
 import { createSignal, For, Show, Suspense } from 'solid-js';
 import SiteLayout from '~/components/SiteLayout';
 import { buttonVariants } from '~/components/ui/button';
 import { Card } from '~/components/ui/card';
 import { getSessionData } from '~/app';
 import { ANTORA_TOPICS } from '~/data/github-topics';
-import { loadAdminData } from '~/lib/server/admin';
+import { addTrusted, loadAdminData, removeTrusted, reviewQueueItem, type AdminQueueItem } from '~/lib/server/admin';
+import { closeReport } from '~/lib/server/reports';
+import { REPORT_REASONS } from '~/lib/report-reasons';
 
 const endpoints = [
   { method: 'GET', path: '/api/extensions/catalog', note: 'Full extension catalog (add ?topics=false to skip topic discovery)' },
@@ -14,14 +17,65 @@ const endpoints = [
   { method: 'POST', path: '/api/extensions/submit', note: 'Submit an extension repository (sign-in required)' },
   { method: 'POST', path: '/api/themes/validate', note: 'Check a theme repository' },
   { method: 'POST', path: '/api/themes/submit', note: 'Submit a theme (sign-in required)' },
-  { method: 'POST', path: '/api/admin/discover', note: 'Run GitHub topic discovery now (admin only)' },
+  { method: 'POST', path: '/api/admin/discover', note: 'Run GitHub topic discovery now and import repos that pass (admin only)' },
 ];
 
 interface DiscoveryResult {
   ranAt: string;
-  extensions: Array<{ owner: string; repo: string; repoUrl: string; topics: string[] }>;
-  themes: Array<{ owner: string; repo: string; repoUrl: string; topics: string[] }>;
+  imported: number;
+  results: Array<{ kind: string; owner: string; repo: string; repoUrl: string; outcome: string; approvedVia?: string; failures: string[] }>;
   error?: string;
+}
+
+const field = 'px-3 py-1.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm';
+const refresh = () => revalidate(loadAdminData.key);
+const reasonLabel = (v: string) => REPORT_REASONS.find((r) => r.value === v)?.label ?? v;
+
+function QueueRow(props: { item: AdminQueueItem }) {
+  const [reason, setReason] = createSignal('');
+  const [rejecting, setRejecting] = createSignal(false);
+  const [busy, setBusy] = createSignal(false);
+  const [result, setResult] = createSignal<{ ok: boolean; message: string } | null>(null);
+  const decide = async (decision: 'approve' | 'reject') => {
+    setBusy(true);
+    try {
+      const r = await reviewQueueItem({ kind: props.item.kind, id: props.item.id, decision, reason: reason() });
+      setResult(r);
+      if (r.ok) setTimeout(refresh, 1500);
+    } catch (error) {
+      setResult({ ok: false, message: error instanceof Error ? error.message : 'Failed' });
+    }
+    setBusy(false);
+  };
+  return (
+    <li class="py-3 space-y-2">
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span class="text-xs uppercase tracking-wide text-slate-500 w-20">{props.item.kind}</span>
+        <a href={props.item.repoUrl} target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300 font-medium">{props.item.name}</a>
+        <span class="text-slate-400">{props.item.detail}</span>
+        <span class="text-slate-500 ml-auto">{fmt(props.item.submittedAt)}</span>
+      </div>
+      <Show
+        when={!result()?.ok}
+        fallback={<p role="status" class="text-sm text-emerald-400">{result()!.message}</p>}
+      >
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" disabled={busy()} onClick={() => decide('approve')} class={buttonVariants({ size: 'sm' })}>Approve</button>
+          <Show
+            when={rejecting()}
+            fallback={<button type="button" disabled={busy()} onClick={() => setRejecting(true)} class={buttonVariants({ variant: 'outline', size: 'sm' })}>Reject…</button>}
+          >
+            <input aria-label="Reason for rejecting (optional)" placeholder="Reason (optional)" maxLength={500} value={reason()} onInput={(e) => setReason(e.currentTarget.value)} class={`${field} flex-1 min-w-48`} />
+            <button type="button" disabled={busy()} onClick={() => decide('reject')} class={buttonVariants({ variant: 'outline', size: 'sm' })}>Confirm reject</button>
+            <button type="button" onClick={() => setRejecting(false)} class={buttonVariants({ variant: 'ghost', size: 'sm' })}>Cancel</button>
+          </Show>
+        </div>
+        <Show when={result() && !result()!.ok}>
+          <p role="alert" class="text-sm text-red-400">{result()!.message}</p>
+        </Show>
+      </Show>
+    </li>
+  );
 }
 
 const fmt = (iso: string | null) =>
@@ -41,7 +95,10 @@ export default function AdminPage() {
       const res = await fetch('/api/admin/discover', { method: 'POST' });
       const body = (await res.json()) as DiscoveryResult;
       if (!res.ok) setDiscoveryError(body.error ?? `Discovery failed (${res.status})`);
-      else setDiscovery(body);
+      else {
+        setDiscovery(body);
+        if (body.imported > 0) refresh();
+      }
     } catch (error) {
       setDiscoveryError(error instanceof Error ? error.message : 'Discovery failed');
     }
@@ -87,13 +144,25 @@ export default function AdminPage() {
                   <h2 class="text-lg font-semibold text-white mb-3">Review queue ({d().queue.length})</h2>
                   <Show when={d().queue.length > 0} fallback={<p class="text-sm text-slate-400">Nothing waiting for review.</p>}>
                     <ul class="divide-y divide-slate-700/50 text-sm">
-                      <For each={d().queue}>
-                        {(item) => (
+                      <For each={d().queue}>{(item) => <QueueRow item={item} />}</For>
+                    </ul>
+                  </Show>
+                </Card>
+
+                <ReportsCard reports={d().reports} />
+                <TrustedCard trusted={d().trusted} />
+
+                <Card class="p-6">
+                  <h2 class="text-lg font-semibold text-white mb-3">Recent automatic approvals</h2>
+                  <Show when={d().recentApprovals.length > 0} fallback={<p class="text-sm text-slate-400">None yet.</p>}>
+                    <ul class="divide-y divide-slate-700/50 text-sm">
+                      <For each={d().recentApprovals}>
+                        {(a) => (
                           <li class="py-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                            <span class="text-xs uppercase tracking-wide text-slate-500 w-20">{item.kind}</span>
-                            <a href={item.repoUrl} target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300 font-medium">{item.name}</a>
-                            <span class="text-slate-400">{item.detail}</span>
-                            <span class="text-slate-500 ml-auto">{fmt(item.submittedAt)}</span>
+                            <span class="text-xs uppercase tracking-wide text-slate-500 w-20">{a.kind}</span>
+                            <a href={a.repoUrl} target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300 font-medium">{a.name}</a>
+                            <span class="text-slate-400">{a.approvedVia}</span>
+                            <span class="text-slate-500 ml-auto">{fmt(a.at)}</span>
                           </li>
                         )}
                       </For>
@@ -109,7 +178,7 @@ export default function AdminPage() {
                     <div><dt class="text-slate-500">Indexed repositories</dt><dd class="text-slate-300">{d().indexedRepos.length}</dd></div>
                   </dl>
                   <p class="text-sm text-slate-400 mt-4">
-                    The sync workflow runs every 6 hours. UI modules are indexed from{' '}
+                    The sync workflow runs once a day (09:00 UTC). UI modules are indexed from{' '}
                     <code class="text-primary-300">ui-modules/registry.json5</code> manifests.
                   </p>
                 </Card>
@@ -141,13 +210,16 @@ export default function AdminPage() {
                   <Show when={discovery()}>
                     {(r) => (
                       <div class="text-sm text-slate-300 space-y-2 border-t border-slate-700/50 pt-3">
-                        <p class="text-slate-400">Ran {fmt(r().ranAt)}: {r().extensions.length} extension repos, {r().themes.length} theme repos. Nothing is saved; the next sync picks them up.</p>
-                        <ul class="space-y-1">
-                          <For each={[...r().extensions.map((x) => ({ ...x, kind: 'extension' })), ...r().themes.map((x) => ({ ...x, kind: 'theme' }))]}>
+                        <p class="text-slate-400">Ran {fmt(r().ranAt)}: checked {r().results.length} new {r().results.length === 1 ? 'repository' : 'repositories'}, imported {r().imported}.</p>
+                        <ul class="space-y-2">
+                          <For each={r().results}>
                             {(x) => (
                               <li>
                                 <span class="text-xs uppercase text-slate-500 mr-2">{x.kind}</span>
                                 <a href={x.repoUrl} target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300">{x.owner}/{x.repo}</a>
+                                <span class="ml-2 text-slate-400">{x.outcome}</span>
+                                <Show when={x.approvedVia}><span class="block text-xs text-emerald-400">{x.approvedVia}</span></Show>
+                                <Show when={x.failures.length > 0}><span class="block text-xs text-amber-300">Failed: {x.failures.join('; ')}</span></Show>
                               </li>
                             )}
                           </For>
@@ -200,5 +272,97 @@ export default function AdminPage() {
         </Suspense>
       </div>
     </SiteLayout>
+  );
+}
+
+function ReportsCard(props: { reports: AdminReport[] }) {
+  const [msg, setMsg] = createSignal<{ ok: boolean; message: string } | null>(null);
+  const close = async (id: string, status: 'resolved' | 'dismissed') => {
+    const r = await closeReport(id, status).catch((e) => ({ ok: false, message: e instanceof Error ? e.message : 'Failed' }));
+    setMsg(r);
+    if (r.ok) refresh();
+  };
+  return (
+    <Card class="p-6" id="reports">
+      <h2 class="text-lg font-semibold text-white mb-3">Reports ({props.reports.length})</h2>
+      <Show when={msg()}>{(m) => <p role="status" class={`text-sm mb-2 ${m().ok ? 'text-emerald-400' : 'text-red-400'}`}>{m().message}</p>}</Show>
+      <Show when={props.reports.length > 0} fallback={<p class="text-sm text-slate-400">No open reports.</p>}>
+        <ul class="divide-y divide-slate-700/50 text-sm">
+          <For each={props.reports}>
+            {(r) => (
+              <li class="py-3 space-y-1">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span class="text-xs uppercase tracking-wide text-slate-500 w-20">{r.itemKind}</span>
+                  <Show when={r.itemKind === 'extension'} fallback={<a href={`https://github.com/${r.itemId}`} target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300 font-medium">{r.itemName}</a>}>
+                    <A href={`/extensions/${r.itemId}`} class="text-primary-400 hover:text-primary-300 font-medium">{r.itemName}</A>
+                  </Show>
+                  <span class="text-amber-300">{reasonLabel(r.reason)}</span>
+                  <span class="text-slate-500 ml-auto">{r.reporter} · {fmt(r.createdAt)}</span>
+                </div>
+                <Show when={r.message}><p class="text-slate-300 whitespace-pre-wrap break-words">{r.message}</p></Show>
+                <div class="flex gap-2 pt-1">
+                  <button type="button" onClick={() => close(r.id, 'resolved')} class={buttonVariants({ size: 'sm' })}>Resolve</button>
+                  <button type="button" onClick={() => close(r.id, 'dismissed')} class={buttonVariants({ variant: 'outline', size: 'sm' })}>Dismiss</button>
+                </div>
+              </li>
+            )}
+          </For>
+        </ul>
+      </Show>
+    </Card>
+  );
+}
+
+const TRUSTED_KIND_LABELS: Record<string, string> = {
+  github_org: 'GitHub org',
+  github_user: 'GitHub user',
+  gitlab_group: 'GitLab group',
+  gitlab_user: 'GitLab user',
+};
+
+function TrustedCard(props: { trusted: Array<{ id: string; kind: string; name: string; note: string | null; addedBy: string | null }> }) {
+  const [kind, setKind] = createSignal('github_org');
+  const [name, setName] = createSignal('');
+  const [note, setNote] = createSignal('');
+  const [msg, setMsg] = createSignal<{ ok: boolean; message: string } | null>(null);
+  const act = async (p: Promise<{ ok: boolean; message: string }>) => {
+    const r = await p.catch((e) => ({ ok: false, message: e instanceof Error ? e.message : 'Failed' }));
+    setMsg(r);
+    if (r.ok) refresh();
+    return r.ok;
+  };
+  const add = async (e: Event) => {
+    e.preventDefault();
+    if (await act(addTrusted({ kind: kind(), name: name(), note: note() }))) {
+      setName('');
+      setNote('');
+    }
+  };
+  return (
+    <Card class="p-6">
+      <h2 class="text-lg font-semibold text-white mb-1">Trusted publishers</h2>
+      <p class="text-sm text-slate-400 mb-3">Submissions from these owners, or from people who belong to them, skip the review queue.</p>
+      <ul class="divide-y divide-slate-700/50 text-sm mb-4">
+        <For each={props.trusted} fallback={<li class="py-2 text-slate-400">None.</li>}>
+          {(t) => (
+            <li class="py-2 flex flex-wrap items-center gap-x-3">
+              <span class="text-xs uppercase tracking-wide text-slate-500 w-28">{TRUSTED_KIND_LABELS[t.kind] ?? t.kind}</span>
+              <span class="text-white font-medium">{t.name}</span>
+              <Show when={t.note}><span class="text-slate-400">{t.note}</span></Show>
+              <button type="button" onClick={() => act(removeTrusted(t.id))} class={`${buttonVariants({ variant: 'ghost', size: 'sm' })} ml-auto`}>Remove</button>
+            </li>
+          )}
+        </For>
+      </ul>
+      <form onSubmit={add} class="flex flex-wrap items-center gap-2">
+        <select aria-label="Publisher type" value={kind()} onChange={(e) => setKind(e.currentTarget.value)} class={field}>
+          <For each={Object.entries(TRUSTED_KIND_LABELS)}>{([v, l]) => <option value={v}>{l}</option>}</For>
+        </select>
+        <input aria-label="Name" required placeholder="Name" value={name()} onInput={(e) => setName(e.currentTarget.value)} class={field} />
+        <input aria-label="Note (optional)" placeholder="Note (optional)" value={note()} onInput={(e) => setNote(e.currentTarget.value)} class={`${field} flex-1 min-w-40`} />
+        <button type="submit" class={buttonVariants({ size: 'sm' })}>Add</button>
+      </form>
+      <Show when={msg()}>{(m) => <p role="status" class={`text-sm mt-2 ${m().ok ? 'text-emerald-400' : 'text-red-400'}`}>{m().message}</p>}</Show>
+    </Card>
   );
 }

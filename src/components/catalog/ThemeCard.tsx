@@ -3,7 +3,10 @@ import { Card } from '~/components/ui/card';
 import { Badge } from '~/components/ui/badge';
 import { buttonVariants } from '~/components/ui/button';
 import { cn } from '~/lib/utils';
-import { ColorModeIcons, splitModeTags } from './ColorModeIcons';
+import { ColorModeIcons, splitModeTags, type ColorMode } from './ColorModeIcons';
+import { THEME_APPEARANCE_LABELS } from '~/lib/appearance-filter';
+import ReportButton from './ReportButton';
+import NewBadge from './NewBadge';
 import type { Theme } from '~/types/theme';
 
 interface ThemeCardProps {
@@ -17,6 +20,15 @@ export default function ThemeCard(props: ThemeCardProps) {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const modes = (): ColorMode[] => {
+    switch (props.theme.appearance) {
+      case 'light': return ['light'];
+      case 'dark': return ['dark'];
+      case 'both': return ['dark', 'light'];
+      default: return [];
+    }
   };
 
   onMount(() => {
@@ -76,6 +88,7 @@ export default function ThemeCard(props: ThemeCardProps) {
         <div class="flex items-start justify-between gap-4 mb-3">
           <h3 class="font-semibold text-lg text-white capitalize group-hover:text-primary-400 transition-colors">
             {props.theme.name}
+            <NewBadge firstListedAt={props.theme.firstListedAt} class="ml-2 align-middle normal-case" />
           </h3>
           <div class="flex items-center gap-1 text-yellow-400 shrink-0">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -87,20 +100,34 @@ export default function ThemeCard(props: ThemeCardProps) {
 
         <p class="text-slate-400 text-sm mb-4 line-clamp-2">{props.theme.description}</p>
 
-        <Show when={splitModeTags(props.theme.tags).modes.length > 0}>
-          <div class="flex items-center gap-1.5 mb-2" aria-label="Color modes">
-            <ColorModeIcons modes={splitModeTags(props.theme.tags).modes} />
-          </div>
+        <Show when={props.theme.appearance}>
+          {(appearance) => (
+            <div class="flex items-center gap-1.5 mb-2 text-xs text-slate-400">
+              <ColorModeIcons modes={modes()} />
+              <span>{THEME_APPEARANCE_LABELS[appearance()]}</span>
+            </div>
+          )}
+        </Show>
+        <Show when={props.theme.baseTheme}>
+          {(base) => (
+            <p class="text-xs text-slate-400 mb-2">
+              Color re-theme of{' '}
+              <a href={`https://github.com/${base()}`} target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300">{base()}</a>
+            </p>
+          )}
         </Show>
         <div class="flex flex-wrap gap-2 mb-4">
-          {splitModeTags(props.theme.tags).rest.slice(0, 3).map((tag) => (
+          {splitModeTags(props.theme.tags).rest.filter((t) => t !== 'theme').slice(0, 3).map((tag) => (
             <Badge>{tag}</Badge>
           ))}
         </div>
 
         <div class="flex items-center justify-between text-xs text-slate-500">
           <span>by <span class="text-slate-400">{props.theme.author}</span></span>
-          <span>Updated {formatDate(props.theme.lastUpdated)}</span>
+          <span class="flex items-center gap-3">
+            <span>Updated {formatDate(props.theme.lastUpdated)}</span>
+            <ReportButton itemKind="theme" itemId={props.theme.id} itemName={props.theme.name} />
+          </span>
         </div>
       </div>
     </Card>

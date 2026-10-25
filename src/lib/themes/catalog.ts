@@ -9,7 +9,8 @@ function featuredRank(repoUrl: string): number {
   );
   return i < 0 ? Number.MAX_SAFE_INTEGER : i;
 }
-import { db } from '~/server/db';
+import { client, db } from '~/server/db';
+import { readFirstListed } from '~/lib/first-listed';
 import { themes } from '~/server/db/schema';
 import type { Theme } from '~/types/theme';
 
@@ -22,6 +23,7 @@ export async function loadGalleryThemes(): Promise<Theme[]> {
       .orderBy(desc(themes.stars));
 
     if (result.length > 0) {
+      const first = await readFirstListed(client, 'theme');
       result.sort((a, b) => featuredRank(a.repoUrl) - featuredRank(b.repoUrl) || b.stars - a.stars);
       return result.map((t) => ({
         id: t.id,
@@ -34,6 +36,9 @@ export async function loadGalleryThemes(): Promise<Theme[]> {
         stars: t.stars,
         tags: JSON.parse(t.tags) as string[],
         lastUpdated: t.updatedAt.toISOString(),
+        firstListedAt: first.get(t.id) ?? t.createdAt.toISOString(),
+        appearance: t.appearance ?? undefined,
+        baseTheme: t.baseTheme ?? undefined,
       }));
     }
   } catch (error) {

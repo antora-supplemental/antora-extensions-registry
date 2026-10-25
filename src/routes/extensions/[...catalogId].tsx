@@ -2,6 +2,8 @@ import { A, createAsync, useParams } from '@solidjs/router';
 import { Meta, Title } from '@solidjs/meta';
 import { createMemo, createSignal, For, Show, Suspense } from 'solid-js';
 import SiteLayout from '~/components/SiteLayout';
+import NewBadge from '~/components/catalog/NewBadge';
+import ReportButton from '~/components/catalog/ReportButton';
 import DependencyTree from '~/components/catalog/DependencyTree';
 import { Badge } from '~/components/ui/badge';
 import { buttonVariants } from '~/components/ui/button';
@@ -53,6 +55,7 @@ export default function ExtensionDetailPage() {
                     <div class="flex flex-wrap items-center gap-2 mb-2">
                       <Badge variant="primary">{e().type}</Badge>
                       <span class="font-mono text-sm text-slate-500">v{e().version}</span>
+                      <NewBadge firstListedAt={e().firstListedAt} />
                     </div>
                     <h1 class="text-3xl lg:text-4xl font-bold text-white mb-4">{e().name}</h1>
                     <p class="text-slate-300 text-lg max-w-3xl">{e().description}</p>
@@ -60,6 +63,7 @@ export default function ExtensionDetailPage() {
                       <a href={e().repository} target="_blank" rel="noopener noreferrer" class={buttonVariants({ variant: 'secondary', size: 'sm' })}>
                         Repository
                       </a>
+                      <ReportButton itemKind="extension" itemId={e().catalogId} itemName={e().name} class="self-center ml-2" />
                     </div>
                   </header>
 

@@ -1,6 +1,5 @@
 import {
   ANTORA_APPEARANCE_TOPICS,
-  ANTORA_CATEGORY_TOPICS,
   ANTORA_TOPIC_REGISTRY,
   ANTORA_TOPICS,
   EXTENSION_DISCOVERY_QUERY,
@@ -19,15 +18,15 @@ export async function GET({ request }: { request: Request }) {
       rules: [
         'Use exactly one primary topic: antora-extension OR antora-theme',
         'Do not use repo/product names as topics',
-        'Appearance topics are optional: antora-light-theme, antora-dark-theme, antora-dark-mode',
-        'antora-wildcard-theme = full theme outside light/dark — never combine with light/dark appearance topics',
-        'antora-dark-mode = slipstream overlay; antora-dark-theme = full dark theme',
+        'Themes declare one appearance: antora-light-theme (light only), antora-dark-theme (dark only), both of those (light + dark), or antora-other-theme (neither)',
+        'antora-other-theme is never combined with antora-light-theme or antora-dark-theme',
+        'Themes may instead set "appearance" (light|dark|both|other) in antora-theme.json at the repository root; a pure color re-theme may set "baseTheme": "owner/repo" there',
+        'antora-dark-mode is for extensions that add dark mode to an existing theme',
         'No vague antora base topic — it matches consumers, not extenders',
       ],
       examples: {
         antoraDarkMode: [
           ANTORA_TOPICS.EXTENSION,
-          ANTORA_APPEARANCE_TOPICS.DARK_THEME,
           ANTORA_APPEARANCE_TOPICS.DARK_MODE,
         ],
         valentusTheme: [
@@ -39,9 +38,9 @@ export async function GET({ request }: { request: Request }) {
           ANTORA_TOPICS.THEME,
           ANTORA_APPEARANCE_TOPICS.LIGHT_THEME,
         ],
-        wildcardTheme: [
+        otherTheme: [
           ANTORA_TOPICS.THEME,
-          ANTORA_CATEGORY_TOPICS.WILDCARD,
+          ANTORA_APPEARANCE_TOPICS.OTHER_THEME,
         ],
       },
     },

@@ -5,6 +5,7 @@ import {
   toKnownExtensionRepos,
 } from '~/lib/github-topics';
 import { buildExtensionCatalog, type ExtensionCatalogResult } from '~/lib/ui-modules';
+import type { KnownExtensionRepo } from '~/types/ui-module';
 
 import { readCatalogFromDb } from '~/lib/catalog-db';
 import snapshot from '~/data/catalog-snapshot.json';
@@ -27,6 +28,10 @@ export interface BuildFullCatalogOptions {
   siteRoot?: string;
   /** Skip the build-time snapshot and query GitHub live. */
   live?: boolean;
+  /** Repositories approved in the database (expedited checks, admin approvals). */
+  extraRepos?: KnownExtensionRepo[];
+  /** `owner/repo` (lowercase) of rejected repositories to leave out. */
+  excludeRepos?: Set<string>;
 }
 
 export async function buildFullExtensionCatalog(
@@ -37,6 +42,8 @@ export async function buildFullExtensionCatalog(
     topicSearchLimit = 30,
     siteRoot = process.cwd(),
     live = process.env.REGISTRY_LIVE_CATALOG === 'true',
+    extraRepos = [],
+    excludeRepos,
   } = options;
 
   if (!live) {
@@ -53,6 +60,10 @@ export async function buildFullExtensionCatalog(
     const discovered = toKnownExtensionRepos(topicHits);
     repos = mergeExtensionRepos(knownExtensionRepos, discovered);
   }
+
+  const have = new Set(repos.map((r) => `${r.owner}/${r.repo}`.toLowerCase()));
+  repos = [...repos, ...extraRepos.filter((r) => !have.has(`${r.owner}/${r.repo}`.toLowerCase()))];
+  if (excludeRepos?.size) repos = repos.filter((r) => !excludeRepos.has(`${r.owner}/${r.repo}`.toLowerCase()));
 
   const catalog = await buildExtensionCatalog(repos, siteRoot);
   return {

@@ -68,6 +68,18 @@ export async function POST({ request }: { request: Request }) {
       submittedBy: session.user.id,
     });
 
+    const { submissionTrust, approveItem } = await import('~/server/registry');
+    const trusted = await submissionTrust(parsed.owner, session.user.id);
+    if (trusted) {
+      const approved = await approveItem('extension', id, null, trusted);
+      if (approved.ok) {
+        return new Response(JSON.stringify({ success: true, message: `${approved.message} ${trusted}.`, extensionRepoId: id }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

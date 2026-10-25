@@ -1,5 +1,6 @@
 import { A, createAsync, useSearchParams } from '@solidjs/router';
-import { Show } from 'solid-js';
+import { createSignal, For, Show } from 'solid-js';
+import { expediteRepoCheck, type ExpediteResult } from '~/lib/server/registry';
 import SiteLayout from '~/components/SiteLayout';
 import { buttonVariants } from '~/components/ui/button';
 import { getSessionData } from '~/app';
@@ -23,6 +24,12 @@ const screenshotWorkflow = `- name: Generate Preview Screenshot
     git commit -m "Update preview screenshot" || exit 0
     git push`;
 
+const manifestExample = `{
+  "appearance": "dark",
+  "baseTheme": "antora-supplemental/valentus-theme",
+  "demoUrl": "https://example.github.io/my-theme/"
+}`;
+
 const code = 'px-1.5 py-0.5 bg-slate-800 rounded text-primary-300 text-[0.9em]';
 
 export default function AddPage() {
@@ -42,7 +49,7 @@ export default function AddPage() {
         <header>
           <h1 class="text-3xl lg:text-4xl font-bold text-white mb-4">Add to the registry</h1>
           <p class="text-slate-400 text-lg">
-            Made an Antora extension or theme? Here's how to get it listed. We review every submission before it's listed.
+            Made an Antora extension or theme? Here's how to get it listed. Repositories that meet the criteria below can be checked and listed right away; everything else is reviewed by an admin.
           </p>
           <div class="mt-6 flex flex-wrap gap-3">
             <A href={signedIn() ? formHref('extensions') : signInHref('extensions')} class={buttonVariants()}>Add your extension</A>
@@ -53,10 +60,27 @@ export default function AddPage() {
         <Show when={from() && !signedIn()}>
           <div id="sign-in" class="p-4 rounded-xl border border-primary-500/50 bg-slate-800/40 text-slate-300 text-sm">
             You need to sign in before you can add {from() === 'themes' ? 'a theme' : 'an extension'}.{' '}
-            <A href={signInHref(from()!)} class="text-primary-400 hover:text-primary-300 font-medium">Sign in</A>
-            {' '}and we'll bring you straight back to the form.
+            <A href={signInHref(from()!)} class="text-primary-400 hover:text-primary-300 font-medium">Sign in</A>.
           </div>
         </Show>
+
+        <section id="check" class="scroll-mt-24">
+          <h2 class="text-2xl font-bold text-white mb-3">Check a repository now</h2>
+          <p class="text-slate-400 mb-4">
+            Discovery runs once a day. To skip the wait, paste a GitHub repository URL. If it meets every criterion it's listed immediately;
+            otherwise you'll see what to fix.
+          </p>
+          <Show
+            when={signedIn()}
+            fallback={
+              <p class="text-slate-300 text-sm">
+                <A href="/auth/signin?redirect=/add%23check" class="text-primary-400 hover:text-primary-300 font-medium">Sign in</A> to check a repository.
+              </p>
+            }
+          >
+            <ExpediteForm />
+          </Show>
+        </section>
 
         <section>
           <h2 class="text-2xl font-bold text-white mb-3">What qualifies</h2>
@@ -82,8 +106,8 @@ export default function AddPage() {
                 <A href="/auth/signin?redirect=/add" class="text-primary-400 hover:text-primary-300">Sign in</A>.
               </Show>
             </li>
-            <li>Submit the repository URL with the extension or theme form.</li>
-            <li>We review it. Once approved, it shows up in the registry.</li>
+            <li>Check it with the form above to list it right away, or submit it with the extension or theme form for review.</li>
+            <li>Submissions from trusted publishers (such as the antora-supplemental organization and its members) are listed without waiting for review.</li>
           </ol>
         </section>
 
@@ -95,10 +119,22 @@ export default function AddPage() {
             </li>
             <li>Publish a live demo, for example on GitHub Pages, and set it as the repository website.</li>
             <li>
-              Optionally tag the color modes it supports: <code class={code}>{ANTORA_APPEARANCE_TOPICS.LIGHT_THEME}</code>,{' '}
-              <code class={code}>{ANTORA_APPEARANCE_TOPICS.DARK_THEME}</code>.
+              Declare its appearance with topics: <code class={code}>{ANTORA_APPEARANCE_TOPICS.LIGHT_THEME}</code> for light only,{' '}
+              <code class={code}>{ANTORA_APPEARANCE_TOPICS.DARK_THEME}</code> for dark only, both for a theme with light and dark modes,
+              or <code class={code}>{ANTORA_APPEARANCE_TOPICS.OTHER_THEME}</code> for anything else (high contrast, sepia and so on).
+              The gallery filters Light, Dark, Light + dark and Other use these.
+            </li>
+            <li>
+              Or declare it in an <code class={code}>antora-theme.json</code> file at the repository root. The file wins over topics, and they
+              must not disagree. <code class={code}>appearance</code> is <code class={code}>light</code>, <code class={code}>dark</code>,{' '}
+              <code class={code}>both</code> or <code class={code}>other</code>.
+            </li>
+            <li>
+              If your theme only swaps the color variables of another theme, name that theme as <code class={code}>baseTheme</code> (owner/repo)
+              in the manifest. The card shows it as a color re-theme. A fork alone doesn't count.
             </li>
           </ul>
+          <pre class="bg-slate-900 rounded-xl p-4 overflow-x-auto text-sm text-slate-300 border border-slate-700/50 mb-6"><code>{manifestExample}</code></pre>
           <h3 class="text-lg font-semibold text-white mb-2">Screenshot workflow</h3>
           <p class="text-slate-400 text-sm mb-3">
             Add this GitHub Action to your theme repository to regenerate <code class={code}>preview.png</code> from your live demo:
@@ -123,7 +159,7 @@ export default function AddPage() {
           <h2 class="text-2xl font-bold text-white mb-3">Extensions</h2>
           <ul class="list-disc pl-5 space-y-2 text-slate-300">
             <li>
-              Tag the repository <code class={code}>{ANTORA_TOPICS.EXTENSION}</code>. Tagged repositories are found automatically, but submitting gets yours reviewed sooner.
+              Tag the repository <code class={code}>{ANTORA_TOPICS.EXTENSION}</code>. Tagged repositories are found once a day; use the check above to list yours sooner.
             </li>
             <li>
               If it adds dark mode to an existing theme, also tag it <code class={code}>{ANTORA_APPEARANCE_TOPICS.DARK_MODE}</code> so it's listed under Dark mode add-ons.
@@ -138,8 +174,8 @@ export default function AddPage() {
         <section>
           <h2 class="text-2xl font-bold text-white mb-3">After you submit</h2>
           <ul class="list-disc pl-5 space-y-2 text-slate-300">
-            <li>We review every submission before it's listed. Approved entries appear in the registry.</li>
-            <li>Updates: push to your repository. The registry re-reads listed repositories every few hours.</li>
+            <li>Submissions that aren't checked automatically wait for an admin. Approved entries appear in the registry.</li>
+            <li>Updates: push to your repository. The registry re-reads listed repositories once a day.</li>
             <li>
               Removal: delete the topic and{' '}
               <a href="https://github.com/antora-supplemental/antora-extensions-registry/issues" target="_blank" rel="noopener" class="text-primary-400 hover:text-primary-300">open an issue</a>
@@ -149,5 +185,65 @@ export default function AddPage() {
         </section>
       </div>
     </SiteLayout>
+  );
+}
+
+function ExpediteForm() {
+  const [url, setUrl] = createSignal('');
+  const [busy, setBusy] = createSignal(false);
+  const [result, setResult] = createSignal<ExpediteResult | null>(null);
+  const submit = async (e: Event) => {
+    e.preventDefault();
+    setBusy(true);
+    setResult(null);
+    try {
+      setResult(await expediteRepoCheck(url()));
+    } catch (error) {
+      setResult({ ok: false, error: error instanceof Error ? error.message : 'The check failed.' });
+    }
+    setBusy(false);
+  };
+  return (
+    <div class="space-y-4">
+      <form onSubmit={submit} class="flex flex-col sm:flex-row gap-2">
+        <label for="check-url" class="sr-only">GitHub repository URL</label>
+        <input
+          id="check-url"
+          type="url"
+          required
+          placeholder="https://github.com/owner/repo"
+          value={url()}
+          onInput={(e) => setUrl(e.currentTarget.value)}
+          class="flex-1 px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm"
+        />
+        <button type="submit" disabled={busy()} class={buttonVariants()}>{busy() ? 'Checking…' : 'Check repository'}</button>
+      </form>
+      <Show when={result()}>
+        {(r) => (
+          <div role="status" class="p-4 rounded-xl border border-slate-700/50 bg-slate-800/40 text-sm space-y-3">
+            <Show when={r().ok} fallback={<p class="text-red-400">{r().error}</p>}>
+              <p class={r().imported ? 'text-emerald-400 font-medium' : r().passed ? 'text-slate-200' : 'text-amber-300 font-medium'}>{r().message}</p>
+              <ul class="space-y-1">
+                <For each={r().criteria}>
+                  {(c) => (
+                    <li class="flex gap-2">
+                      <span aria-hidden="true" class={c.ok ? 'text-emerald-400' : 'text-red-400'}>{c.ok ? '✓' : '✗'}</span>
+                      <span class="sr-only">{c.ok ? 'Passed:' : 'Failed:'}</span>
+                      <span class="text-slate-300">
+                        {c.label}
+                        <Show when={c.detail}><span class="block text-xs text-slate-400">{c.detail}</span></Show>
+                      </span>
+                    </li>
+                  )}
+                </For>
+              </ul>
+            </Show>
+            <Show when={r().remaining !== undefined}>
+              <p class="text-xs text-slate-400">{r().remaining} {r().remaining === 1 ? 'check' : 'checks'} left this hour.</p>
+            </Show>
+          </div>
+        )}
+      </Show>
+    </div>
   );
 }

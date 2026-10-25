@@ -30,6 +30,8 @@ export interface UiModuleInstall {
 export interface ExtensionCatalogEntry {
   /** Globally unique id: `{repoSlug}/{moduleId}` */
   catalogId: string;
+  /** ISO date this entry was first listed in the registry (never changes). */
+  firstListedAt?: string;
   id: string;
   name: string;
   version: string;

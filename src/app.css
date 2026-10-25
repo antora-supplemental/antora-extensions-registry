@@ -160,3 +160,8 @@ html:not(.dark) .search-pop-option[aria-selected='true'] { background-color: #ff
 
 /* Dark mode: small slate-500 meta text (versions, ids, authors, dates) was #737373 on charcoal (3.59:1); lift to AA. */
 html.dark .text-slate-500 { color: #a3a3a3; }
+
+/* "New" badge (first listed within NEW_WINDOW_DAYS). Orange palette, AA in both schemes:
+   light #9a3412 on #fff4ed = 6.9:1; dark #ffc9a8 on #431407 = 10.6:1. */
+.new-badge { background-color: #fff4ed; color: #9a3412; border: 1px solid #ffc9a8; }
+html.dark .new-badge { background-color: #431407; color: #ffc9a8; border-color: #9a3412; }

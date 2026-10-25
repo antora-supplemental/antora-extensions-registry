@@ -1,3 +1,4 @@
+import type { AdminReport } from '~/lib/server/reports';
 import { cache } from '@solidjs/router';
 import { getRequestEvent } from 'solid-js/web';
 
@@ -18,16 +19,24 @@ export interface AdminData {
   indexedRepos: Array<{ owner: string; repo: string; moduleCount: number; recipeCount: number }>;
   discoveredRepos: Array<{ owner: string; repo: string }>;
   manifests: Array<{ catalogId: string; name: string; manifestPath: string }>;
+  reports: AdminReport[];
+  trusted: Array<{ id: string; kind: string; name: string; note: string | null; addedBy: string | null }>;
+  recentApprovals: Array<{ kind: 'theme' | 'extension'; name: string; repoUrl: string; approvedVia: string; at: string | null }>;
   loadErrors: string[];
 }
 
-async function currentAdmin(): Promise<boolean> {
+/** The signed-in admin's user id, or null. Every admin server function checks this on the server. */
+async function currentAdminId(): Promise<string | null> {
   const event = getRequestEvent();
-  if (!event) return false;
+  if (!event) return null;
   const { auth } = await import('~/server/auth');
   const { isAdminUser } = await import('~/server/admin');
   const session = await auth.api.getSession({ headers: event.request.headers });
-  return isAdminUser(session?.user?.id);
+  return (await isAdminUser(session?.user?.id)) ? session!.user.id : null;
+}
+
+async function currentAdmin(): Promise<boolean> {
+  return (await currentAdminId()) !== null;
 }
 
 /** Whether the signed-in user may open /admin. */
@@ -91,5 +100,99 @@ export const loadAdminData = cache(async (): Promise<AdminData | null> => {
     loadErrors.push(`Extension catalog: ${error instanceof Error ? error.message : String(error)}`);
   }
 
-  return { queue, catalogSource, syncedAt, discoveredRepoCount, indexedRepos, discoveredRepos, manifests, loadErrors };
+  let trusted: AdminData['trusted'] = [];
+  const recentApprovals: AdminData['recentApprovals'] = [];
+  try {
+    const { client } = await import('~/server/db');
+    const { listTrustedPublishers } = await import('~/lib/registry-write');
+    trusted = (await listTrustedPublishers(client)).map((t) => ({ id: t.id, kind: t.kind, name: t.name, note: t.note, addedBy: t.addedBy }));
+    const rows = await client.execute(`
+      SELECT 'theme' AS kind, name, repoUrl, approvedVia, reviewedAt FROM theme WHERE approvedVia IS NOT NULL
+      UNION ALL
+      SELECT 'extension' AS kind, owner || '/' || name, repoUrl, approvedVia, reviewedAt FROM extension_repo WHERE approvedVia IS NOT NULL
+      ORDER BY reviewedAt DESC LIMIT 20`);
+    for (const r of rows.rows) {
+      recentApprovals.push({
+        kind: r.kind as 'theme' | 'extension',
+        name: String(r.name),
+        repoUrl: String(r.repoUrl),
+        approvedVia: String(r.approvedVia),
+        at: r.reviewedAt ? new Date(Number(r.reviewedAt) * 1000).toISOString() : null,
+      });
+    }
+  } catch (error) {
+    loadErrors.push(`Trusted publishers: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  const reports: AdminData['reports'] = [];
+  try {
+    const { client } = await import('~/server/db');
+    const rows = await client.execute(`
+      SELECT r.id, r.itemKind, r.itemId, r.itemName, r.reason, r.message, r.createdAt, COALESCE(u.name, u.email, r.reporterId) AS reporter
+      FROM report r LEFT JOIN user u ON u.id = r.reporterId
+      WHERE r.status = 'open' ORDER BY r.createdAt DESC LIMIT 100`);
+    for (const r of rows.rows) {
+      reports.push({
+        id: String(r.id), itemKind: String(r.itemKind), itemId: String(r.itemId), itemName: String(r.itemName),
+        reason: String(r.reason), message: (r.message as string | null) ?? null, reporter: String(r.reporter),
+        createdAt: new Date(Number(r.createdAt) * 1000).toISOString(),
+      });
+    }
+  } catch (error) {
+    loadErrors.push(`Reports: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  return { reports, trusted, recentApprovals, queue, catalogSource, syncedAt, discoveredRepoCount, indexedRepos, discoveredRepos, manifests, loadErrors };
 }, 'admin-data');
+
+export interface AdminActionResult {
+  ok: boolean;
+  message: string;
+}
+
+/** Approve or reject a queue item. Admin-only; checked on the server. */
+export async function reviewQueueItem(input: {
+  kind: 'theme' | 'extension';
+  id: string;
+  decision: 'approve' | 'reject';
+  reason?: string;
+}): Promise<AdminActionResult> {
+  'use server';
+  const adminId = await currentAdminId();
+  if (!adminId) return { ok: false, message: 'Admins only.' };
+  if (input.kind !== 'theme' && input.kind !== 'extension') return { ok: false, message: 'Unknown item type.' };
+  const { approveItem, rejectItem } = await import('~/server/registry');
+  try {
+    if (input.decision === 'approve') return await approveItem(input.kind, input.id, adminId, 'Approved by an admin');
+    const reason = input.reason?.trim().slice(0, 500) || null;
+    return await rejectItem(input.kind, input.id, adminId, reason);
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+const TRUSTED_KINDS = ['github_user', 'github_org', 'gitlab_user', 'gitlab_group'] as const;
+
+/** Add a trusted publisher. Admin-only. */
+export async function addTrusted(input: { kind: string; name: string; note?: string }): Promise<AdminActionResult> {
+  'use server';
+  const adminId = await currentAdminId();
+  if (!adminId) return { ok: false, message: 'Admins only.' };
+  const kind = TRUSTED_KINDS.find((k) => k === input.kind);
+  const name = input.name?.trim().replace(/^@/, '');
+  if (!kind || !name || !/^[\w./-]+$/.test(name)) return { ok: false, message: 'Pick a type and enter a valid user, org or group name.' };
+  const { client } = await import('~/server/db');
+  const { addTrustedPublisher } = await import('~/lib/registry-write');
+  await addTrustedPublisher(client, kind, name, adminId, input.note?.trim().slice(0, 200) || null);
+  return { ok: true, message: `Added ${name.toLowerCase()} (${kind.replace('_', ' ')}).` };
+}
+
+/** Remove a trusted publisher. Admin-only. */
+export async function removeTrusted(id: string): Promise<AdminActionResult> {
+  'use server';
+  const adminId = await currentAdminId();
+  if (!adminId) return { ok: false, message: 'Admins only.' };
+  const { client } = await import('~/server/db');
+  await client.execute({ sql: 'DELETE FROM trusted_publisher WHERE id = ?', args: [id] });
+  return { ok: true, message: `Removed ${id.split(':').slice(1).join(':')}.` };
+}

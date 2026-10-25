@@ -31,7 +31,13 @@ export async function readCatalogFromDb(): Promise<DbCatalog | null> {
     const c = getClient();
     const rows = await c.execute('SELECT payload FROM catalog_entry ORDER BY repoOwner, repoName, catalogId');
     if (rows.rows.length === 0) return null;
-    const entries = rows.rows.map((r) => JSON.parse(String(r.payload)) as ExtensionCatalogEntry);
+    const { readFirstListed } = await import('~/lib/first-listed');
+    const first = await readFirstListed(c, 'extension');
+    const entries = rows.rows.map((r) => {
+      const e = JSON.parse(String(r.payload)) as ExtensionCatalogEntry;
+      const at = first.get(e.catalogId);
+      return at ? { ...e, firstListedAt: at } : e;
+    });
     const meta = await c.execute("SELECT key, value FROM catalog_meta");
     const m = Object.fromEntries(meta.rows.map((r) => [String(r.key), String(r.value)]));
     const modules = entries.filter((e) => e.type !== 'ui-recipe');

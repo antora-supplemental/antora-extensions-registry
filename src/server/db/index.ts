@@ -14,6 +14,6 @@ function createDbClient(): Client {
   });
 }
 
-const client = createDbClient();
+export const client = createDbClient();
 
 export const db = drizzle(client, { schema });

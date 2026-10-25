@@ -29,6 +29,12 @@ export const serverScheme = z
     GITHUB_TOKEN: z.string().optional(),
     /** Comma-separated GitHub logins allowed into /admin (e.g. "AMDphreak"). */
     ADMIN_GITHUB_LOGINS: z.string().optional(),
+    /** Resend API key for report notification emails; when unset, reports are stored but not emailed. */
+    RESEND_API_KEY: z.string().optional(),
+    /** Verified sender for report emails, e.g. "Antora Registry <reports@antora-supplemental.org>". */
+    REPORT_EMAIL_FROM: z.string().optional(),
+    /** Where report emails go. Defaults to support@antora-supplemental.org. */
+    REPORT_EMAIL_TO: z.string().optional(),
     REGISTRY_CATALOG_ONLY: z.enum(["true", "false", "0", "1"]).optional(),
   })
   .superRefine((data, ctx) => {

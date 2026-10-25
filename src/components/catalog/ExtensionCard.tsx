@@ -4,6 +4,7 @@ import { Card } from '~/components/ui/card';
 import { Badge } from '~/components/ui/badge';
 import { buttonVariants } from '~/components/ui/button';
 import { ColorModeIcons, splitModeTags } from './ColorModeIcons';
+import NewBadge from './NewBadge';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 import { formatInstallSnippet } from '~/lib/ui-modules';
 
@@ -47,6 +48,7 @@ export default function ExtensionCard(props: ExtensionCardProps) {
                 {typeLabel()}
               </Badge>
               <span class="text-slate-500 text-xs font-mono">v{props.entry.version}</span>
+              <NewBadge firstListedAt={props.entry.firstListedAt} />
             </div>
             <h3 class="font-semibold text-lg text-white">
               <A href={`/extensions/${props.entry.catalogId}`} class="hover:text-primary-400 transition-colors focus-visible:outline-none focus-visible:underline">

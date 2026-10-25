@@ -1,25 +1,17 @@
 import { createSignal, createMemo, For, Show } from 'solid-js';
-import { splitModeTags } from './ColorModeIcons';
+import { byFirstListedDesc, isNewListing } from '~/lib/new-items';
 import { inputClass } from '~/components/ui/text-field';
 import { cn } from '~/lib/utils';
 import type { Theme } from '~/types/theme';
-import { matchesAppearanceFilter, type AppearanceFilter } from '~/data/github-topics';
-import { APPEARANCE_FILTER_OPTIONS } from '~/lib/appearance-filter';
+import {
+  matchesThemeAppearance,
+  THEME_APPEARANCE_FILTER_OPTIONS,
+  type ThemeAppearanceFilter,
+} from '~/lib/appearance-filter';
 import ThemeCard from './ThemeCard';
 
 interface ThemeGalleryProps {
   themes: Theme[];
-}
-
-function inferThemeTopics(theme: Theme): string[] {
-  if (theme.githubTopics?.length) return theme.githubTopics;
-  const topics = ['antora-theme'];
-  // DB-synced themes carry tags (dark/dark-theme/light-theme/light+dark), not GitHub topics.
-  const { modes } = splitModeTags(theme.tags);
-  const both = theme.tags.includes('light+dark');
-  if (both || modes.includes('dark')) topics.push('antora-dark-theme');
-  if (both || modes.includes('light')) topics.push('antora-light-theme');
-  return topics;
 }
 
 export default function ThemeGallery(props: ThemeGalleryProps) {
@@ -27,12 +19,9 @@ export default function ThemeGallery(props: ThemeGalleryProps) {
     typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('q') ?? '' : '';
   const [searchQuery, setSearchQuery] = createSignal(initialQ);
   const [selectedTag, setSelectedTag] = createSignal<string | null>(null);
-  const [sortBy, setSortBy] = createSignal<'stars' | 'updated' | 'name'>('stars');
-  const [appearanceFilter, setAppearanceFilter] = createSignal<AppearanceFilter>('all');
-
-  const THEME_APPEARANCE_OPTIONS = APPEARANCE_FILTER_OPTIONS.filter(
-    (o) => o.value !== 'dark-mode-only',
-  );
+  const [sortBy, setSortBy] = createSignal<'stars' | 'updated' | 'newest' | 'name'>('stars');
+  const [newOnly, setNewOnly] = createSignal(false);
+  const [appearanceFilter, setAppearanceFilter] = createSignal<ThemeAppearanceFilter>('all');
 
   const allTags = createMemo(() => {
     const tags = new Set<string>();
@@ -54,18 +43,18 @@ export default function ThemeGallery(props: ThemeGalleryProps) {
     }
 
     const appearance = appearanceFilter();
-    themes = themes.filter((theme) =>
-      matchesAppearanceFilter(theme.githubTopics ?? inferThemeTopics(theme), appearance),
-    );
+    themes = themes.filter((theme) => matchesThemeAppearance(theme.appearance, appearance));
 
     const tag = selectedTag();
     if (tag) {
       themes = themes.filter((theme) => theme.tags.includes(tag));
     }
 
+    if (newOnly()) themes = themes.filter((t) => isNewListing(t.firstListedAt));
     const sort = sortBy();
     themes.sort((a, b) => {
       if (sort === 'stars') return b.stars - a.stars;
+      if (sort === 'newest') return byFirstListedDesc(a, b);
       if (sort === 'updated') return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
       return a.name.localeCompare(b.name);
     });
@@ -92,23 +81,33 @@ export default function ThemeGallery(props: ThemeGalleryProps) {
 
         <select
           value={sortBy()}
-          onChange={(e) => setSortBy(e.currentTarget.value as 'stars' | 'updated' | 'name')}
+          onChange={(e) => setSortBy(e.currentTarget.value as 'stars' | 'updated' | 'newest' | 'name')}
+          aria-label="Sort themes"
           class="px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 cursor-pointer"
         >
           <option value="stars">Most Stars</option>
           <option value="updated">Recently Updated</option>
+          <option value="newest">Newest first</option>
           <option value="name">Name</option>
         </select>
 
         <select
           value={appearanceFilter()}
-          onChange={(e) => setAppearanceFilter(e.currentTarget.value as AppearanceFilter)}
+          onChange={(e) => setAppearanceFilter(e.currentTarget.value as ThemeAppearanceFilter)}
           class="px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white cursor-pointer"
+          title="Filter by appearance"
+          aria-label="Filter by appearance"
         >
-          <For each={THEME_APPEARANCE_OPTIONS}>
+          <For each={THEME_APPEARANCE_FILTER_OPTIONS}>
             {(opt) => <option value={opt.value}>{opt.label}</option>}
           </For>
         </select>
+
+        <label class="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white cursor-pointer whitespace-nowrap">
+          <input type="checkbox" checked={newOnly()} onChange={(e) => setNewOnly(e.currentTarget.checked)} class="accent-primary-600" />
+          <span class="new-badge rounded-md px-1.5 py-0.5 text-xs font-semibold leading-none">New</span>
+          <span class="text-sm">only</span>
+        </label>
       </div>
 
       <div class="flex flex-wrap gap-2 mb-8">

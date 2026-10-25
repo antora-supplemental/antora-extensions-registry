@@ -92,10 +92,22 @@ export async function POST({ request }: { request: Request }) {
       status: 'pending',
     });
 
+    const { submissionTrust, approveItem } = await import('~/server/registry');
+    const trusted = await submissionTrust(owner, session.user.id);
+    if (trusted) {
+      const approved = await approveItem('theme', themeId, null, trusted);
+      if (approved.ok) {
+        return new Response(JSON.stringify({ success: true, message: `${approved.message} ${trusted}.`, themeId }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Theme submitted successfully! It will appear in the gallery after review.',
+        message: 'Theme submitted. It will appear in the gallery after review.',
         themeId,
       }),
       {

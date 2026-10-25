@@ -1,8 +1,8 @@
 import { createSignal, createMemo, For, Show } from 'solid-js';
+import { byFirstListedDesc, isNewListing } from '~/lib/new-items';
 import { inputClass } from '~/components/ui/text-field';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
-import { matchesAppearanceFilter, type AppearanceFilter } from '~/data/github-topics';
-import { APPEARANCE_FILTER_OPTIONS } from '~/lib/appearance-filter';
+import { hasDarkModeAddonTopic } from '~/data/github-topics';
 import ExtensionCard from './ExtensionCard';
 
 interface ExtensionGalleryProps {
@@ -13,16 +13,20 @@ interface ExtensionGalleryProps {
 
 type ViewMode = 'all' | 'single' | 'bundles';
 
-const EXTENSION_APPEARANCE_OPTIONS = [
-  { value: 'all' as AppearanceFilter, label: 'All color modes' },
-  ...APPEARANCE_FILTER_OPTIONS.filter((o) => o.value !== 'all' && o.value !== 'default'),
+type ExtensionAppearanceFilter = 'all' | 'dark-mode-addon';
+
+const EXTENSION_APPEARANCE_OPTIONS: Array<{ value: ExtensionAppearanceFilter; label: string }> = [
+  { value: 'all', label: 'All extensions' },
+  { value: 'dark-mode-addon', label: 'Dark mode add-ons' },
 ];
 
 export default function ExtensionGallery(props: ExtensionGalleryProps) {
   const [searchQuery, setSearchQuery] = createSignal(props.initialQuery ?? '');
   const [selectedTag, setSelectedTag] = createSignal<string | null>(null);
   const [viewMode, setViewMode] = createSignal<ViewMode>('all');
-  const [appearanceFilter, setAppearanceFilter] = createSignal<AppearanceFilter>('all');
+  const [newOnly, setNewOnly] = createSignal(false);
+  const [sortBy, setSortBy] = createSignal<'name' | 'newest'>('name');
+  const [appearanceFilter, setAppearanceFilter] = createSignal<ExtensionAppearanceFilter>('all');
 
   const allEntries = createMemo(() => [...props.modules, ...props.recipes]);
 
@@ -40,8 +44,8 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
     if (mode === 'bundles') entries = entries.filter((e) => e.type === 'ui-recipe');
 
     const appearance = appearanceFilter();
-    if (appearance !== 'all') {
-      entries = entries.filter((e) => matchesAppearanceFilter(e.githubTopics ?? [], appearance));
+    if (appearance === 'dark-mode-addon') {
+      entries = entries.filter((e) => hasDarkModeAddonTopic(e.githubTopics ?? []));
     }
 
     const query = searchQuery().toLowerCase();
@@ -58,7 +62,8 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
     const tag = selectedTag();
     if (tag) entries = entries.filter((entry) => entry.tags.includes(tag));
 
-    entries.sort((a, b) => a.name.localeCompare(b.name));
+    if (newOnly()) entries = entries.filter((e) => isNewListing(e.firstListedAt));
+    entries.sort((a, b) => (sortBy() === 'newest' ? byFirstListedDesc(a, b) : 0) || a.name.localeCompare(b.name));
     return entries;
   });
 
@@ -88,7 +93,7 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
 
         <select
           value={appearanceFilter()}
-          onChange={(e) => setAppearanceFilter(e.currentTarget.value as AppearanceFilter)}
+          onChange={(e) => setAppearanceFilter(e.currentTarget.value as ExtensionAppearanceFilter)}
           class="px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white cursor-pointer"
           title="Filter by color mode"
           aria-label="Filter by color mode"
@@ -97,6 +102,22 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
             {(opt) => <option value={opt.value}>{opt.label}</option>}
           </For>
         </select>
+
+        <select
+          value={sortBy()}
+          aria-label="Sort extensions"
+          onChange={(e) => setSortBy(e.currentTarget.value as 'name' | 'newest')}
+          class="px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white cursor-pointer"
+        >
+          <option value="name">Name</option>
+          <option value="newest">Newest first</option>
+        </select>
+
+        <label class="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white cursor-pointer whitespace-nowrap">
+          <input type="checkbox" checked={newOnly()} onChange={(e) => setNewOnly(e.currentTarget.checked)} class="accent-primary-600" />
+          <span class="new-badge rounded-md px-1.5 py-0.5 text-xs font-semibold leading-none">New</span>
+          <span class="text-sm">only</span>
+        </label>
       </div>
 
       <div class="flex flex-wrap gap-2 mb-6">

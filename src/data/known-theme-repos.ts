@@ -3,6 +3,7 @@ import {
   ANTORA_APPEARANCE_TOPICS,
   ANTORA_TOPICS,
   appearanceTags,
+  themeAppearanceFromTopics,
 } from './github-topics';
 
 export interface KnownThemeRepo {
@@ -48,6 +49,11 @@ export const knownThemeRepos: KnownThemeRepo[] = [
   },
 ];
 
+function themeAppearanceOf(topics: string[]) {
+  const a = themeAppearanceFromTopics(topics);
+  return a === 'conflict' ? null : a;
+}
+
 export function themesFromKnownRepos(): Theme[] {
   return knownThemeRepos.map((ref) => ({
     id: `${ref.owner}-${ref.repo}`.toLowerCase(),
@@ -62,5 +68,7 @@ export function themesFromKnownRepos(): Theme[] {
     tags: [...new Set([...appearanceTags(ref.githubTopics), 'documentation'])],
     lastUpdated: new Date().toISOString(),
     githubTopics: ref.githubTopics,
+    appearance: themeAppearanceOf(ref.githubTopics),
+    baseTheme: null,
   }));
 }
