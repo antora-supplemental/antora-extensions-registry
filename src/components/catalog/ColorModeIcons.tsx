@@ -41,7 +41,7 @@ export function ColorModeIcons(props: { modes: ColorMode[]; palettes?: Partial<R
               width: '15px',
               height: '15px',
               background: `conic-gradient(${p.background} 0 50%, ${p.surface} 50% 80%, ${p.accent} 80% 100%)`,
-              border: `1.5px solid ${mode === 'dark' ? '#e5e7eb' : '#1f2937'}`,
+              border: '1.5px solid rgb(var(--trim) / calc(var(--trim-alpha) + 0.25))',
             }}
           />
         );

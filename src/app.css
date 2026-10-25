@@ -28,6 +28,12 @@
   /* Solid brand accent: dark text on orange (white on #FF5F00 fails WCAG AA). */
   --brand: #ff5f00;
   --brand-foreground: #111111;
+  /* Purple-glass trim (light): violet-500 rim at 55%, bright inner highlight; text on white uses violet-700. */
+  --trim: 139 92 246;          /* #8B5CF6 */
+  --trim-alpha: 0.55;
+  --trim-foreground: #6d28d9;
+  --trim-deep: #7400b8;
+  --glass-highlight: 0.7;
   color-scheme: light;
 }
 
@@ -55,6 +61,12 @@
   --chrome-bg: #111111;
   --brand: #ff5f00;
   --brand-foreground: #111111;
+  /* Purple-glass trim (dark): violet-400 rim at 40%, faint inner highlight. */
+  --trim: 167 139 250;         /* #A78BFA */
+  --trim-alpha: 0.4;
+  --trim-foreground: #c4b5fd;
+  --trim-deep: #7400b8;
+  --glass-highlight: 0.14;
 }
 
 /* Rubber-band overscroll shows the root background: match the header/footer. */
@@ -136,3 +148,19 @@ input[type='search']::-ms-reveal {
   width: 0;
   height: 0;
 }
+
+/* Purple glass trims. Tinted-glass rims rather than flat lines: translucent violet border, a faint
+   inner top highlight, and a soft violet glow on hover/focus. Never a large purple fill. */
+.glass-rim {
+  border: 1px solid rgb(var(--trim) / var(--trim-alpha));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--glass-highlight));
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.glass-rim:hover, .glass-rim:focus-within, .glass-rim:focus-visible {
+  border-color: rgb(var(--trim) / calc(var(--trim-alpha) + 0.2));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--glass-highlight)), 0 0 16px rgb(var(--trim) / 0.28);
+}
+.glass-tint { background-color: rgb(var(--trim) / 0.06); }
+.trim-rule-b { border-bottom: 1px solid rgb(var(--trim) / var(--trim-alpha)); }
+.trim-rule-t { border-top: 1px solid rgb(var(--trim) / var(--trim-alpha)); }
+::selection { background-color: rgb(var(--trim) / 0.35); }

@@ -138,7 +138,7 @@ export default function ExtensionCard(props: ExtensionCardProps) {
           </div>
         </Show>
 
-        <div class="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-700/50">
+        <div class="flex items-center justify-between text-xs text-slate-500 pt-3 trim-rule-t">
           <span>
             by <span class="text-slate-400">{props.entry.author}</span>
           </span>

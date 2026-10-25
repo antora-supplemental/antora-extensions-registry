@@ -89,7 +89,7 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
         <select
           value={viewMode()}
           onChange={(e) => setViewMode(e.currentTarget.value as ViewMode)}
-          class="px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white cursor-pointer"
+          class="px-4 py-3 bg-slate-800/50 glass-rim rounded-xl text-white cursor-pointer"
         >
           <option value="all">All entries</option>
           <option value="modules">Modules only</option>
@@ -99,7 +99,7 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
         <select
           value={appearanceFilter()}
           onChange={(e) => setAppearanceFilter(e.currentTarget.value as AppearanceFilter)}
-          class="px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white cursor-pointer"
+          class="px-4 py-3 bg-slate-800/50 glass-rim rounded-xl text-white cursor-pointer"
           title="Appearance / capability filter"
         >
           <For each={EXTENSION_APPEARANCE_OPTIONS}>

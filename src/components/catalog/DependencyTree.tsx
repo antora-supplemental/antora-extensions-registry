@@ -30,7 +30,7 @@ function NodeRow(props: { node: DependencyNode }) {
         </Show>
       </div>
       <Show when={props.node.children.length > 0}>
-        <ul class="ml-4 border-l border-slate-700/50 pl-4">
+        <ul class="ml-4 border-l border-trim/40 pl-4">
           <For each={props.node.children}>{(child) => <NodeRow node={child} />}</For>
         </ul>
       </Show>

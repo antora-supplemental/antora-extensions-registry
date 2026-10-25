@@ -25,7 +25,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
 
   return (
     <div class="site-shell min-h-screen text-slate-100 antialiased">
-      <nav class="border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50">
+      <nav class="trim-rule-b bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex items-center justify-between h-16">
             <A href="/" aria-label="Antora Registry home" class="flex items-center gap-3 group">
@@ -35,10 +35,10 @@ export default function SiteLayout(props: SiteLayoutProps) {
               </span>
             </A>
             <div class="hidden md:flex items-center gap-4">
-              <A href="/extensions" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
+              <A href="/extensions" activeClass="!text-white border-b-2 border-trim/70" class="py-1 text-slate-300 hover:text-white transition-colors text-sm font-medium">
                 Extensions
               </A>
-              <A href="/themes" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
+              <A href="/themes" activeClass="!text-white border-b-2 border-trim/70" class="py-1 text-slate-300 hover:text-white transition-colors text-sm font-medium">
                 Themes
               </A>
               <ThemeToggle />
@@ -106,7 +106,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
                     )}
                   </For>
                   <ThemeToggle showLabel class="w-full px-3 py-2" />
-                  <div class="my-2 border-t border-slate-700/50" />
+                  <div class="my-2 trim-rule-t" />
                   <Suspense fallback={null}>
                     <Show
                       when={session()?.user}
@@ -128,7 +128,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
 
       <main>{props.children}</main>
 
-      <footer class="border-t border-slate-700/50 bg-slate-900/50 mt-20">
+      <footer class="trim-rule-t bg-slate-900/50 mt-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <p class="text-slate-400 text-sm">

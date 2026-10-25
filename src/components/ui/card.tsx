@@ -7,7 +7,7 @@ export const Card: Component<ComponentProps<'article'>> = (props) => {
   return (
     <article
       class={cn(
-        'bg-card/50 text-card-foreground rounded-xl overflow-hidden border border-border/50 hover:border-primary-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10',
+        'bg-card/50 text-card-foreground rounded-xl overflow-hidden glass-rim',
         local.class,
       )}
       {...others}
