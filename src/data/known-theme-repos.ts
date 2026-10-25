@@ -14,7 +14,16 @@ export interface KnownThemeRepo {
   demoUrl?: string;
 }
 
+// Order is the homepage "Featured Themes" order; the upstream Antora Default UI leads.
 export const knownThemeRepos: KnownThemeRepo[] = [
+  {
+    owner: 'antora',
+    repo: 'antora-ui-default',
+    name: 'Default UI',
+    description: 'The official Antora default UI bundle.',
+    githubTopics: [ANTORA_TOPICS.THEME, ANTORA_APPEARANCE_TOPICS.LIGHT_THEME],
+    demoUrl: 'https://docs.antora.org',
+  },
   {
     owner: 'antora-supplemental',
     repo: 'valentus-theme',
@@ -36,14 +45,6 @@ export const knownThemeRepos: KnownThemeRepo[] = [
     description: 'Bespoke minimalist architectural theme — Stone and Graphite design system.',
     githubTopics: [ANTORA_TOPICS.THEME, ANTORA_APPEARANCE_TOPICS.LIGHT_THEME],
     demoUrl: 'https://antora-supplemental.github.io/architexture-theme/',
-  },
-  {
-    owner: 'antora',
-    repo: 'antora-ui-default',
-    name: 'Default UI',
-    description: 'The official Antora default UI bundle.',
-    githubTopics: [ANTORA_TOPICS.THEME, ANTORA_APPEARANCE_TOPICS.LIGHT_THEME],
-    demoUrl: 'https://docs.antora.org',
   },
 ];
 
