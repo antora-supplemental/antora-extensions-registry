@@ -1,8 +1,10 @@
 import { client } from '~/server/db';
 
 /** Cached preview images (see src/lib/preview-cache.ts). Content-addressed, so cacheable forever. */
-export async function GET({ params }: { params: { hash: string } }) {
-  const hash = String(params.hash ?? '').toLowerCase();
+export async function GET(event: { request: Request; params?: { hash?: string } }) {
+  // Read the hash from the URL as well: params are not always populated on the Netlify function.
+  const fromUrl = new URL(event.request.url).pathname.split('/').pop() ?? '';
+  const hash = String(event.params?.hash || fromUrl).replace(/\.[a-z]+$/i, '').toLowerCase();
   if (!/^[0-9a-f]{64}$/.test(hash)) return new Response('Not found', { status: 404 });
   try {
     const r = await client.execute({ sql: 'SELECT contentType, bytes FROM preview_blob WHERE hash = ?', args: [hash] });
