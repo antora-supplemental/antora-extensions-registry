@@ -55,7 +55,8 @@ export function themesFromKnownRepos(): Theme[] {
     author: ref.owner,
     repoUrl: `https://github.com/${ref.owner}/${ref.repo}`,
     demoUrl: ref.demoUrl ?? `https://${ref.owner}.github.io/${ref.repo}/`,
-    previewImage: `https://raw.githubusercontent.com/${ref.owner}/${ref.repo}/main/preview.png`,
+    // Screenshots of each demoUrl, committed under public/previews (theme repos ship no preview.png).
+    previewImage: `/previews/${ref.repo}.png`,
     stars: 0,
     tags: [...new Set([...appearanceTags(ref.githubTopics), 'documentation'])],
     lastUpdated: new Date().toISOString(),
