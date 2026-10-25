@@ -95,6 +95,19 @@ html:not(.dark) .border-slate-700\/50, html:not(.dark) .border-slate-700\/60, ht
 /* Orange text on white needs the darker step for AA (#C2410C = 5.18:1). */
 html:not(.dark) .text-primary-300, html:not(.dark) .text-primary-400, html:not(.dark) .hover\:text-primary-300:hover, html:not(.dark) .group:hover .group-hover\:text-primary-400 { color: #c2410c; }
 
+html:not(.dark) .bg-slate-800\/40 { background-color: rgb(255 255 255 / 0.8); }
+/* Translucent white text (sign-in provider labels) and its hover. */
+html:not(.dark) .text-white\/90, html:not(.dark) .group:hover .group-hover\:text-white { color: #111111; }
+/* Orange tints: #C2410C text needs a paler tint than primary/20 (4.03:1) to reach AA. */
+html:not(.dark) .bg-primary\/20 { background-color: #fff7ed; }        /* #C2410C on it: 4.87:1 */
+html:not(.dark) .hover\:bg-primary\/30:hover { background-color: #ffedd5; } /* 4.52:1 */
+/* Status text authored for dark backgrounds: darker steps on light. */
+html:not(.dark) .text-amber-200, html:not(.dark) .text-amber-300, html:not(.dark) .text-amber-400 { color: #92400e; }
+html:not(.dark) .text-emerald-300, html:not(.dark) .text-emerald-300\/90, html:not(.dark) .text-emerald-400 { color: #065f46; }
+html:not(.dark) .text-green-300\/80, html:not(.dark) .text-green-400 { color: #166534; }
+html:not(.dark) .text-red-300, html:not(.dark) .text-red-400 { color: #b91c1c; }
+html:not(.dark) .text-yellow-400 { color: #a16207; }
+
 /* AsciiDoc Rendering Polish */
 .adoc-content {
   line-height: 1.6;

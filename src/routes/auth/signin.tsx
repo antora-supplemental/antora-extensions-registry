@@ -77,7 +77,7 @@ export default function SignIn() {
                 <div class="relative w-full max-w-sm space-y-10">
                     <div class="text-center space-y-4">
                         <h1 class="text-3xl font-black text-white tracking-tight">Sign in</h1>
-                        <p class="text-sm text-slate-400 font-medium">Sign in to save collections, build stacks and share your own work.</p>
+                        <p class="text-sm text-slate-400 font-medium">Choose a provider to continue</p>
                     </div>
 
                     <Show when={error()}>
