@@ -1,3 +1,4 @@
+import { matchPackage } from './bundle-members';
 import { liveImages } from '~/lib/preview-check';
 /**
  * Sync-time metadata: layers, bundle detection and preview images.
@@ -28,6 +29,7 @@ export interface RepoMetadata {
   declared: AntoraRegistryMetadata;
   keywords: string[];
   dependencyNames: string[];
+  dependencySpecs: Record<string, string>;
   privatePackage: boolean;
   homepage?: string;
   readmeImages: PreviewImage[];
@@ -46,6 +48,7 @@ export async function readRepoMetadata(owner: string, repo: string, branch: stri
     declared,
     keywords: (pkg?.keywords ?? []).map((k) => String(k).toLowerCase()),
     dependencyNames: Object.keys(pkg?.dependencies ?? {}).filter((n) => n !== pkg?.name),
+    dependencySpecs: Object.fromEntries(Object.entries(pkg?.dependencies ?? {}).filter(([n]) => n !== pkg?.name).map(([n, v]) => [n, String(v)])),
     privatePackage: pkg?.private === true,
     homepage: pkg?.homepage,
     readmeImages: await liveImages(readmeImages(owner, repo, branch, readme, md === null), MAX_README_PREVIEWS),
@@ -188,6 +191,7 @@ function declaredPreviews(owner: string, repo: string, branch: string, d: Antora
 export function applyRepoMetadata(entry: ExtensionCatalogEntry, meta: RepoMetadata, branch = 'main'): ExtensionCatalogEntry {
   const d = meta.declared;
   const out: ExtensionCatalogEntry = { ...entry, dependencyNames: meta.dependencyNames };
+  if (Object.keys(meta.dependencySpecs ?? {}).length) out.dependencySpecs = meta.dependencySpecs;
   if (meta.privatePackage) out.privatePackage = true;
   if (meta.homepage) out.homepage = meta.homepage;
   if (!out.layers?.length) {
@@ -230,7 +234,7 @@ export function finalizeCatalog(entries: ExtensionCatalogEntry[]): ExtensionCata
   const byName = new Map(entries.map((e) => [e.name.toLowerCase(), e]));
   const withBundles = entries.map((e) => {
     if (e.bundle || !e.dependencyNames?.length) return e;
-    const indexed = e.dependencyNames.filter((n) => byName.has(n.toLowerCase()));
+    const indexed = e.dependencyNames.filter((n) => byName.has(n.toLowerCase()) || matchPackage(n, entries));
     if (indexed.length < BUNDLE_MIN_INDEXED_DEPS) return e;
     return { ...e, bundle: { members: e.dependencyNames, source: 'inferred' as const, reason: `depends on ${indexed.length} indexed extensions` } };
   });
@@ -239,7 +243,7 @@ export function finalizeCatalog(entries: ExtensionCatalogEntry[]): ExtensionCata
     if (e.layers?.length) return e;
     if (e.bundle) {
       const memberLayers = new Set(e.bundle.members.flatMap((m) => {
-        const member = lookup.get(m.toLowerCase());
+        const member = lookup.get(m.toLowerCase()) ?? matchPackage(m, withBundles);
         return member ? member.layers ?? inferLayers(member) : [];
       }));
       const layers = normalizeLayers([...memberLayers]);

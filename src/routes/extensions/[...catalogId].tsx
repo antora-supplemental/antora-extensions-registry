@@ -13,7 +13,7 @@ import { INSTALL_GUIDE_URL, installGuidance } from '~/lib/install-guidance';
 import { Badge } from '~/components/ui/badge';
 import { buttonVariants } from '~/components/ui/button';
 import { Card } from '~/components/ui/card';
-import { buildDependencyTree, dependents } from '~/lib/extension-deps';
+import { buildDependencyTree, dependentLabel, dependents } from '~/lib/extension-deps';
 import { loadExtensionCatalog } from '~/lib/server/catalog';
 import { formatInstallSnippet } from '~/lib/ui-modules';
 import { layerLabel } from '~/lib/layers';
@@ -91,7 +91,7 @@ export default function ExtensionDetailPage() {
                       <p class="text-sm text-slate-400 mb-4">
                         {e().bundle!.members.length} packages.{' '}
                         {e().bundle!.source === 'declared' ? 'Declared by the repository.' : e().bundle!.source === 'admin' ? 'Set by a registry admin.' : `Detected: ${e().bundle!.reason ?? 'depends on several indexed extensions'}.`}{' '}
-                        Linked names are listed in this registry.
+                        Registry entries link to their pages; names marked "not in registry" link out to npm or GitHub.
                       </p>
                       <BundleContents entry={e()} all={all()} />
                     </Card>
@@ -101,18 +101,18 @@ export default function ExtensionDetailPage() {
                     <Card class="p-6 lg:col-span-2">
                       <h2 class="text-lg font-semibold text-white mb-4">Dependency tree</h2>
                       <DependencyTree tree={buildDependencyTree(e(), all())} />
-                      <Show when={(e().requires?.length ?? 0) + (e().recommends?.length ?? 0) === 0}>
+                      <Show when={(e().requires?.length ?? 0) + (e().recommends?.length ?? 0) + (e().bundle?.members.length ?? 0) === 0}>
                         <p class="text-sm text-slate-400 mt-2">No dependencies.</p>
                       </Show>
                       <Show when={dependents(e(), all()).length > 0}>
                         <h3 class="text-sm font-semibold text-white mt-6 mb-1">Used by</h3>
-                        <p class="text-xs text-slate-400 mb-2">Packages that depend on this one. The tag says how they depend on it.</p>
+                        <p class="text-xs text-slate-400 mb-2">Packages that depend on or bundle this one. The tag says how.</p>
                         <ul class="space-y-1">
                           <For each={dependents(e(), all())}>
                             {(d) => (
                               <li class="flex items-center gap-2 text-sm">
                                 <A href={`/extensions/${d.entry.catalogId}`} class="text-primary-400 hover:text-primary-300">{d.entry.name}</A>
-                                <Badge variant={d.relation === 'requires' ? 'warning' : 'muted'}>{d.relation} this</Badge>
+                                <Badge variant={d.relation === 'requires' ? 'warning' : d.relation === 'bundled-in' ? 'primary' : 'muted'} title={d.relation === 'bundled-in' ? `${e().name} is bundled in ${d.entry.name}` : undefined}>{dependentLabel(d.relation)}</Badge>
                                 <Show when={d.mutual}>
                                   <Badge variant="muted" title="This package also depends on it, so the two form a cycle">mutual</Badge>
                                 </Show>

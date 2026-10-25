@@ -66,6 +66,8 @@ export interface ExtensionCatalogEntry {
   previews?: PreviewImage[];
   /** npm dependency names from package.json (bundle detection, "contains" list). */
   dependencyNames?: string[];
+  /** package.json `dependencies` specs by name (e.g. `github:owner/repo#tag`), used to link members that are not in the registry. */
+  dependencySpecs?: Record<string, string>;
   /** package.json `"private": true`: not on npm, install from the Git repository. */
   privatePackage?: boolean;
   homepage?: string;

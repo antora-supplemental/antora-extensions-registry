@@ -7,12 +7,15 @@ function NodeRow(props: { node: DependencyNode }) {
   return (
     <li>
       <div class="flex flex-wrap items-center gap-2 py-1.5">
-        <Show when={props.node.relation !== 'root'}>
-          <Badge variant={props.node.relation === 'requires' ? 'warning' : 'muted'}>{props.node.relation}</Badge>
-        </Show>
         <Show
           when={props.node.entry}
-          fallback={<span class="font-mono text-sm text-slate-400">{props.node.id} <span class="text-xs">(not listed)</span></span>}
+          fallback={
+            <Show when={props.node.externalUrl} fallback={<span class="font-mono text-sm text-slate-400">{props.node.id} <span class="text-xs">(not listed)</span></span>}>
+              <a href={props.node.externalUrl} target="_blank" rel="noopener noreferrer" class="font-mono text-sm text-slate-300 hover:text-white">
+                {props.node.id} <span class="font-sans text-xs text-slate-500">(not in registry)</span>
+              </a>
+            </Show>
+          }
         >
           {(entry) => (
             <Show when={props.node.relation !== 'root'} fallback={<span class="font-semibold text-white">{entry().name}</span>}>
@@ -24,6 +27,9 @@ function NodeRow(props: { node: DependencyNode }) {
         </Show>
         <Show when={props.node.entry}>
           {(entry) => <span class="font-mono text-xs text-slate-500">v{entry().version}</span>}
+        </Show>
+        <Show when={props.node.relation !== 'root'}>
+          <Badge variant={props.node.relation === 'requires' ? 'warning' : props.node.relation === 'bundles' ? 'primary' : 'muted'}>{props.node.relation}</Badge>
         </Show>
         <Show when={props.node.cycle}>
           <span class="text-xs text-amber-400">(cycle)</span>

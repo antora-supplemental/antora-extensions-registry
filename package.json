@@ -15,7 +15,7 @@
     "apply:registry-topics": "node scripts/apply-registry-topics.mjs --discover",
     "catalog:snapshot": "tsx scripts/build-catalog-snapshot.ts",
     "catalog:sync": "tsx scripts/sync-catalog-db.ts",
-    "test": "tsx --test tests/preview-images.test.ts tests/extension-deps.test.ts",
+    "test": "tsx --test tests/preview-images.test.ts tests/extension-deps.test.ts tests/bundle-members.test.ts",
     "audit:previews": "tsx scripts/audit-previews.ts"
   },
   "type": "module",
