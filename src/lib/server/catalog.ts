@@ -4,6 +4,7 @@ import { loadGalleryThemes } from '~/lib/themes/catalog';
 import { isNewListing } from '~/lib/new-items';
 import { readCatalogOverlay } from '~/lib/catalog-db';
 import { applyOverlay, DEFAULT_FEATURED } from '~/lib/catalog-overlay';
+import { classifyEntry } from '~/lib/layers';
 import type { Theme } from '~/types/theme';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 
@@ -24,8 +25,8 @@ export const loadExtensionCatalog = cache(async (): Promise<ExtensionCatalogPayl
       readCatalogOverlay(),
     ]);
     return {
-      modules: applyOverlay(catalog.modules, overlay),
-      recipes: applyOverlay(catalog.recipes, overlay),
+      modules: applyOverlay(catalog.modules.map(classifyEntry), overlay),
+      recipes: applyOverlay(catalog.recipes.map(classifyEntry), overlay),
       discoveredRepoCount: catalog.discoveredRepoCount,
       catalogError: null,
       featured: overlay.featured,

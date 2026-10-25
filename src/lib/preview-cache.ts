@@ -64,7 +64,7 @@ export interface PreviewCacheReport {
 }
 
 /** Applies the cache to every entry in place. Previews end up pointing at /previews/<hash>. */
-export async function syncPreviewCache(entries: ExtensionCatalogEntry[], store: PreviewStore, fetchImpl: FetchLike = fetch): Promise<PreviewCacheReport> {
+export async function syncPreviewCache(entries: ExtensionCatalogEntry[], store: PreviewStore, fetchImpl: FetchLike = fetch, extraKeep: string[] = []): Promise<PreviewCacheReport> {
   const report: PreviewCacheReport = { cached: 0, refreshed: 0, servedStale: 0, dropped: [], purged: 0 };
   for (const e of entries) {
     const known = new Map((await store.list(e.catalogId)).map((c) => [c.sourceUrl, c]));
@@ -99,7 +99,7 @@ export async function syncPreviewCache(entries: ExtensionCatalogEntry[], store: 
     if (out.length) e.previews = out;
     else delete e.previews;
   }
-  report.purged = await store.purgeExcept(entries.map((e) => e.catalogId));
+  report.purged = await store.purgeExcept([...entries.map((e) => e.catalogId), ...extraKeep]);
   return report;
 }
 

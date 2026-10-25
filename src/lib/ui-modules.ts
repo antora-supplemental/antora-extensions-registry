@@ -8,9 +8,12 @@ import { liveImages } from '~/lib/preview-check';
 import { applyRepoMetadata, finalizeCatalog, readRepoMetadata, type PackageJson } from '~/lib/catalog-enrich';
 import { normalizeLayers } from '~/lib/layers';
 import { forkAllowed, forkInfoFrom, type CompareFields } from '~/lib/fork-groups';
+import { fetchGitLabProject, fetchGitLabRaw, gitlabForkFields, gitlabProjectUrl, gitlabRawBase, isGitHubHost, parseGitLabUrl } from '~/lib/gitlab';
+import { registerRawBase } from '~/lib/catalog-enrich';
 import type {
   ExtensionCatalogEntry,
   ExtensionDiscoveryResult,
+  ForkInfo,
   KnownExtensionRepo,
   RegistryIndex,
   UiModuleManifest,
@@ -76,7 +79,6 @@ function inferTags(entry: {
   const text = `${entry.id} ${entry.name} ${entry.description}`.toLowerCase();
 
   const keywords: Record<string, string[]> = {
-    dark: ['dark', 'theme', 'toggle'],
     layout: ['layout', 'chrome', 'header', 'nav', 'mast'],
     breadcrumb: ['breadcrumb', 'bc-', 'trail', 'crumb'],
     recipe: ['recipe'],
@@ -394,8 +396,10 @@ async function packageJsonEntry(
   repo: string,
   branch: string,
   repoMeta: { stars: number; author: string; lastUpdated: string; githubRepoId?: number; githubTopics?: string[] },
+  forge?: { fetchText: (path: string) => Promise<string | null>; repoUrl: string },
 ): Promise<ExtensionCatalogEntry | null> {
-  const text = await fetchRawText(owner, repo, 'package.json', branch);
+  const fetchText = forge?.fetchText ?? ((p: string) => fetchRawText(owner, repo, p, branch));
+  const text = await fetchText('package.json');
   if (!text) return null;
   let pkg: PackageJson;
   try {
@@ -410,7 +414,7 @@ async function packageJsonEntry(
       version: pkg.version ?? '0.0.0',
       type: 'antora-extension',
       description: pkg.description ?? '',
-      repository: `https://github.com/${owner}/${repo}`,
+      repository: forge?.repoUrl ?? `https://github.com/${owner}/${repo}`,
       repositoryOwner: owner,
       repositoryName: repo,
       manifestPath: 'package.json',
@@ -422,7 +426,7 @@ async function packageJsonEntry(
     repo,
     repoMeta,
   );
-  const meta = await readRepoMetadata(owner, repo, branch, (p) => fetchRawText(owner, repo, p, branch), pkg);
+  const meta = await readRepoMetadata(owner, repo, branch, fetchText, pkg);
   const entry = applyRepoMetadata(base, meta, branch);
   if (entry.previews?.length) {
     entry.previews = await liveImages(entry.previews);
@@ -436,6 +440,8 @@ export interface ExtensionCatalogResult {
   modules: ExtensionCatalogEntry[];
   recipes: ExtensionCatalogEntry[];
   indexedRepos: Array<{
+    /** Omitted for github.com. */
+    host?: string;
     owner: string;
     repo: string;
     githubRepoId?: number;
@@ -478,6 +484,56 @@ async function fetchCompare(info: { source?: { full_name: string; default_branch
   }
 }
 
+/**
+ * Cross-host grouping: a repository that is not a GitHub fork but declares `antoraRegistry.upstream`
+ * (for example a GitHub copy of a GitLab project) is grouped with that upstream.
+ */
+export function upstreamFork(e: Pick<ExtensionCatalogEntry, 'upstream'>): ForkInfo | undefined {
+  if (!e.upstream) return undefined;
+  const gl = parseGitLabUrl(e.upstream);
+  const gh = e.upstream.match(/github\.com[/:]([^/]+)\/([^/#?]+?)(?:\.git)?(?:[/#?]|$)/i);
+  const source = gl ? `${gl.host}/${gl.owner}/${gl.repo}` : gh ? `${gh[1]}/${gh[2]}` : undefined;
+  return source ? { parent: source, source } : undefined;
+}
+
+/** GitLab project (gitlab.com or self-hosted): package.json-listed extension, same enrichment as GitHub. */
+async function indexGitLabRepo(ref: KnownExtensionRepo): Promise<ExtensionCatalogEntry[] | null> {
+  const host = ref.host!.toLowerCase();
+  const project = await fetchGitLabProject(host, ref.owner, ref.repo);
+  if (!project) {
+    console.warn(`[registry] GitLab project ${host}/${ref.owner}/${ref.repo} not found or not public`);
+    return null;
+  }
+  const fields = gitlabForkFields(host, project);
+  if (!forkAllowed(fields, ref.discoveredVia)) {
+    console.log(`[registry] skipping GitLab fork ${host}/${ref.owner}/${ref.repo}: no antora-extension topic of its own`);
+    return null;
+  }
+  if (fields.archived && ref.discoveredVia !== 'curated') return null;
+  const branch = ref.branch ?? project.default_branch ?? 'HEAD';
+  registerRawBase(ref.owner, ref.repo, gitlabRawBase(host, ref.owner, ref.repo));
+  const repoUrl = project.web_url ?? gitlabProjectUrl(host, ref.owner, ref.repo);
+  const entry = await packageJsonEntry(
+    ref.owner,
+    ref.repo,
+    branch,
+    { stars: fields.stars, author: fields.owner!.login, lastUpdated: project.last_activity_at ?? new Date().toISOString(), githubTopics: fields.topics },
+    { fetchText: (p) => fetchGitLabRaw(host, ref.owner, ref.repo, branch, p), repoUrl },
+  );
+  if (!entry) {
+    console.warn(`[registry] GitLab project ${host}/${ref.owner}/${ref.repo} has no readable package.json on ${branch}`);
+    return null;
+  }
+  const forkOf = fields.fork ? forkInfoFrom(fields, null) : upstreamFork(entry);
+  return [{
+    ...entry,
+    catalogId: `${host}/${ref.owner}/${ref.repo}`.toLowerCase() + `/${entry.id}`,
+    repositoryHost: host,
+    ...(forkOf ? { forkOf } : {}),
+    ...(project.last_activity_at ? { pushedAt: project.last_activity_at } : {}),
+  }];
+}
+
 export async function buildExtensionCatalog(
   repos: KnownExtensionRepo[],
   siteRoot = process.cwd(),
@@ -488,6 +544,19 @@ export async function buildExtensionCatalog(
   const seen = new Set<string>();
 
   for (const ref of repos) {
+    if (!isGitHubHost(ref.host)) {
+      const r = await indexGitLabRepo(ref);
+      if (!r) continue;
+      let n = 0;
+      for (const entry of r) {
+        if (seen.has(entry.catalogId)) continue;
+        seen.add(entry.catalogId);
+        modules.push(entry);
+        n++;
+      }
+      if (n) indexedRepos.push({ host: ref.host, owner: ref.owner, repo: ref.repo, discoveredVia: ref.discoveredVia, moduleCount: n, recipeCount: 0 });
+      continue;
+    }
     const resolved = await resolveKnownRepoRef(ref);
     const owner = resolved?.owner ?? ref.owner;
     const repo = resolved?.name ?? ref.repo;
@@ -500,7 +569,10 @@ export async function buildExtensionCatalog(
     const forkOf = info ? forkInfoFrom(info, info.fork ? await fetchCompare(info, owner) : null) : undefined;
     const result = await indexKnownRepo(ref, siteRoot);
     const withRepoInfo = (list: ExtensionCatalogEntry[]) =>
-      list.map((e) => ({ ...e, ...(forkOf ? { forkOf } : {}), ...(info?.pushed_at ? { pushedAt: info.pushed_at } : {}) }));
+      list.map((e) => {
+        const declared = forkOf ?? upstreamFork(e);
+        return { ...e, ...(declared ? { forkOf: declared } : {}), ...(info?.pushed_at ? { pushedAt: info.pushed_at } : {}) };
+      });
     const canonicalModules = withRepoInfo(applyRepoCanonicalNames(result.modules, ref, owner, repo));
     const canonicalRecipes = withRepoInfo(applyRepoCanonicalNames(result.recipes, ref, owner, repo));
 
@@ -541,6 +613,12 @@ export async function buildExtensionCatalog(
   };
 }
 
+/** Git install spec: `github:owner/repo` on GitHub, `git+https://<host>/<path>.git` on GitLab (incl. self-hosted). */
+export function gitInstallSpec(entry: Pick<ExtensionCatalogEntry, 'repositoryOwner' | 'repositoryName' | 'repositoryHost'>): string {
+  if (!isGitHubHost(entry.repositoryHost)) return `git+https://${entry.repositoryHost}/${entry.repositoryOwner}/${entry.repositoryName}.git`;
+  return `github:${entry.repositoryOwner}/${entry.repositoryName}`;
+}
+
 export function formatInstallSnippet(entry: ExtensionCatalogEntry): string {
   const registry = entry.install?.orchestrator?.registry ?? './ui-modules/registry.json5';
   const lines = [
@@ -554,8 +632,7 @@ export function formatInstallSnippet(entry: ExtensionCatalogEntry): string {
     const snippet = ['antora:', '  extensions:', `    - require: '${entry.name}'`];
     if (entry.privatePackage) {
       // Not published to npm: install from the Git repository first.
-      const repoRef = `${entry.repositoryOwner}/${entry.repositoryName}`;
-      return [`# Not on npm yet: pnpm add github:${repoRef}`, ...snippet].join('\n');
+      return [`# Not on npm yet: pnpm add ${gitInstallSpec(entry)}`, ...snippet].join('\n');
     }
     return snippet.join('\n');
   }

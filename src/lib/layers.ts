@@ -56,24 +56,60 @@ export function isBundle(e: Pick<ExtensionCatalogEntry, 'type' | 'bundle'>): boo
   return e.type === 'ui-recipe' || e.type === 'ui-bundle' || Boolean(e.bundle);
 }
 
+/** GitHub/GitLab topics that classify a package. Topics are explicit metadata; free text never is. */
+export const TOPIC_LAYERS: Record<string, LayerId> = {
+  'antora-theme': 'paint',
+  'antora-paint': 'paint',
+  'antora-chassis': 'chassis',
+  'antora-engine': 'engine',
+  'antora-body-kit': 'body-kit',
+  'body-kit': 'body-kit',
+  layout: 'body-kit',
+  'antora-layout': 'body-kit',
+  'antora-bolt-on': 'bolt-on',
+};
+
+type Classifiable = Pick<ExtensionCatalogEntry, 'type' | 'repositoryName' | 'githubTopics' | 'partials' | 'bundle'> &
+  Partial<Pick<ExtensionCatalogEntry, 'layers' | 'layerSource' | 'tags'>>;
+
+export function topicLayers(e: Pick<ExtensionCatalogEntry, 'githubTopics'> & Partial<Pick<ExtensionCatalogEntry, 'tags'>>): LayerId[] {
+  const topics = [...(e.githubTopics ?? []), ...(e.tags ?? [])].map((t) => t.toLowerCase());
+  return normalizeLayers(topics.map((t) => TOPIC_LAYERS[t]).filter(Boolean));
+}
+
 /**
- * Best guess when the repository declares nothing. Results are flagged `inferred`.
- * Returns [] when there is no reasonable guess (the entry lands in "Unclassified").
+ * Structural guess when nothing explicit exists. Results are flagged `inferred`. Never reads names or
+ * descriptions: words like "dark" or "theme" there do not make a package paint (article-zones mentions
+ * "theme zones" and is a layout). Returns [] for bundles (their members decide).
  */
-export function inferLayers(e: Pick<ExtensionCatalogEntry, 'type' | 'repositoryName' | 'id' | 'name' | 'description' | 'tags' | 'githubTopics' | 'partials' | 'bundle'>): LayerId[] {
-  const text = `${e.id} ${e.name} ${e.description}`.toLowerCase();
-  const topics = (e.githubTopics ?? []).map((t) => t.toLowerCase());
-  const has = (...words: string[]) => words.some((w) => text.includes(w) || topics.includes(w));
+export function inferLayers(e: Classifiable): LayerId[] {
   if (e.bundle) return [];
-  if (e.repositoryName?.toLowerCase() === 'antora-ui-chassis' || has('chassis')) return ['chassis'];
-  if (e.type === 'ui-module' || e.type === 'ui-recipe') {
-    if (has('dark', 'palette', 'color', 'colour', 'icon', 'logo', 'font', 'typography')) return ['paint'];
-    if (has('layout', 'header', 'mast', 'column', 'silhouette') || (e.partials?.replace?.length ?? 0) > 0) return ['body-kit'];
-    return ['bolt-on'];
-  }
-  if (e.type === 'antora-extension') {
-    if (has('theme', 'palette')) return ['paint'];
-    return ['bolt-on'];
-  }
+  const fromTopics = topicLayers(e);
+  if (fromTopics.length) return fromTopics;
+  if (e.repositoryName?.toLowerCase() === 'antora-ui-chassis') return ['chassis'];
+  if (e.type === 'ui-module' || e.type === 'ui-recipe') return (e.partials?.replace?.length ?? 0) > 0 ? ['body-kit'] : ['bolt-on'];
+  if (e.type === 'antora-extension') return ['bolt-on'];
   return [];
+}
+
+/**
+ * The one classifier for listing, search, and package pages. Declared (antoraRegistry.layer) and admin layers
+ * win; topics come next; otherwise a structural inference. Stored `inferred` values are recomputed so stale
+ * synced payloads cannot disagree with this code.
+ */
+export function classifyEntry<T extends Classifiable>(e: T): T {
+  if (e.layerSource === 'declared' || e.layerSource === 'admin') return e;
+  const fromTopics = topicLayers(e);
+  if (fromTopics.length) return { ...e, layers: fromTopics, layerSource: 'topic' as T['layerSource'] };
+  if (e.bundle && e.layerSource === 'inferred' && e.layers?.length) return e; // computed from members in finalizeCatalog
+  const layers = inferLayers(e);
+  const { layers: _l, layerSource: _s, ...rest } = e;
+  return (layers.length ? { ...rest, layers, layerSource: 'inferred' } : rest) as T;
+}
+
+/** Paint/theme package: explicit paint layer (declared/admin) or an antora-theme / antora-paint topic. */
+export function isThemePackage(e: Classifiable): boolean {
+  const topics = (e.githubTopics ?? []).map((t) => t.toLowerCase());
+  if (topics.includes('antora-theme') || topics.includes('antora-paint')) return true;
+  return (e.layerSource === 'declared' || e.layerSource === 'admin') && Boolean(e.layers?.includes('paint'));
 }

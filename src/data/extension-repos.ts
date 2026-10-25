@@ -45,4 +45,12 @@ export const knownExtensionRepos: KnownExtensionRepo[] = [
     githubTopics: [ANTORA_TOPICS.EXTENSION],
     localRegistryIndex: '../antora-diagram-engines/registry-index.json',
   },
+  {
+    // @antora/lunr-extension: the official search extension, hosted on GitLab (its topics don't include antora-extension).
+    host: 'gitlab.com',
+    owner: 'antora',
+    repo: 'antora-lunr-extension',
+    discoveredVia: 'curated',
+    githubTopics: [ANTORA_TOPICS.EXTENSION],
+  },
 ];

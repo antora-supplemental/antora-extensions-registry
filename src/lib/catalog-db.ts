@@ -31,6 +31,11 @@ export async function readCatalogFromDb(): Promise<DbCatalog | null> {
   if (!catalogDbConfigured()) return null;
   try {
     const c = getClient();
+    // One indexed read of the sync-time snapshot; the per-table path below is the fallback for older syncs.
+    const { parseSnapshot, SNAPSHOT_KEYS } = await import('~/lib/browse-cache');
+    const snap = await c.execute({ sql: 'SELECT value FROM catalog_meta WHERE key = ?', args: [SNAPSHOT_KEYS.extensions] });
+    const fromSnap = parseSnapshot<Omit<DbCatalog, 'source'>>(snap.rows[0]?.value);
+    if (fromSnap) return { ...fromSnap, source: 'database' };
     const rows = await c.execute('SELECT payload FROM catalog_entry ORDER BY repoOwner, repoName, catalogId');
     if (rows.rows.length === 0) return null;
     const { readFirstListed } = await import('~/lib/first-listed');
@@ -83,6 +88,21 @@ export async function readCatalogOverlay(): Promise<CatalogOverlay> {
   const overlay = emptyOverlay();
   if (!catalogDbConfigured()) return overlay;
   const c = getClient();
+  // One round trip for all three tables; falls back to separate reads if a table is missing.
+  try {
+    const [o, p, f] = await c.batch([
+      'SELECT catalogId, layers, bundleMembers FROM catalog_override',
+      'SELECT catalogId, url, caption FROM catalog_preview ORDER BY position, createdAt',
+      "SELECT value FROM catalog_meta WHERE key = 'featured'",
+    ], 'read');
+    for (const r of o.rows) overlay.overrides.set(String(r.catalogId), { catalogId: String(r.catalogId), layers: parseList(r.layers), bundleMembers: parseList(r.bundleMembers) });
+    for (const r of p.rows) {
+      const id = String(r.catalogId);
+      overlay.uploads.set(id, [...(overlay.uploads.get(id) ?? []), { url: String(r.url), caption: (r.caption as string | null) ?? undefined, source: 'upload' } satisfies PreviewImage]);
+    }
+    overlay.featured = (f.rows.length ? parseList(f.rows[0].value) : null) ?? DEFAULT_FEATURED;
+    return overlay;
+  } catch { /* a table is missing: per-table reads below */ }
   try {
     const rows = await c.execute('SELECT catalogId, layers, bundleMembers FROM catalog_override');
     for (const r of rows.rows) {

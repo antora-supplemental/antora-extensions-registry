@@ -14,7 +14,15 @@ import { readFirstListed } from '~/lib/first-listed';
 import { themes } from '~/server/db/schema';
 import type { Theme } from '~/types/theme';
 
-export async function loadGalleryThemes(): Promise<Theme[]> {
+export async function loadGalleryThemes(options: { snapshot?: boolean } = {}): Promise<Theme[]> {
+  if (options.snapshot !== false) {
+    try {
+      const { parseSnapshot, SNAPSHOT_KEYS } = await import('~/lib/browse-cache');
+      const r = await client.execute({ sql: 'SELECT value FROM catalog_meta WHERE key = ?', args: [SNAPSHOT_KEYS.themes] });
+      const snap = parseSnapshot<Theme[]>(r.rows[0]?.value);
+      if (snap?.length) return snap;
+    } catch { /* no snapshot yet */ }
+  }
   try {
     const result = await db
       .select()

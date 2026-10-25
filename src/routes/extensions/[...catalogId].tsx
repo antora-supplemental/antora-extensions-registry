@@ -8,6 +8,7 @@ import DependencyTree from '~/components/catalog/DependencyTree';
 import LayerBadges from '~/components/catalog/LayerBadges';
 import BundleContents from '~/components/catalog/BundleContents';
 import ForkVersions from '~/components/catalog/ForkVersions';
+import PackageTitle from '~/components/catalog/PackageTitle';
 import { forkVariants } from '~/lib/fork-groups';
 import PreviewGallery from '~/components/catalog/PreviewGallery';
 import FullDescription, { inline } from '~/components/catalog/FullDescription';
@@ -66,7 +67,7 @@ export default function ExtensionDetailPage() {
                       <span class="font-mono text-sm text-slate-500">v{e().version}</span>
                       <NewBadge firstListedAt={e().firstListedAt} />
                     </div>
-                    <h1 class="text-3xl lg:text-4xl font-bold text-white mb-4">{e().name}</h1>
+                    <div class="mb-4"><PackageTitle entry={e()} as="h1" link={false} titleClass="text-3xl lg:text-4xl font-bold text-white break-words" /></div>
                     <p class="text-slate-300 text-lg max-w-3xl">{e().description}</p>
                     <LayerBadges entry={e()} class="mt-3" />
                     <ForkVersions current={e()} variants={forkVariants(e(), all())} />

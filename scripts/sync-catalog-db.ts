@@ -13,6 +13,7 @@ import { themesFromKnownRepos } from '../src/data/known-theme-repos';
 import { discoverThemeReposFromTopics } from '../src/lib/github-topics';
 import { checkRepository } from '../src/lib/registry-check';
 import { sqlPreviewStore, syncPreviewCache } from '../src/lib/preview-cache';
+import { OWNERS_DDL, ownerKeys, syncOwners } from '../src/lib/owners';
 import { firstListedStatements } from '../src/lib/first-listed';
 import { SEED_TRUSTED_PUBLISHERS, repoStatus, trustedReason, upsertApprovedTheme } from '../src/lib/registry-write';
 
@@ -42,10 +43,24 @@ if (entries.length === 0) throw new Error('Catalog came back empty; refusing to 
 
 // Cache previews in Turso and serve them from /previews/<hash>: never cache a failed first fetch, keep the
 // cached copy (marked stale) when the source later breaks or leaves the README, refresh on a changed image.
-const pv = await syncPreviewCache(entries, await sqlPreviewStore(db));
+const previewStore = await sqlPreviewStore(db);
+const pv = await syncPreviewCache(entries, previewStore, fetch, ownerKeys(entries));
+// Owners (GitHub users/orgs, GitLab users/groups): metadata on every entry + owner table; avatars cached like previews.
+const owners = await syncOwners(entries, previewStore);
+await db.execute(OWNERS_DDL);
+console.log(`[registry] owners: ${owners.length} (${owners.filter((o) => o.avatar).length} with a cached avatar)`);
 console.log(`[registry] previews: ${pv.cached} newly cached, ${pv.refreshed} refreshed, ${pv.servedStale} served from a stale source, ${pv.dropped.length} never cached, ${pv.purged} purged`);
 for (const d of pv.dropped) console.log(`[registry] preview not cached: ${d}`);
 
+const countByOwner = new Map<string, number>();
+for (const e of entries) countByOwner.set(`${e.owner!.host}/${e.owner!.login}`, (countByOwner.get(`${e.owner!.host}/${e.owner!.login}`) ?? 0) + 1);
+const ownerStmts = [
+  { sql: 'DELETE FROM owner', args: [] },
+  ...owners.map((o) => ({
+    sql: 'INSERT INTO owner (host, login, type, profileUrl, avatarUrl, avatar, displayName, packageCount, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    args: [o.host, o.login, o.type, o.profileUrl, o.avatarUrl ?? null, o.avatar ?? null, o.displayName ?? null, countByOwner.get(`${o.host}/${o.login}`) ?? 0, now],
+  })),
+];
 const curatedThemes = themesFromKnownRepos();
 const stmts = [
   { sql: 'DELETE FROM catalog_entry', args: [] },
@@ -62,7 +77,7 @@ const stmts = [
     sql: `INSERT INTO extension_repo (id, repoUrl, owner, name, catalogSource, moduleCount, recipeCount, status, createdAt, updatedAt)
           VALUES (?, ?, ?, ?, 'github-sync', ?, ?, 'approved', ?, ?)
           ON CONFLICT(repoUrl) DO UPDATE SET moduleCount = excluded.moduleCount, recipeCount = excluded.recipeCount, updatedAt = excluded.updatedAt`,
-    args: [`${r.owner}/${r.repo}`.toLowerCase(), `https://github.com/${r.owner}/${r.repo}`, r.owner, r.repo, r.moduleCount, r.recipeCount, now, now],
+    args: [`${r.host ? r.host + '/' : ''}${r.owner}/${r.repo}`.toLowerCase(), `https://${r.host ?? 'github.com'}/${r.owner}/${r.repo}`, r.owner, r.repo, r.moduleCount, r.recipeCount, now, now],
   })),
   ...curatedThemes.map((t) => ({
     sql: `INSERT INTO theme (id, name, description, authorName, repoUrl, demoUrl, previewImage, stars, tags, appearance, baseTheme, status, createdAt, updatedAt)
@@ -76,7 +91,7 @@ const stmts = [
   { sql: "INSERT INTO catalog_meta (key, value) VALUES ('syncedAt', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", args: [new Date().toISOString()] },
   { sql: "INSERT INTO catalog_meta (key, value) VALUES ('discoveredRepoCount', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", args: [String(catalog.discoveredRepoCount)] },
 ];
-await db.batch(stmts, 'write');
+await db.batch([...stmts, ...ownerStmts], 'write');
 console.log(`[registry] synced ${entries.length} catalog entries from ${catalog.indexedRepos.length} repos into the database`);
 
 // Newly discovered theme repositories: check and import the ones that meet the criteria.
@@ -95,3 +110,53 @@ for (const hit of await discoverThemeReposFromTopics(50)) {
   console.log(`[registry] imported theme ${hit.owner}/${hit.repo}: ${approvedVia}`);
 }
 console.log(`[registry] imported ${imported} new theme(s) from topic discovery`);
+
+// Preview cache readback (diagnostics only: counts and value types, never contents or secrets).
+try {
+  const n = await db.execute('SELECT COUNT(*) AS n, COALESCE(SUM(size), 0) AS bytes FROM preview_blob');
+  const one = await db.execute('SELECT hash, typeof(bytes) AS t, length(bytes) AS len FROM preview_blob LIMIT 1');
+  const r = one.rows[0];
+  console.log(`[registry] preview_blob: ${n.rows[0].n} rows, ${n.rows[0].bytes} bytes; sample ${r ? `${String(r.hash).slice(0, 12)} ${r.t} ${r.len}` : 'none'}`);
+} catch (err) {
+  console.log(`[registry] preview_blob readback failed: ${(err as Error).name}`);
+}
+// Browse snapshots: one denormalized row per view (read by the site in a single query), then CDN purge.
+{
+  const { serializeSnapshot, SNAPSHOT_KEYS, CACHE_TAG } = await import('../src/lib/browse-cache');
+  const { classifyEntry } = await import('../src/lib/layers');
+  const { readFirstListed } = await import('../src/lib/first-listed');
+  const { loadGalleryThemes } = await import('../src/lib/themes/catalog');
+  const first = await readFirstListed(db, 'extension');
+  const all = entries.map((e) => classifyEntry(first.get(e.catalogId) ? { ...e, firstListedAt: first.get(e.catalogId) } : e));
+  const repoMap = new Map<string, { owner: string; repo: string; githubRepoId?: number; moduleCount: number; recipeCount: number }>();
+  for (const e of all) {
+    const key = `${e.repositoryHost ?? 'github.com'}/${e.repositoryOwner}/${e.repositoryName}`;
+    const r = repoMap.get(key) ?? { owner: e.repositoryOwner, repo: e.repositoryName, githubRepoId: e.githubRepoId, moduleCount: 0, recipeCount: 0 };
+    if (e.type === 'ui-recipe') r.recipeCount++; else r.moduleCount++;
+    repoMap.set(key, r);
+  }
+  const extSnap = serializeSnapshot({
+    modules: all.filter((e) => e.type !== 'ui-recipe'),
+    recipes: all.filter((e) => e.type === 'ui-recipe'),
+    indexedRepos: [...repoMap.values()],
+    discoveredRepoCount: catalog.discoveredRepoCount,
+    syncedAt: new Date().toISOString(),
+  });
+  const themeSnap = serializeSnapshot(await loadGalleryThemes({ snapshot: false }));
+  await db.batch([
+    { sql: "INSERT INTO catalog_meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", args: [SNAPSHOT_KEYS.extensions, extSnap] },
+    { sql: "INSERT INTO catalog_meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", args: [SNAPSHOT_KEYS.themes, themeSnap] },
+  ], 'write');
+  console.log(`[registry] browse snapshots: extensions ${Math.round(extSnap.length / 1024)} KB, themes ${Math.round(themeSnap.length / 1024)} KB`);
+  // Optional CDN purge (names only: NETLIFY_AUTH_TOKEN, NETLIFY_SITE_ID). Without them the 5-minute s-maxage applies.
+  if (process.env.NETLIFY_AUTH_TOKEN && process.env.NETLIFY_SITE_ID) {
+    const res = await fetch('https://api.netlify.com/api/v1/purge', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.NETLIFY_AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ site_id: process.env.NETLIFY_SITE_ID, cache_tags: [CACHE_TAG] }),
+    });
+    console.log(`[registry] CDN purge (${CACHE_TAG}): HTTP ${res.status}`);
+  } else {
+    console.log('[registry] CDN purge skipped (NETLIFY_AUTH_TOKEN / NETLIFY_SITE_ID not set); pages refresh within 5 minutes');
+  }
+}

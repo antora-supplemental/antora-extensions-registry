@@ -70,6 +70,12 @@ export interface ExtensionCatalogEntry {
   dependencySpecs?: Record<string, string>;
   /** Set when the repository is a GitHub fork listed in its own right (it has the `antora-extension` topic). */
   forkOf?: ForkInfo;
+  /** Declared `antoraRegistry.upstream` (cross-host fork grouping). */
+  upstream?: string;
+  /** Git host of the repository; omitted for github.com. */
+  repositoryHost?: string;
+  /** Owner (user or organization) metadata, filled by the catalog sync. */
+  owner?: OwnerInfo;
   /** Last push to the repository (GitHub `pushed_at`). */
   pushedAt?: string;
   /** package.json `"private": true`: not on npm, install from the Git repository. */
@@ -81,7 +87,7 @@ export interface ExtensionCatalogEntry {
 }
 
 export type LayerId = 'engine' | 'chassis' | 'body-kit' | 'paint' | 'bolt-on';
-export type MetadataSource = 'declared' | 'inferred' | 'admin';
+export type MetadataSource = 'declared' | 'topic' | 'inferred' | 'admin';
 
 export interface BundleInfo {
   /** Package names (or catalog ids) of the members. */
@@ -104,6 +110,8 @@ export interface PreviewImage {
 
 /** The `antoraRegistry` block in package.json (or the antora-registry.md frontmatter). */
 export interface AntoraRegistryMetadata {
+  /** Upstream repository URL when this repo continues another one on a different host (e.g. a GitHub copy of a GitLab project). Used for fork grouping. */
+  upstream?: string;
   layers?: string[] | string;
   layer?: string;
   /** `true`, or the member package names. */
@@ -206,11 +214,26 @@ export interface KnownExtensionRepo {
   /** Monorepo dev fallback: path to registry-index.json relative to site root */
   localRegistryIndex?: string;
   /** How this repo entered the catalog */
-  discoveredVia?: 'curated' | 'github-topic' | 'submission';
+  discoveredVia?: 'curated' | 'github-topic' | 'gitlab-topic' | 'submission';
+  /** Git host; omitted for github.com. GitLab: `gitlab.com` or a self-hosted GitLab host (owner = full group path). */
+  host?: string;
   /** Topics on the repo when discovered via GitHub */
   githubTopics?: string[];
   /** Stable GitHub repo id — survives renames within GitHub */
   githubRepoId?: number;
+}
+
+export interface OwnerInfo {
+  /** `github.com`, `gitlab.com` or a self-hosted GitLab host. */
+  host: string;
+  login: string;
+  type: 'user' | 'org';
+  profileUrl: string;
+  /** Avatar on the forge (source URL). */
+  avatarUrl?: string;
+  /** Cached avatar served by the registry (/previews/<hash>); only set once a fetch succeeded. */
+  avatar?: string;
+  displayName?: string;
 }
 
 export interface ForkInfo {

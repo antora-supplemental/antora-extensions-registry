@@ -5,7 +5,7 @@ import { liveImages } from '~/lib/preview-check';
  * Declared values come from `antoraRegistry` in package.json or the antora-registry.md frontmatter;
  * anything guessed is marked `inferred` so the UI can say so and admins can override it.
  */
-import { inferLayers, normalizeLayers } from '~/lib/layers';
+import { classifyEntry, inferLayers, normalizeLayers } from '~/lib/layers';
 import type { AntoraRegistryMetadata, ExtensionCatalogEntry, PreviewImage } from '~/types/ui-module';
 
 /** A package depending on at least this many indexed extensions is treated as a bundle. */
@@ -80,15 +80,28 @@ function isBadge(url: string): boolean {
   return /shields\.io|badge|contrib\.rocks|\/actions\/workflows\/|codecov|travis-ci|circleci|badgen|coveralls|gitter/i.test(url);
 }
 
+/**
+ * Raw-file base per repository for non-GitHub forges (GitLab registers `https://<host>/<path>/-/raw/`).
+ * Everything that builds preview URLs goes through resolveRepoUrl, so registering the base is enough.
+ */
+const rawBases = new Map<string, string>();
+export function registerRawBase(owner: string, repo: string, base: string): void {
+  rawBases.set(`/${repo}`.toLowerCase(), base);
+}
+
 export function resolveRepoUrl(owner: string, repo: string, branch: string, url: string): string | null {
   const u = url.trim();
   if (!u || u.startsWith('data:')) return null;
   if (/^https?:\/\//i.test(u)) {
     const m = u.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/([^/]+)\/(.+)$/);
-    return m ? `https://raw.githubusercontent.com/${m[1]}/${m[2]}/${m[3]}/${m[4]}` : u;
+    if (m) return `https://raw.githubusercontent.com/${m[1]}/${m[2]}/${m[3]}/${m[4]}`;
+    // GitLab blob links -> raw (gitlab.com or self-hosted: /-/blob/ is GitLab-specific).
+    const g = u.match(/^(https?:\/\/[^/]+\/.+?)\/-\/blob\/(.+)$/);
+    return g ? `${g[1]}/-/raw/${g[2]}` : u;
   }
   const rel = u.replace(/^\.?\//, '');
-  return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${rel}`;
+  const base = rawBases.get(`/${repo}`.toLowerCase());
+  return base ? `${base}${branch}/${rel}` : `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${rel}`;
 }
 
 /**
@@ -194,6 +207,7 @@ export function applyRepoMetadata(entry: ExtensionCatalogEntry, meta: RepoMetada
   if (Object.keys(meta.dependencySpecs ?? {}).length) out.dependencySpecs = meta.dependencySpecs;
   if (meta.privatePackage) out.privatePackage = true;
   if (meta.homepage) out.homepage = meta.homepage;
+  if (typeof d.upstream === 'string' && d.upstream.trim()) out.upstream = d.upstream.trim();
   if (!out.layers?.length) {
     const declaredLayers = normalizeLayers(d.layers ?? d.layer);
     if (declaredLayers.length) {
@@ -240,7 +254,7 @@ export function finalizeCatalog(entries: ExtensionCatalogEntry[]): ExtensionCata
   });
   const lookup = new Map(withBundles.map((e) => [e.name.toLowerCase(), e]));
   return withBundles.map((e) => {
-    if (e.layers?.length) return e;
+    if (e.layerSource === 'declared' || e.layerSource === 'admin') return e;
     if (e.bundle) {
       const memberLayers = new Set(e.bundle.members.flatMap((m) => {
         const member = lookup.get(m.toLowerCase()) ?? matchPackage(m, withBundles);
@@ -249,7 +263,6 @@ export function finalizeCatalog(entries: ExtensionCatalogEntry[]): ExtensionCata
       const layers = normalizeLayers([...memberLayers]);
       return layers.length ? { ...e, layers, layerSource: 'inferred' as const } : e;
     }
-    const layers = inferLayers(e);
-    return layers.length ? { ...e, layers, layerSource: 'inferred' as const } : e;
+    return classifyEntry(e);
   });
 }

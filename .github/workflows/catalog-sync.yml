@@ -38,3 +38,7 @@ jobs:
           DB_URL: ${{ secrets.DB_URL }}
           DB_AUTH_TOKEN: ${{ secrets.DB_AUTH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: GitLab rate limit; CDN purge of browse pages after sync.
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

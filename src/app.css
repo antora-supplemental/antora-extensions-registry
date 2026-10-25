@@ -166,7 +166,7 @@ html.dark .text-slate-500 { color: #a3a3a3; }
 .new-badge { background-color: #fff4ed; color: #9a3412; border: 1px solid #ffc9a8; }
 html.dark .new-badge { background-color: #431407; color: #ffc9a8; border-color: #9a3412; }
 /*
- * Header "Themes" link: rainbow on the letters only, at 20% opacity over the normal text color. A duplicate,
+ * Header "Themes" link: rainbow on the letters only, at 40% opacity over the normal text color. A duplicate,
  * aria-hidden copy of the label sits exactly on top with the gradient clipped to its glyphs, so nothing paints
  * outside the letters. The one deliberate exception to the no-gradients rule.
  */
@@ -183,7 +183,7 @@ html.dark .new-badge { background-color: #431407; color: #ffc9a8; border-color: 
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  opacity: 0.2;
+  opacity: 0.4;
   pointer-events: none;
   user-select: none;
 }

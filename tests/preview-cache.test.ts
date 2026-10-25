@@ -9,7 +9,7 @@ const png = (n: number) => new Uint8Array([0x89, 0x50, 0x4e, 0x47, n]);
 type Reply = { status: number; type?: string; body?: Uint8Array };
 const fakeFetch = (routes: Record<string, Reply>) => async (url: string) => {
   const r = routes[url] ?? { status: 404, type: 'text/html' };
-  return new Response(r.body ?? new Uint8Array(), { status: r.status, headers: r.type ? { 'content-type': r.type } : {} });
+  return new Response((r.body ?? new Uint8Array()) as unknown as BodyInit, { status: r.status, headers: r.type ? { 'content-type': r.type } : {} });
 };
 const entry = (previews: PreviewImage[]) => ({ catalogId: 'o/r/pkg', previews }) as unknown as ExtensionCatalogEntry;
 const readme = (url = URL_A): PreviewImage => ({ url, source: 'readme' });

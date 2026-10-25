@@ -40,7 +40,10 @@ export function forkInfoFrom(repo: RepoForkFields, compare?: CompareFields | nul
 
 /** Same upstream repository and same module = same group. Plain package.json entries match by repository only. */
 export function forkGroupKey(e: ExtensionCatalogEntry): string {
-  const repo = (e.forkOf?.source ?? `${e.repositoryOwner}/${e.repositoryName}`).toLowerCase();
+  // Sources are `owner/repo` on GitHub and `<host>/<group>/<project>` elsewhere; both normalize to host-qualified.
+  const own = e.repositoryHost && e.repositoryHost !== 'github.com' ? `${e.repositoryHost}/${e.repositoryOwner}/${e.repositoryName}` : `${e.repositoryOwner}/${e.repositoryName}`;
+  const raw = (e.forkOf?.source ?? own).toLowerCase();
+  const repo = raw.split('/').length === 2 ? `github.com/${raw}` : raw;
   return `${repo}::${e.manifestPath === 'package.json' ? '*' : e.id.toLowerCase()}`;
 }
 

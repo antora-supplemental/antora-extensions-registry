@@ -7,7 +7,8 @@ import { buttonVariants } from '~/components/ui/button';
 import { ColorModeIcons, splitModeTags } from './ColorModeIcons';
 import NewBadge from './NewBadge';
 import LayerBadges from './LayerBadges';
-import { isBundle } from '~/lib/layers';
+import PackageTitle from './PackageTitle';
+import { isBundle, isThemePackage } from '~/lib/layers';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 import { formatInstallSnippet } from '~/lib/ui-modules';
 
@@ -68,12 +69,7 @@ export default function ExtensionCard(props: ExtensionCardProps) {
                 <Badge variant="tag" title="Other versions of this package are listed; see the package page">+{props.forkCount} {props.forkCount === 1 ? 'fork' : 'forks'}</Badge>
               </Show>
             </div>
-            <h3 class="font-semibold text-lg text-white">
-              <A href={`/extensions/${props.entry.catalogId}`} class="hover:text-primary-400 transition-colors focus-visible:outline-none focus-visible:underline">
-                {props.entry.name}
-              </A>
-            </h3>
-            <p class="text-slate-500 text-xs font-mono mt-1 truncate">{props.entry.catalogId}</p>
+            <PackageTitle entry={props.entry} />
           </div>
         </div>
 
@@ -126,7 +122,7 @@ export default function ExtensionCard(props: ExtensionCardProps) {
           </div>
         </Show>
 
-        <Show when={splitModeTags(props.entry.tags).modes.length > 0}>
+        <Show when={isThemePackage(props.entry) && splitModeTags(props.entry.tags).modes.length > 0}>
           <div class="flex items-center gap-1.5 mb-2" aria-label="Color modes">
             <ColorModeIcons modes={splitModeTags(props.entry.tags).modes} />
           </div>

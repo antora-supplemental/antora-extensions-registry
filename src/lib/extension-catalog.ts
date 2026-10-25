@@ -59,6 +59,11 @@ export async function buildFullExtensionCatalog(
     const topicHits = await discoverExtensionReposFromTopics(topicSearchLimit);
     const discovered = toKnownExtensionRepos(topicHits);
     repos = mergeExtensionRepos(knownExtensionRepos, discovered);
+    // GitLab (gitlab.com): projects with the antora-extension topic. Optional GITLAB_TOKEN raises the rate limit.
+    const { discoverGitLabByTopic } = await import('~/lib/gitlab');
+    const key = (r: KnownExtensionRepo) => `${r.host ?? 'github.com'}/${r.owner}/${r.repo}`.toLowerCase();
+    const known = new Set(repos.map(key));
+    for (const hit of await discoverGitLabByTopic()) if (!known.has(key(hit))) repos.push(hit);
   }
 
   const have = new Set(repos.map((r) => `${r.owner}/${r.repo}`.toLowerCase()));

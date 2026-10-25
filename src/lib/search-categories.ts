@@ -9,8 +9,11 @@ export const EXTENSION_KIND_LABELS: Record<string, string> = {
   bundle: 'Bundles',
 };
 
+/**
+ * No broader "All extensions" entry: every listed extension is Antora-specific (no AsciiDoc-only packages as of
+ * 2026-10-25), so it duplicated the kinds below. Re-add it as "Antora + AsciiDoc extensions" if those appear.
+ */
 export const SEARCH_CATEGORIES: Array<{ label: string; href: string }> = [
-  { label: 'All extensions', href: '/search?type=extensions' },
   ...Object.entries(EXTENSION_KIND_LABELS).map(([kind, label]) => ({
     label,
     href: `/search?type=extensions&kind=${kind}`,

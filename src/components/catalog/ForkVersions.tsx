@@ -1,6 +1,7 @@
 import { A } from '@solidjs/router';
 import { For, Show } from 'solid-js';
 import { Badge } from '~/components/ui/badge';
+import PackageTitle from './PackageTitle';
 import { publishedName } from '~/lib/fork-groups';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 
@@ -17,9 +18,7 @@ export default function ForkVersions(props: { current: ExtensionCatalogEntry; va
           <For each={props.variants}>
             {(v) => (
               <li class="flex flex-wrap items-center gap-2">
-                <Show when={v.catalogId !== props.current.catalogId} fallback={<span class="font-mono text-white">{v.repositoryOwner}</span>}>
-                  <A href={`/extensions/${v.catalogId}`} class="font-mono text-primary-400 hover:text-primary-300">{v.repositoryOwner}</A>
-                </Show>
+                <PackageTitle entry={v} as="span" link={v.catalogId !== props.current.catalogId} titleClass="text-sm font-medium text-white" />
                 <Badge variant={v.forkOf ? 'muted' : 'primary'}>{v.forkOf ? 'fork' : 'upstream'}</Badge>
                 <span class="text-slate-400">last commit {date(v.pushedAt ?? v.lastUpdated)}</span>
                 <span class="text-slate-400">{'\u2605'} {v.stars ?? 0}</span>
