@@ -2,6 +2,10 @@
 
 == Unreleased
 
+* Unknown routes (including the removed `/registry`) now render a *Page not found* page with HTTP 404 via a `[...404].tsx` catch-all and `HttpStatusCode`. Previously no route matched, so SolidStart served an empty app shell with HTTP 200 (an earlier attempt never wrote the file because PowerShell treated `[...404]` as a wildcard).
+* Native search clear buttons (`::-webkit-search-cancel-button`, `::-ms-clear`) are hidden so long queries fade cleanly at the input edge.
+* Footer tagline: "extensions and themes for the Antora community" (was "extensions, themes, and packages").
+
 * New extension detail page at `/extensions/<owner>/<repo>/<id>` with key info, install snippet, a requires/recommends dependency tree (cycle- and depth-guarded, same-repo ids preferred) and a "Used by" list; extension cards link to it.
 * Homepage search *All* now lands on `/extensions?q=...`; the extensions page reads `?q=` to pre-filter.
 * Removed the `/registry` prototype page (no redirect), its nav links, the homepage *Package search* button and *Packages* card, and the dead components (`SearchTree`, `ExtensionPanel`, `DependencyButton`, `InstallMethods`, `lib/registry/*`) and CSS (`.glass`, `.premium-gradient`, `.side-panel`, `.dependency-tree-node`, custom `.animate-in`).
@@ -10,7 +14,6 @@
 * Homepage hero: removed the "One catalog for the Antora ecosystem..." paragraph; that summary now lives only in the `description`, `og:description` and `twitter:description` meta tags.
 * Homepage hero heading is now "Extensions & themes for ANTORA" (dropped "Discover"). *ANTORA* sits on its own line as a knockout cut out of a near-square block filled with a diagonal brand gradient (`--brand-grad-from/via/to` in `app.css`), via the shared `KnockoutText` component; accessible text stays "Antora".
 * Homepage search box gets the bloom from the old `/registry` search (blurred primary/indigo gradient halo, brighter on focus, tuned per scheme); placeholder no longer mentions packages. Long queries fade out before the input meets the *Search* button (`.search-fade-end`).
-* Unknown routes (including the removed `/registry`) now render a real *Page not found* page with HTTP 404 instead of a blank 200 shell.
 
 * Search inputs with an icon (`/registry`, themes gallery): padding reserves the icon area and long queries fade out (CSS `mask-image`) before running under the icon; the box chrome moved to a wrapper with `focus-within` ring.
 * `/registry` hero: *EXTENSIONS* is now a true knockout (letters cut out of a gradient pill via an SVG mask, real text kept for screen readers). It was invisible because `.premium-gradient` used the `background` shorthand, which reset `bg-clip-text` to `border-box` on `text-transparent` text; the class now sets `background-image` only.
