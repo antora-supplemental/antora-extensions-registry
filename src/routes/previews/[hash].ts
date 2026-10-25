@@ -1,4 +1,4 @@
-import { client } from '~/server/db';
+import { catalogDbConfigured, getClient } from '~/lib/catalog-db';
 
 /** Cached preview images (see src/lib/preview-cache.ts). Content-addressed, so cacheable forever. */
 export async function GET(event: { request: Request; params?: { hash?: string } }) {
@@ -7,7 +7,8 @@ export async function GET(event: { request: Request; params?: { hash?: string } 
   const hash = String(event.params?.hash || fromUrl).replace(/\.[a-z]+$/i, '').toLowerCase();
   if (!/^[0-9a-f]{64}$/.test(hash)) return new Response('Not found', { status: 404 });
   try {
-    const r = await client.execute({ sql: 'SELECT contentType, bytes FROM preview_blob WHERE hash = ?', args: [hash] });
+    if (!catalogDbConfigured()) throw new Error('catalog database not configured');
+    const r = await getClient().execute({ sql: 'SELECT contentType, bytes FROM preview_blob WHERE hash = ?', args: [hash] });
     const row = r.rows[0];
     if (!row) return new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
     const bytes = row.bytes as ArrayBuffer | Uint8Array;

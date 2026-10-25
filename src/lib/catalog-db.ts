@@ -20,7 +20,8 @@ export function catalogDbConfigured(): boolean {
 }
 
 let client: Client | null = null;
-function getClient(): Client {
+/** Shared read client for catalog data (also used by /previews/<hash>). */
+export function getClient(): Client {
   client ??= createClient({ url: process.env.DB_URL!, authToken: process.env.DB_AUTH_TOKEN });
   return client;
 }
