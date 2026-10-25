@@ -21,6 +21,8 @@
   --input: 240 5.9% 90%;
   --ring: 263.4 70% 50.4%;
   --radius: 0.75rem;
+  /* Header/footer chrome (Tailwind slate-900); also the overscroll backdrop. */
+  --chrome-bg: #0f172a;
 }
 
 [data-theme='dark'], .dark {
@@ -40,10 +42,16 @@
   --card-foreground: 0 0% 98%;
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
+  --chrome-bg: #0f172a;
+}
+
+/* Rubber-band overscroll shows the root background: match the header/footer. */
+html {
+  background-color: var(--chrome-bg);
 }
 
 body {
-  background-color: hsl(var(--background));
+  background-color: var(--chrome-bg);
   color: hsl(var(--foreground));
   font-family: 'Outfit', 'Inter', system-ui, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
