@@ -40,13 +40,28 @@ export function buildDependencyTree(root: ExtensionCatalogEntry, all: ExtensionC
   return walk(root, 'root', new Set(), 0);
 }
 
-/** Entries whose requires/recommends point at `target`. */
-export function dependents(target: ExtensionCatalogEntry, all: ExtensionCatalogEntry[]): Array<{ entry: ExtensionCatalogEntry; relation: 'requires' | 'recommends' }> {
-  const out: Array<{ entry: ExtensionCatalogEntry; relation: 'requires' | 'recommends' }> = [];
+export interface Dependent {
+  /** The package that declares the edge. */
+  entry: ExtensionCatalogEntry;
+  /** How `entry` depends on the target: `entry` requires (or recommends) the target, never the reverse. */
+  relation: 'requires' | 'recommends';
+  /** True when the target also requires or recommends `entry` back (a two-package cycle). */
+  mutual: boolean;
+}
+
+function points(from: ExtensionCatalogEntry, ids: string[] | undefined, to: ExtensionCatalogEntry, all: ExtensionCatalogEntry[]): boolean {
+  return (ids ?? []).some((id) => resolveModuleId(id, from, all)?.catalogId === to.catalogId);
+}
+
+/** Entries whose requires/recommends point at `target` (incoming edges), flagged when the edge is mutual. */
+export function dependents(target: ExtensionCatalogEntry, all: ExtensionCatalogEntry[]): Dependent[] {
+  const out: Dependent[] = [];
   for (const e of all) {
     if (e.catalogId === target.catalogId) continue;
-    if ((e.requires ?? []).some((id) => resolveModuleId(id, e, all)?.catalogId === target.catalogId)) out.push({ entry: e, relation: 'requires' });
-    else if ((e.recommends ?? []).some((id) => resolveModuleId(id, e, all)?.catalogId === target.catalogId)) out.push({ entry: e, relation: 'recommends' });
+    const relation = points(e, e.requires, target, all) ? 'requires' : points(e, e.recommends, target, all) ? 'recommends' : null;
+    if (!relation) continue;
+    const mutual = points(target, target.requires, e, all) || points(target, target.recommends, e, all);
+    out.push({ entry: e, relation, mutual });
   }
   return out;
 }

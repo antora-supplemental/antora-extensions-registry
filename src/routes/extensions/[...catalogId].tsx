@@ -105,13 +105,17 @@ export default function ExtensionDetailPage() {
                         <p class="text-sm text-slate-400 mt-2">No dependencies.</p>
                       </Show>
                       <Show when={dependents(e(), all()).length > 0}>
-                        <h3 class="text-sm font-semibold text-white mt-6 mb-2">Used by</h3>
+                        <h3 class="text-sm font-semibold text-white mt-6 mb-1">Used by</h3>
+                        <p class="text-xs text-slate-400 mb-2">Packages that depend on this one. The tag says how they depend on it.</p>
                         <ul class="space-y-1">
                           <For each={dependents(e(), all())}>
                             {(d) => (
                               <li class="flex items-center gap-2 text-sm">
-                                <Badge variant={d.relation === 'requires' ? 'warning' : 'muted'}>{d.relation}</Badge>
                                 <A href={`/extensions/${d.entry.catalogId}`} class="text-primary-400 hover:text-primary-300">{d.entry.name}</A>
+                                <Badge variant={d.relation === 'requires' ? 'warning' : 'muted'}>{d.relation} this</Badge>
+                                <Show when={d.mutual}>
+                                  <Badge variant="muted" title="This package also depends on it, so the two form a cycle">mutual</Badge>
+                                </Show>
                               </li>
                             )}
                           </For>
