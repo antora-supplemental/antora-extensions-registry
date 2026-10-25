@@ -1,3 +1,4 @@
+import { previewFallback } from '~/lib/preview-fallback';
 import { Dialog } from '@kobalte/core/dialog';
 import { createSignal, For, Show } from 'solid-js';
 import type { PreviewImage } from '~/types/ui-module';
@@ -41,7 +42,7 @@ export default function PreviewGallery(props: { previews: PreviewImage[]; name: 
           class={`block w-full rounded-lg border border-slate-700 bg-slate-900 overflow-hidden cursor-zoom-in ${FOCUS}`}
           aria-label={`Open ${label(current())} in a larger view`}
         >
-          <img src={current().url} alt={label(current())} class="w-full max-h-[28rem] object-contain bg-white dark:bg-[#111111]" loading="lazy" />
+          <img src={current().url} onError={previewFallback(current())} alt={label(current())} class="w-full max-h-[28rem] object-contain bg-white dark:bg-[#111111]" loading="lazy" />
         </Dialog.Trigger>
         <Dialog.Portal>
           <Dialog.Overlay class="fixed inset-0 z-50 bg-[#111111]/95" />
@@ -72,7 +73,7 @@ export default function PreviewGallery(props: { previews: PreviewImage[]; name: 
                     <span aria-hidden="true">&larr;</span>
                   </button>
                 </Show>
-                <img src={current().url} alt={label(current())} class="max-h-[75vh] min-w-0 max-w-full rounded-md bg-white object-contain dark:bg-[#111111]" />
+                <img src={current().url} onError={previewFallback(current())} alt={label(current())} class="max-h-[75vh] min-w-0 max-w-full rounded-md bg-white object-contain dark:bg-[#111111]" />
                 <Show when={count() > 1}>
                   <button type="button" class={NAV_BUTTON} aria-label="Next image" onClick={() => step(1)}>
                     <span aria-hidden="true">&rarr;</span>
@@ -101,7 +102,7 @@ export default function PreviewGallery(props: { previews: PreviewImage[]; name: 
                   aria-current={i() === index() ? 'true' : undefined}
                   class={`block h-16 w-28 rounded-md overflow-hidden border-2 bg-white dark:bg-[#111111] ${FOCUS} ${i() === index() ? 'border-primary-600' : 'border-slate-700 hover:border-slate-500'}`}
                 >
-                  <img src={p.url} alt="" class="h-full w-full object-cover" loading="lazy" />
+                  <img src={p.url} onError={previewFallback(p)} alt="" class="h-full w-full object-cover" loading="lazy" />
                 </button>
               </li>
             )}

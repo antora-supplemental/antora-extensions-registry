@@ -7,7 +7,7 @@ export async function GET({ params }: { params: { hash: string } }) {
   try {
     const r = await client.execute({ sql: 'SELECT contentType, bytes FROM preview_blob WHERE hash = ?', args: [hash] });
     const row = r.rows[0];
-    if (!row) return new Response('Not found', { status: 404 });
+    if (!row) return new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
     const bytes = row.bytes as ArrayBuffer | Uint8Array;
     return new Response(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes), {
       status: 200,
@@ -20,6 +20,6 @@ export async function GET({ params }: { params: { hash: string } }) {
     });
   } catch (err) {
     console.error('Preview cache read failed:', err);
-    return new Response('Not found', { status: 404 });
+    return new Response('Preview cache unavailable', { status: 503, headers: { 'Cache-Control': 'no-store' } });
   }
 }

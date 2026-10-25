@@ -1,3 +1,4 @@
+import { previewFallback } from '~/lib/preview-fallback';
 import { createSignal, Show } from 'solid-js';
 import { A } from '@solidjs/router';
 import { Card } from '~/components/ui/card';
@@ -51,7 +52,7 @@ export default function ExtensionCard(props: ExtensionCardProps) {
     <Card class="overflow-hidden">
       <Show when={thumb()}>
         <A href={`/extensions/${props.entry.catalogId}`} tabIndex={-1} aria-hidden="true" class="block border-b border-slate-700/50 bg-white dark:bg-[#111111]">
-          <img src={thumb()!.url} alt="" loading="lazy" class="h-36 w-full object-cover object-top" />
+          <img src={thumb()!.url} onError={previewFallback(thumb()!)} alt="" loading="lazy" class="h-36 w-full object-cover object-top" />
         </A>
       </Show>
       <div class="p-5">
