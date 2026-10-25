@@ -10,6 +10,7 @@
 * Homepage hero: removed the "One catalog for the Antora ecosystem..." paragraph; that summary now lives only in the `description`, `og:description` and `twitter:description` meta tags.
 * Homepage hero heading is now "Antora EXTENSIONS themes & more" (dropped "Discover"); *EXTENSIONS* is a knockout cut out of a near-square gradient block via the shared `KnockoutText` component (sr-only real text).
 * Homepage search box gets the bloom from the old `/registry` search (blurred primary/indigo gradient halo, brighter on focus, tuned per scheme); placeholder no longer mentions packages. Long queries fade out before the input meets the *Search* button (`.search-fade-end`).
+* Unknown routes (including the removed `/registry`) now render a real *Page not found* page with HTTP 404 instead of a blank 200 shell.
 
 * Search inputs with an icon (`/registry`, themes gallery): padding reserves the icon area and long queries fade out (CSS `mask-image`) before running under the icon; the box chrome moved to a wrapper with `focus-within` ring.
 * `/registry` hero: *EXTENSIONS* is now a true knockout (letters cut out of a gradient pill via an SVG mask, real text kept for screen readers). It was invisible because `.premium-gradient` used the `background` shorthand, which reset `bg-clip-text` to `border-box` on `text-transparent` text; the class now sets `background-image` only.
