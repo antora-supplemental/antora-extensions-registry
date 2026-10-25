@@ -1,3 +1,4 @@
+import { useSearchParams } from "@solidjs/router";
 import { createSignal, For, onMount, Show } from "solid-js";
 import SiteLayout from "~/components/SiteLayout";
 import ProviderIcon from "~/components/icons/ProviderIcon";
@@ -13,7 +14,14 @@ const socialProviders: { id: ProviderId; name: string }[] = [
     { id: "apple", name: "Apple" },
 ];
 
+/** Only same-site paths are allowed as a post-sign-in destination. */
+function safeRedirect(value: unknown): string {
+    return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : "/";
+}
+
 export default function SignIn() {
+    const [params] = useSearchParams();
+    const returnTo = () => safeRedirect(params.redirect);
     const [email, setEmail] = createSignal("");
     const [emailSent, setEmailSent] = createSignal(false);
     const [error, setError] = createSignal<string | null>(null);
@@ -37,7 +45,7 @@ export default function SignIn() {
         setError(null);
         setLoading(provider);
         try {
-            await startProviderSignIn(provider, "/");
+            await startProviderSignIn(provider, returnTo());
         } catch (err) {
             setError(err instanceof Error ? err.message : "Sign-in failed");
         } finally {
@@ -53,7 +61,7 @@ export default function SignIn() {
         try {
             await authClient.signIn.magicLink({
                 email: email(),
-                callbackURL: "/",
+                callbackURL: returnTo(),
             });
             setEmailSent(true);
         } catch (err) {
@@ -64,12 +72,12 @@ export default function SignIn() {
     };
 
     return (
-        <SiteLayout>
+        <SiteLayout title="Sign in">
             <div class="min-h-[70vh] flex items-center justify-center p-6">
                 <div class="relative w-full max-w-sm space-y-10">
                     <div class="text-center space-y-4">
                         <h1 class="text-3xl font-black text-white tracking-tight">Sign in</h1>
-                        <p class="text-sm text-slate-400 font-medium">Choose a provider to continue</p>
+                        <p class="text-sm text-slate-400 font-medium">Sign in to save collections, build stacks and share your own work.</p>
                     </div>
 
                     <Show when={error()}>

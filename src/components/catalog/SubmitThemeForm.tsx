@@ -95,15 +95,15 @@ export default function SubmitThemeForm(props: SubmitThemeFormProps) {
     <div class="max-w-2xl mx-auto">
       <Show when={submitted()}>
         <div class="p-6 bg-green-500/10 border border-green-500/50 rounded-xl text-center">
-          <h3 class="text-xl font-semibold text-green-400 mb-2">Theme Submitted!</h3>
+          <h3 class="text-xl font-semibold text-green-400 mb-2">Submitted for review</h3>
           <p class="text-green-300/80">
-            Your theme has been submitted for review. It will appear in the gallery once approved.
+            Your theme will be listed once it has been reviewed.
           </p>
           <a
             href="/themes"
             class="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-green-600 hover:bg-green-500 text-white font-medium rounded-xl transition-colors"
           >
-            Browse Themes
+            Browse themes
           </a>
         </div>
       </Show>
@@ -112,7 +112,7 @@ export default function SubmitThemeForm(props: SubmitThemeFormProps) {
         <form onSubmit={handleValidate} class="space-y-6">
           <div>
             <label for="repo-url" class="block text-sm font-medium text-slate-300 mb-2">
-              GitHub Repository URL
+              GitHub repository URL
             </label>
             <input
               id="repo-url"
@@ -138,13 +138,13 @@ export default function SubmitThemeForm(props: SubmitThemeFormProps) {
 
           <Show when={validatedTheme()}>
             <div class="p-4 bg-green-500/10 border border-green-500/50 rounded-xl text-sm">
-              <p class="text-green-400 font-medium">Theme Validated!</p>
+              <p class="text-green-400 font-medium">Repository found</p>
               <p class="text-green-300/80 mt-1">
                 <strong>{validatedTheme()!.name}</strong> by {validatedTheme()!.author}
               </p>
               <Show when={validationMeta()?.hasUiModuleCatalog}>
                 <p class="text-emerald-300/90 mt-3">
-                  UI module catalog detected: {validationMeta()!.moduleCount} modules, {validationMeta()!.recipeCount} recipes.
+                  Also includes {(validationMeta()!.moduleCount ?? 0) + (validationMeta()!.recipeCount ?? 0)} extensions.
                 </p>
               </Show>
               <button
@@ -152,7 +152,7 @@ export default function SubmitThemeForm(props: SubmitThemeFormProps) {
                 onClick={() => { setValidatedTheme(null); setValidationMeta(null); setRepoUrl(''); }}
                 class="mt-4 text-slate-400 hover:text-white text-sm"
               >
-                Use different URL
+                Use a different URL
               </button>
             </div>
           </Show>
@@ -163,7 +163,7 @@ export default function SubmitThemeForm(props: SubmitThemeFormProps) {
               disabled={isLoading()}
               class="w-full py-3 px-4 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 text-brand-foreground font-medium rounded-xl transition-colors"
             >
-              {isLoading() ? 'Validating...' : 'Validate Theme'}
+              {isLoading() ? 'Checking…' : 'Check repository'}
             </button>
           </Show>
 
@@ -174,7 +174,7 @@ export default function SubmitThemeForm(props: SubmitThemeFormProps) {
               disabled={isSubmitting()}
               class="w-full py-3 px-4 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-medium rounded-xl transition-colors"
             >
-              {isSubmitting() ? 'Submitting...' : 'Submit Theme for Review'}
+              {isSubmitting() ? 'Submitting…' : 'Submit for review'}
             </button>
           </Show>
         </form>

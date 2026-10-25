@@ -50,7 +50,7 @@ export async function POST({ request }: { request: Request }) {
 
     if (existing) {
       return new Response(
-        JSON.stringify({ error: 'This repository is already registered for extension indexing' }),
+        JSON.stringify({ error: 'This repository is already in the registry' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
@@ -71,7 +71,7 @@ export async function POST({ request }: { request: Request }) {
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Registered ${discovery.modules?.length ?? 0} modules and ${discovery.recipes?.length ?? 0} recipes for review.`,
+        message: `Found ${(discovery.modules?.length ?? 0) + (discovery.recipes?.length ?? 0)} extensions. They'll be listed once reviewed.`,
         extensionRepoId: id,
         modules: discovery.modules?.map((module) => ({ id: module.id, name: module.name })),
         recipes: discovery.recipes?.map((recipe) => ({ id: recipe.id, name: recipe.name })),
