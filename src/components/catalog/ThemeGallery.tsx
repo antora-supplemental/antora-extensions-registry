@@ -13,8 +13,11 @@ interface ThemeGalleryProps {
 function inferThemeTopics(theme: Theme): string[] {
   if (theme.githubTopics?.length) return theme.githubTopics;
   const topics = ['antora-theme'];
-  if (theme.tags.includes('dark')) topics.push('antora-dark-theme');
-  if (theme.tags.includes('light')) topics.push('antora-light-theme');
+  // DB-synced themes carry tags (dark/dark-theme/light-theme/light+dark), not GitHub topics.
+  const { modes } = splitModeTags(theme.tags);
+  const both = theme.tags.includes('light+dark');
+  if (both || modes.includes('dark')) topics.push('antora-dark-theme');
+  if (both || modes.includes('light')) topics.push('antora-light-theme');
   return topics;
 }
 
