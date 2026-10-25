@@ -1,4 +1,5 @@
 import { createSignal, Show, onMount } from 'solid-js';
+import { ColorModeIcons, splitModeTags } from './ColorModeIcons';
 import type { Theme } from '~/types/theme';
 
 interface ThemeCardProps {
@@ -82,8 +83,13 @@ export default function ThemeCard(props: ThemeCardProps) {
 
         <p class="text-slate-400 text-sm mb-4 line-clamp-2">{props.theme.description}</p>
 
+        <Show when={splitModeTags(props.theme.tags).modes.length > 0}>
+          <div class="flex items-center gap-1.5 mb-2" aria-label="Color modes">
+            <ColorModeIcons modes={splitModeTags(props.theme.tags).modes} />
+          </div>
+        </Show>
         <div class="flex flex-wrap gap-2 mb-4">
-          {props.theme.tags.slice(0, 3).map((tag) => (
+          {splitModeTags(props.theme.tags).rest.slice(0, 3).map((tag) => (
             <span class="px-2 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-md">{tag}</span>
           ))}
         </div>

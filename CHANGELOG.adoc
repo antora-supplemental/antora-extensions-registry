@@ -2,6 +2,7 @@
 
 == Unreleased
 
+* Theme/extension cards: dark/light mode tags render as circular color-composite icons (contrasting border, `Dark theme` / `Light theme` labels) on their own row instead of tag pills.
 * Database: Turso-backed catalog. New `catalog_entry` / `catalog_meta` tables; `pnpm catalog:sync` (scheduled `catalog-sync.yml` every 6h, plus dispatch) fetches repos/modules/versions with the built-in `GITHUB_TOKEN` and upserts them. The site reads the catalog from the DB (`dataSource: database` in `/api/extensions/catalog`), falling back to the build snapshot. `REGISTRY_CATALOG_ONLY=false`; `BETTER_AUTH_URL` is now `https://registry.antora-supplemental.org`; featured themes keep the curated order (Default UI first).
 * Netlify SSR staging: cross-platform `server.zip` rebuild (Windows `tar -a`), normalize `manifest.json` paths, copy required packages (`pathe`) into the Lambda bundle; fail staging if `server.zip` is missing.
 * DNS: Cloudflare CNAME `registry.antora-supplemental.org` → `antora-extensions-registry.netlify.app` (2026-10-21).

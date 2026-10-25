@@ -1,4 +1,5 @@
 import { createSignal, Show } from 'solid-js';
+import { ColorModeIcons, splitModeTags } from './ColorModeIcons';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 import { formatInstallSnippet } from '~/lib/ui-modules';
 
@@ -87,8 +88,13 @@ export default function ExtensionCard(props: ExtensionCardProps) {
           </div>
         </Show>
 
+        <Show when={splitModeTags(props.entry.tags).modes.length > 0}>
+          <div class="flex items-center gap-1.5 mb-2" aria-label="Color modes">
+            <ColorModeIcons modes={splitModeTags(props.entry.tags).modes} />
+          </div>
+        </Show>
         <div class="flex flex-wrap gap-2 mb-4">
-          {props.entry.tags.slice(0, 5).map((tag) => (
+          {splitModeTags(props.entry.tags).rest.slice(0, 5).map((tag) => (
             <span class="px-2 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-md">{tag}</span>
           ))}
         </div>
