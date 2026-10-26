@@ -81,6 +81,22 @@ export const verifications = sqliteTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
+/** better-auth per-IP limiter storage (rateLimit.storage = "database"). */
+export const rateLimits = sqliteTable("rateLimit", {
+  id: text("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  count: integer("count").notNull(),
+  lastRequest: integer("lastRequest").notNull(),
+});
+
+/** Per-account email/password attempt counters (src/server/auth-guard.ts). */
+export const authAttempts = sqliteTable("auth_attempt", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull(),
+  windowStart: integer("windowStart").notNull(),
+  lockedUntil: integer("lockedUntil"),
+});
+
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   accounts: many(accounts),

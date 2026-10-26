@@ -5,6 +5,8 @@ export {
   sessions,
   accounts,
   verifications,
+  rateLimits,
+  authAttempts,
   usersRelations,
   sessionsRelations,
   accountsRelations,

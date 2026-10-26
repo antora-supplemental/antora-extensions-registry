@@ -19,8 +19,12 @@ export const serverScheme = z
     APPLE_CLIENT_ID: z.string().optional(),
     APPLE_CLIENT_SECRET: z.string().optional(),
     APPLE_APP_BUNDLE_IDENTIFIER: z.string().optional(),
+    /** Deprecated; no longer used (auth email goes through Resend). */
     EMAIL_SERVER: z.string().optional(),
+    /** Sender for auth email (magic link, verification, reset), on a domain verified in Resend. */
     EMAIL_FROM: z.string().optional(),
+    /** "true" requires email verification for password accounts and enables reset and password linking. Needs RESEND_API_KEY + EMAIL_FROM. */
+    AUTH_EMAIL_VERIFICATION: z.enum(["true", "false", "0", "1"]).optional(),
     BETTER_AUTH_SECRET: z.string(),
     BETTER_AUTH_URL: z.string().url(),
     BETTER_AUTH_TRUSTED_ORIGINS: z.string().optional(),
@@ -29,7 +33,7 @@ export const serverScheme = z
     GITHUB_TOKEN: z.string().optional(),
     /** Comma-separated GitHub logins allowed into /admin (e.g. "AMDphreak"). */
     ADMIN_GITHUB_LOGINS: z.string().optional(),
-    /** Resend API key for report notification emails; when unset, reports are stored but not emailed. */
+    /** Resend API key for auth email and report notifications; when unset, no email is sent. */
     RESEND_API_KEY: z.string().optional(),
     /** Verified sender for report emails, e.g. "Antora Registry <reports@antora-supplemental.org>". */
     REPORT_EMAIL_FROM: z.string().optional(),
