@@ -579,9 +579,12 @@ export async function buildExtensionCatalog(
     // Multi-package repos repeat the list on every entry: keep it short there (newest 12 plus rolling tags).
     const many = result.modules.length + result.recipes.length > 3;
     const repoReleases = extras ? (many ? [...extras.releases.filter((r) => !r.rolling).slice(0, 12), ...extras.releases.filter((r) => r.rolling)] : extras.releases) : [];
-    const withExtras = (list: ExtensionCatalogEntry[]) =>
+    // Repo-level relations describe the whole package: on recipes when the repo has any, else on every entry.
+    const relTargets = result.recipes.length ? 'recipes' : 'all';
+    const withExtras = (list: ExtensionCatalogEntry[], kind: 'modules' | 'recipes' = 'modules') =>
       extras
         ? list.map((e) => ({
+            ...(extras.relations && (relTargets === 'all' || kind === 'recipes') ? { relations: extras.relations } : {}),
             ...e,
             ...(repoReleases.length ? { releases: repoReleases } : {}),
             ...(extras.antora.length ? { antora: extras.antora } : {}),
@@ -589,7 +592,7 @@ export async function buildExtensionCatalog(
           }))
         : list;
     const canonicalModules = withExtras(withRepoInfo(applyRepoCanonicalNames(result.modules, ref, owner, repo)));
-    const canonicalRecipes = withExtras(withRepoInfo(applyRepoCanonicalNames(result.recipes, ref, owner, repo)));
+    const canonicalRecipes = withExtras(withRepoInfo(applyRepoCanonicalNames(result.recipes, ref, owner, repo)), 'recipes');
 
     let modCount = 0;
     let recCount = 0;

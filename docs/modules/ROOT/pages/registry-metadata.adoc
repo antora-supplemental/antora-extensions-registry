@@ -173,3 +173,33 @@ previews:
     caption: "Facto stack demo, light"
 ---
 ----
+
+== Package compatibility
+
+Declare how your package relates to others in `package.json` under `antoraRegistry`. Ranges are semver. Keys are package names, `owner/repo`, or repository names.
+
+[source,json]
+----
+"antoraRegistry": {
+  "requires":      { "@antora-supplemental/color-scheme": "^0.4.0" },
+  "worksWith":     { "valentus-theme": "^4.1.0" },
+  "conflictsWith": { "antora-dark-mode": "*" },
+  "provides":      { "skittles-paint-tokens": "0.1" },
+  "uses":          { "valentus-layout-markup": "4", "color-scheme-tokens": "^0.4", "light-dark-slots": "^0.1" }
+}
+----
+
+`requires`, `worksWith`, `conflictsWith`:: Direct relations. `requires` implies `worksWith`. Relations are shown on both packages.
+`provides`, `uses`:: Contracts: named, versioned interfaces such as `color-scheme-tokens@0.5`, `light-dark-slots@0.1`, `valentus-layout-markup@4`, `default-ui-markup@2`, `antora-ui-model@3`.
+
+The registry computes links at each catalog sync, stores them in the entry snapshot and the `catalog_compat` table, and shows them on the detail page under *Works with* (prominent) and *Conflicts with* (smaller), with the reasoning in a tooltip.
+
+=== Confidence and precedence
+
+. *Declared conflict*: always wins.
+. *Antora mismatch*: two related packages that share no Antora major get a warning instead of "works with".
+. *Declared* (or *Curated*, for registry seeds of packages that cannot declare yet): from `requires`/`worksWith`.
+. *Guaranteed*: a package provides every contract the other uses, or a cross-layer chain A -> B -> C has strict layering: every contract A uses is provided by B or C at a compatible version, every contract B uses is provided by C, A does not reach C's contracts directly, and the current B version satisfies the ranges both A and C declare.
+. *Likely (inferred)*: any other declared chain, with the reason (for example "A reaches C's markup directly, not via B").
+
+Nothing is inferred between packages in the same exclusive layer (engine, chassis, body kit, paint): they are listed as alternatives.

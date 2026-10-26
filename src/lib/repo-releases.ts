@@ -1,3 +1,4 @@
+import { readRelations, type DeclaredRelations } from '~/lib/pkg-compat';
 import { antoraRepoDefault, buildReleases, type RawRelease, type ReleaseInfo } from '~/lib/antora-compat';
 import { parseColorSchemes, type ColorScheme } from '~/lib/color-schemes';
 
@@ -42,6 +43,8 @@ export interface RepoReleaseInfo {
   /** Repo default from package.json antoraRegistry.antora. */
   antora: number[];
   colorSchemes: ColorScheme[];
+  /** Declared package relations and contracts (antoraRegistry requires/worksWith/conflictsWith/provides/uses). */
+  relations?: DeclaredRelations;
 }
 
 /** Releases with per-release Antora compatibility, plus declared color schemes, for a GitHub repo. */
@@ -66,5 +69,6 @@ export async function fetchRepoReleaseInfo(owner: string, repo: string, branch: 
     const css = await rawText(owner, repo, branch, p.replace(/^\.?\//, ''));
     if (css) colorSchemes.push(...parseColorSchemes(css));
   }
-  return { releases, antora: repoDefault, colorSchemes };
+  const relations = readRelations(pkg?.antoraRegistry ?? pkg?.['antora-registry']);
+  return { releases, antora: repoDefault, colorSchemes, ...(relations ? { relations } : {}) };
 }

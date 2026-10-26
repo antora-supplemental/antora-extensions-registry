@@ -15,6 +15,8 @@ import { checkRepository } from '../src/lib/registry-check';
 import { sqlPreviewStore, syncPreviewCache } from '../src/lib/preview-cache';
 import { OWNERS_DDL, ownerKeys, syncOwners } from '../src/lib/owners';
 import { firstListedStatements } from '../src/lib/first-listed';
+import { computeCompat, sortLinks } from '../src/lib/pkg-compat';
+import { seedFor } from '../src/data/compat-seeds';
 import { SEED_TRUSTED_PUBLISHERS, repoStatus, trustedReason, upsertApprovedTheme } from '../src/lib/registry-write';
 
 const url = process.env.DB_URL;
@@ -40,6 +42,19 @@ const repoCreated = new Map(repoRows.map((r) => [`${r.owner}/${r.name}`.toLowerC
 const catalog = await buildFullExtensionCatalog({ includeTopicDiscovery: true, live: true, extraRepos: approvedInDb, excludeRepos: rejected });
 const entries = [...catalog.modules, ...catalog.recipes];
 if (entries.length === 0) throw new Error('Catalog came back empty; refusing to wipe the database.');
+
+// Package-to-package compatibility: declared relations win; curated seeds fill packages that cannot declare yet.
+for (const e of entries) {
+  if (!e.relations) {
+    const s = seedFor([e.name, `${e.repositoryOwner}/${e.repositoryName}`, e.repositoryName ?? '']);
+    if (s) e.relations = s;
+  }
+}
+const compat = computeCompat(entries.map((e) => ({ ...e, repositoryOwner: e.repositoryOwner ?? '', repositoryName: e.repositoryName ?? '' })));
+for (const e of entries) {
+  const links = compat.get(e.catalogId);
+  if (links) e.compat = sortLinks(links);
+}
 
 // Cache previews in Turso and serve them from /previews/<hash>: never cache a failed first fetch, keep the
 // cached copy (marked stale) when the source later breaks or leaves the README, refresh on a changed image.
@@ -81,6 +96,20 @@ const releaseStmts = [
     args: [repo, r.tag, r.version, r.rolling ? 1 : 0, r.prerelease ? 1 : 0, JSON.stringify(r.antora), r.antoraSource ?? null, r.publishedAt ?? null, r.installSpec, JSON.stringify(r.assets), now],
   })),
 ];
+// Compatibility links (also in each payload). Created idempotently for the same reason as catalog_release.
+await db.execute(`CREATE TABLE IF NOT EXISTS catalog_compat (
+  source text NOT NULL, target text NOT NULL, relation text NOT NULL, confidence text NOT NULL,
+  why text NOT NULL, path text, contracts text, syncedAt integer NOT NULL, PRIMARY KEY (source, target))`);
+const compatStmts = [
+  { sql: 'DELETE FROM catalog_compat', args: [] },
+  ...[...compat].flatMap(([source, links]) =>
+    links.map((l) => ({
+      sql: 'INSERT OR REPLACE INTO catalog_compat (source, target, relation, confidence, why, path, contracts, syncedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      args: [source, l.target, l.relation, l.confidence, l.why, l.path ? JSON.stringify(l.path) : null, l.contracts ? JSON.stringify(l.contracts) : null, now],
+    })),
+  ),
+];
+console.log(`[registry] compat: ${compatStmts.length - 1} links across ${compat.size} packages`);
 console.log(`[registry] releases: ${releaseRows.size} across ${new Set([...releaseRows.values()].map((x) => x.repo)).size} repos`);
 const curatedThemes = themesFromKnownRepos();
 const stmts = [
@@ -112,7 +141,7 @@ const stmts = [
   { sql: "INSERT INTO catalog_meta (key, value) VALUES ('syncedAt', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", args: [new Date().toISOString()] },
   { sql: "INSERT INTO catalog_meta (key, value) VALUES ('discoveredRepoCount', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", args: [String(catalog.discoveredRepoCount)] },
 ];
-await db.batch([...stmts, ...ownerStmts, ...releaseStmts], 'write');
+await db.batch([...stmts, ...ownerStmts, ...releaseStmts, ...compatStmts], 'write');
 console.log(`[registry] synced ${entries.length} catalog entries from ${catalog.indexedRepos.length} repos into the database`);
 
 // Newly discovered theme repositories: check and import the ones that meet the criteria.

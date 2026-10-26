@@ -123,6 +123,20 @@ export const catalogReleases = sqliteTable("catalog_release", {
     pk: primaryKey({ columns: [table.repo, table.tag] }),
 }));
 
+/** Package-to-package compatibility computed at sync (src/lib/pkg-compat.ts); also stored in each payload. */
+export const catalogCompat = sqliteTable("catalog_compat", {
+    source: text("source").notNull(), // catalogId
+    target: text("target").notNull(), // catalogId, or declared package name when not indexed
+    relation: text("relation").notNull(), // works-with | conflicts | alternative | antora-mismatch
+    confidence: text("confidence").notNull(), // declared | curated | guaranteed | likely
+    why: text("why").notNull(),
+    path: text("path"), // JSON string[] chain
+    contracts: text("contracts"), // JSON string[]
+    syncedAt: integer("syncedAt", { mode: "timestamp" }).notNull(),
+}, (table) => ({
+    pk: primaryKey({ columns: [table.source, table.target] }),
+}));
+
 /** Sync bookkeeping (last run, counts). */
 export const catalogMeta = sqliteTable("catalog_meta", {
     key: text("key").primaryKey(),

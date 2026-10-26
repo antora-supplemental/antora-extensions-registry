@@ -34,6 +34,10 @@ export interface ExtensionCatalogEntry {
   antora?: number[];
   /** Color schemes declared by the paint (`@color-schemes`). */
   colorSchemes?: import('~/lib/color-schemes').ColorScheme[];
+  /** Declared relations and contracts (antoraRegistry). */
+  relations?: import('~/lib/pkg-compat').DeclaredRelations;
+  /** Computed at sync: works-with / conflicts / alternatives with confidence and reasoning. */
+  compat?: import('~/lib/pkg-compat').CompatLink[];
   /** Globally unique id: `{repoSlug}/{moduleId}` */
   catalogId: string;
   /** ISO date this entry was first listed in the registry (never changes). */
@@ -132,6 +136,11 @@ export interface AntoraRegistryMetadata {
   antora?: string | number | Array<string | number>;
   /** Path(s) to paint CSS with a `@color-schemes` comment; the registry shows each scheme with swatches. */
   colorSchemes?: string | string[];
+  requires?: unknown;
+  worksWith?: unknown;
+  conflictsWith?: unknown;
+  provides?: unknown;
+  uses?: unknown;
 }
 
 export interface RegistryModuleRef {

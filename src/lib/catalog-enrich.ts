@@ -1,3 +1,4 @@
+import { readRelations } from '~/lib/pkg-compat';
 import { matchPackage } from './bundle-members';
 import { liveImages } from '~/lib/preview-check';
 /**
@@ -237,6 +238,8 @@ export function applyRepoMetadata(entry: ExtensionCatalogEntry, meta: RepoMetada
     out.longDescriptionSource = 'readme';
   }
   if (!out.previews.length) delete out.previews;
+  const rel = readRelations(d as Record<string, unknown>);
+  if (rel && !out.relations) out.relations = rel;
   return out;
 }
 

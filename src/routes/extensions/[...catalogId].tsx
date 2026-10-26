@@ -1,6 +1,7 @@
 import { A, createAsync, useParams } from '@solidjs/router';
 import { Meta, Title } from '@solidjs/meta';
 import { createMemo, createSignal, For, Show, Suspense } from 'solid-js';
+import { PackageCompat } from '~/components/catalog/PackageCompat';
 import { AntoraBadges, ReleasesTable, SchemeSwatches } from '~/components/catalog/AntoraCompat';
 import SiteLayout from '~/components/SiteLayout';
 import NewBadge from '~/components/catalog/NewBadge';
@@ -90,6 +91,8 @@ export default function ExtensionDetailPage() {
                       <PreviewGallery previews={e().previews!} name={e().name} />
                     </section>
                   </Show>
+
+                  <PackageCompat links={e().compat} />
 
                   <Show when={e().colorSchemes?.length}>
                     <Card class="p-6 mb-6">
