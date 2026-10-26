@@ -9,8 +9,10 @@ import { loadExtensionCatalog, loadThemes } from '~/lib/server/catalog';
 import FeaturedExtension from '~/components/catalog/FeaturedExtension';
 
 export default function Home() {
-  const themes = createAsync(() => loadThemes());
-  const catalog = createAsync(() => loadExtensionCatalog());
+  // deferStream: hold the SSR stream until the data resolves so the cards render in place in the first HTML
+  // (no out-of-order <template> swap after </body>, no loading placeholder, no layout shift on hydration).
+  const themes = createAsync(() => loadThemes(), { deferStream: true });
+  const catalog = createAsync(() => loadExtensionCatalog(), { deferStream: true });
   const featured = () => {
     const c = catalog();
     if (!c) return [];

@@ -1,0 +1,50 @@
+name: Nightly home page bake
+
+# Rebuilds and redeploys the site once a day so the home page's Featured / Featured Themes cards are re-baked from the
+# catalog database. A deploy invalidates Netlify's cache; the home page then stays CDN-cached until the next bake.
+# Schedule: 10:00 UTC = 5:00 AM Central Daylight Time / 4:00 AM Central Standard Time (one hour after catalog-sync).
+# Run it by hand from the Actions tab (workflow_dispatch) while developing or testing.
+
+on:
+  schedule:
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-bake
+  cancel-in-progress: false
+
+jobs:
+  bake:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger a Netlify production build
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NETLIFY_AUTH_TOKEN:-}" ] || [ -z "${NETLIFY_SITE_ID:-}" ]; then
+            echo "::error::NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID secrets are required"; exit 1
+          fi
+          code=$(curl -sS -o build.json -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" -H 'Content-Type: application/json' -d '{"clear_cache":false}' \
+            "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/builds")
+          echo "Netlify build trigger: HTTP $code"
+          test "$code" -lt 300
+      - name: Warm the home page
+        run: |
+          set -euo pipefail
+          # Wait for the new deploy to publish, then request / once so visitors get the baked copy.
+          for i in $(seq 1 40); do
+            sleep 30
+            state=$(curl -sS -H "Authorization: Bearer ${{ secrets.NETLIFY_AUTH_TOKEN }}" \
+              "https://api.netlify.com/api/v1/sites/${{ secrets.NETLIFY_SITE_ID }}/builds?per_page=1" | jq -r '.[0].done')
+            [ "$state" = "true" ] && break
+          done
+          sleep 20
+          curl -sS -o home.html https://registry.antora-supplemental.org/
+          grep -q 'id="featured-heading"' home.html && echo "Home page baked and warm."

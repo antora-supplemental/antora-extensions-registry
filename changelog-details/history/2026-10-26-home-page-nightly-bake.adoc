@@ -1,0 +1,22 @@
+= Home page cards in the first HTML, baked nightly
+:revdate: 2026-10-26
+
+== What was happening
+
+The home page was already server-rendered and CDN-cached (Netlify durable cache, added in 013f606), and the card data
+was in the response. But SolidStart streams Suspense boundaries out of order: the first bytes carried an empty Featured
+slot and a "Loading themes..." placeholder, and the real cards arrived in `<template>` elements after `</body>` that a
+script swapped in. On a desktop browser this painted as items loading in after the page opened, with a layout shift.
+Signed-in visitors bypass the CDN (private, no-store), so they also waited on a live database read.
+
+== Change
+
+* `src/routes/index.tsx`: both home-page queries use `createAsync(..., { deferStream: true })`, so the server waits for
+  the data and renders the cards in place. No placeholder, no post-load swap, no shift; hydration reuses the serialized
+  data, so no content fetch happens after load.
+* `src/lib/browse-cache.ts`: `/` gets its own cache tag (`registry-home`) and a 25-hour CDN lifetime
+  (`s-maxage=90000, stale-while-revalidate=86400`). The catalog sync purges only `registry-browse`, so it no longer
+  refreshes the home page.
+* `.github/workflows/nightly-bake.yml`: a daily cron at 10:00 UTC (5:00 AM CDT / 4:00 AM CST, one hour after
+  catalog-sync) triggers a Netlify production build via the API, waits for it, and warms `/`. `workflow_dispatch` runs
+  it on demand. Needs the existing `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID` secrets.

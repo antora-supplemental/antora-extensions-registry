@@ -9,6 +9,14 @@ export const SNAPSHOT_VERSION = 1;
 export const CACHE_TAG = 'registry-browse';
 /** Fresh 5 minutes at the CDN, then served stale for up to a day while one request revalidates. */
 export const CDN_CACHE = 'public, durable, s-maxage=300, stale-while-revalidate=86400';
+/**
+ * Home page: baked once a day. The nightly-bake workflow (.github/workflows/nightly-bake.yml, 10:00 UTC = 5:00 AM CDT /
+ * 4:00 AM CST) deploys the site, which invalidates Netlify's cache; the first request after it renders the cards from the
+ * database and the CDN serves that HTML until the next bake. 25 h covers a day plus slack, so the bake (not expiry) is
+ * what refreshes it. Tagged separately so the catalog sync's purge of CACHE_TAG does not touch it.
+ */
+export const HOME_CACHE_TAG = 'registry-home';
+export const HOME_CDN_CACHE = 'public, durable, s-maxage=90000, stale-while-revalidate=86400';
 export const SESSION_COOKIES = ['__Secure-better-auth.session_token', 'better-auth.session_token'];
 
 const BROWSE = [/^\/$/, /^\/extensions\/?$/, /^\/extensions\/.+/, /^\/themes\/?$/, /^\/search\/?$/, /^\/owners\/.+/];
@@ -29,8 +37,8 @@ export function browseCacheHeaders(method: string, pathname: string, status: num
   if (hasSession(cookieHeader)) return { 'Cache-Control': 'private, no-store', ...vary };
   return {
     'Cache-Control': 'public, max-age=0, must-revalidate',
-    'Netlify-CDN-Cache-Control': CDN_CACHE,
-    'Netlify-Cache-Tag': CACHE_TAG,
+    'Netlify-CDN-Cache-Control': pathname === '/' ? HOME_CDN_CACHE : CDN_CACHE,
+    'Netlify-Cache-Tag': pathname === '/' ? HOME_CACHE_TAG : CACHE_TAG,
     ...vary,
   };
 }
