@@ -23,6 +23,13 @@ export const knownExtensionRepos: KnownExtensionRepo[] = [
   },
   {
     owner: 'antora-supplemental',
+    repo: 'skittles-theme',
+    branch: 'main',
+    discoveredVia: 'curated',
+    githubTopics: [ANTORA_TOPICS.THEME, 'antora-paint', 'antora-light-theme', 'antora-dark-theme'],
+  },
+  {
+    owner: 'antora-supplemental',
     repo: 'antora-glossary',
     branch: 'main',
     discoveredVia: 'curated',

@@ -166,7 +166,7 @@ html.dark .text-slate-500 { color: #a3a3a3; }
 .new-badge { background-color: #fff4ed; color: #9a3412; border: 1px solid #ffc9a8; }
 html.dark .new-badge { background-color: #431407; color: #ffc9a8; border-color: #9a3412; }
 /*
- * Header "Themes" link: rainbow on the letters only, at 40% opacity over the normal text color. A duplicate,
+ * Header "Themes" link: rainbow on the letters only (dark: 40% over the text color; light: full strength, below). A duplicate,
  * aria-hidden copy of the label sits exactly on top with the gradient clipped to its glyphs, so nothing paints
  * outside the letters. The one deliberate exception to the no-gradients rule.
  */
@@ -187,3 +187,39 @@ html.dark .new-badge { background-color: #431407; color: #ffc9a8; border-color: 
   pointer-events: none;
   user-select: none;
 }
+/* Light mode: saturated hues at 90%, so only 10% darkening toward the body text. Yellow is a deep gold so every
+   stop stays around 3:1 or better on white (decorative bold label). Dark mode keeps the 40% tint. */
+html:not(.dark) .nav-rainbow-overlay {
+  background-image: linear-gradient(30deg, #e1102f, #f25c05, #d49a00, #12a53a, #0b63f0, #8b1ee6);
+  opacity: 0.9; /* 10% of the body-text color shows through */
+}
+
+/*
+ * Thumbnail overlay actions (ThemeCard). While hidden they take no pointer events and no focus
+ * (visibility: hidden), so a click or tap on the thumbnail never fires an invisible button.
+ * Reveal: hover on hover-capable fine pointers, or focus inside the thumbnail. On touch the tap
+ * lands on the preview link (CardPreviewLink) and opens the detail page. Visibility flips 60 ms after the reveal starts, so the click that caused the
+ * reveal cannot land on a button; on hide it flips after the fade.
+ */
+.thumb-actions,
+.thumb-scrim {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 300ms, transform 300ms, visibility 0s linear 300ms;
+}
+.thumb-actions { transform: translateY(0.5rem); }
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .thumb-actions,
+  .group:hover .thumb-scrim { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition: opacity 300ms, transform 300ms, visibility 0s linear 60ms; }
+}
+.thumb:focus-within .thumb-actions,
+.thumb:focus-within .thumb-scrim { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition: opacity 300ms, transform 300ms, visibility 0s linear 60ms; }
+.thumb-scrim { pointer-events: none !important; }
+
+/* Secondary buttons in light mode: the shared slate hover remap equals the resting gray, so darken on hover. */
+html:not(.dark) .bg-secondary.hover\:bg-slate-600:hover { background-color: #d4d4d4; }
+/* Antora badges and release markers: readable on the light canvas. */
+html:not(.dark) .text-sky-300 { color: #0369a1; }
+html:not(.dark) .text-emerald-300 { color: #047857; }
+html:not(.dark) .text-amber-300 { color: #b45309; }

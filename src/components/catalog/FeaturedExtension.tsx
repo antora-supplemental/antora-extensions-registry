@@ -1,3 +1,4 @@
+import CardPreviewLink from './CardPreviewLink';
 import { previewFallback } from '~/lib/preview-fallback';
 import { A } from '@solidjs/router';
 import { Show } from 'solid-js';
@@ -15,9 +16,9 @@ export default function FeaturedExtension(props: { entry: ExtensionCatalogEntry;
     <Card class="overflow-hidden">
       <div class={thumb() ? 'grid md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]' : ''}>
         <Show when={thumb()}>
-          <A href={`/extensions/${props.entry.catalogId}`} tabIndex={-1} aria-hidden="true" class="block bg-white dark:bg-[#111111] border-b md:border-b-0 md:border-r border-slate-700/50">
+          <CardPreviewLink href={`/extensions/${props.entry.catalogId}`} class="block bg-white dark:bg-[#111111] border-b md:border-b-0 md:border-r border-slate-700/50">
             <img src={thumb()!.url} onError={previewFallback(thumb()!)} alt="" class="h-full max-h-80 w-full object-cover object-top" loading="lazy" />
-          </A>
+          </CardPreviewLink>
         </Show>
         <div class="p-6 lg:p-8">
           <div class="flex flex-wrap items-center gap-2 mb-3">

@@ -1,3 +1,4 @@
+import { themeDetailHref } from '~/lib/theme-href';
 import { cache } from '@solidjs/router';
 import { buildFullExtensionCatalog } from '~/lib/extension-catalog';
 import { loadGalleryThemes } from '~/lib/themes/catalog';
@@ -71,13 +72,13 @@ export const loadSearchIndex = cache(async (): Promise<SearchIndexItem[]> => {
     href: `/extensions/${e.catalogId}`,
     isNew: isNewListing(e.firstListedAt),
   }));
-  // Themes have no detail page; a suggestion opens the theme-filtered results for that name.
+  // Theme detail pages live at /themes/<owner>/<repo>.
   const th = themes.map((t) => ({
     kind: 'theme' as const,
     type: 'theme',
     id: t.id,
     name: t.name,
-    href: `/search?q=${encodeURIComponent(t.name)}&type=themes`,
+    href: themeDetailHref(t),
     isNew: isNewListing(t.firstListedAt),
   }));
   return [...ext, ...th];

@@ -103,6 +103,26 @@ export const catalogEntries = sqliteTable("catalog_entry", {
     syncedAt: integer("syncedAt", { mode: "timestamp" }).notNull(),
 });
 
+/**
+ * One row per tagged release of a cataloged repository, with the Antora line(s) it targets
+ * (precedence in src/lib/antora-compat.ts). Written by scripts/sync-catalog-db.ts; created by drizzle-kit push.
+ */
+export const catalogReleases = sqliteTable("catalog_release", {
+    repo: text("repo").notNull(), // owner/repo, lowercase
+    tag: text("tag").notNull(),
+    version: text("version").notNull(),
+    rolling: integer("rolling", { mode: "boolean" }).notNull(),
+    prerelease: integer("prerelease", { mode: "boolean" }).notNull(),
+    antora: text("antora").notNull(), // JSON number[]; [] = undeclared
+    antoraSource: text("antoraSource"), // build-metadata | engines | peer-dependencies | repo-default
+    publishedAt: text("publishedAt"),
+    installSpec: text("installSpec").notNull(),
+    assets: text("assets").notNull(), // JSON {name,url}[]
+    syncedAt: integer("syncedAt", { mode: "timestamp" }).notNull(),
+}, (table) => ({
+    pk: primaryKey({ columns: [table.repo, table.tag] }),
+}));
+
 /** Sync bookkeeping (last run, counts). */
 export const catalogMeta = sqliteTable("catalog_meta", {
     key: text("key").primaryKey(),

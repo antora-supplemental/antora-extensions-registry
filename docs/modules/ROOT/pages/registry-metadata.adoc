@@ -114,6 +114,51 @@ The registry never shows the whole README; the section ends with a *Read the ful
 }
 ----
 
+== Antora version compatibility
+
+The registry lists each tagged release of a repository and the Antora line it targets, so a theme or extension can ship different releases for Antora 3 and Antora 4 (antora-solid).
+The sync reads the repository's GitHub releases and tags (newest 40 full SemVer releases; repositories with more than three packages keep the newest 12) and resolves each release's compatibility.
+The first rule that matches wins:
+
+. *Build metadata on the tag.* `v4.2.0+antora.3` means Antora 3; `+antora-solid` means Antora 4.
+An alias tag on the same version (`v4.2.0` released, `v4.2.0+antora.3` tagged next to it) counts for that release and is not listed twice.
+. *`engines.antora`* in `package.json` at that tag, as an npm range: `"^3.1.0"`, `">=3 <5"`.
+. *Peer dependencies* on core Antora packages (`antora`, `@antora/site-generator`, `@antora/cli` and the other pipeline packages) in `package.json` at that tag.
+Add-ons such as `@antora/lunr-extension` version on their own and are ignored.
+. *Repository default*: `antoraRegistry.antora` in `package.json` on the default branch: `"3"`, `4`, `"antora-solid"` or `[3, 4]`.
+. Otherwise the release is shown under "Antora version not declared". Nothing is guessed.
+
+Rolling tags such as `v4` or `v4.2` take the compatibility of the newest full release they cover and are marked "rolling".
+Each release lists its install spec (`github:owner/repo#tag`) and its release assets, such as `ui-bundle.zip`.
+
+The package page shows a *Releases by Antora version* table, grouped by Antora line with the latest stable release of each line highlighted.
+Cards show an "Antora N" badge for every line with a release, and the extensions page has an Antora version filter (Antora 3, Antora 4).
+Releases are stored in the entry payload and in the `catalog_release` table (one row per repository and tag), which `drizzle-kit push` creates before each sync and deploy.
+
+[source,json]
+----
+"engines": { "antora": "^3.1.0" },
+"antoraRegistry": { "antora": "3" }
+----
+
+== Color schemes
+
+A paint can list its color schemes so the registry shows them as swatches on the card and with labels on the package page.
+Point `antoraRegistry.colorSchemes` at the paint CSS (a path or a list of paths on the default branch).
+The file starts with a `@color-schemes` comment mapping each scheme id to a label, optional `slots` (`["dark"]` for a dark scheme, `[]` for a special one) and an optional `base`:
+
+[source,css]
+----
+/* @color-schemes
+{ "light": {"label":"Strawberry (light)"}, "orangedark": {"label":"Orange (dark)","slots":["dark"]} }
+*/
+:root { --sk-canvas: #ffebee; --sk-dominant: #ff002b; --sk-link: #0042db; --sk-ink: #1e050a; }
+html.dark-theme[data-scheme="orangedark"] { ... }
+----
+
+Swatch colors come from the scheme's own block: `light` is `:root`, `dark` is `html.dark-theme`, and any other id is `html[data-scheme="id"]` or `html.dark-theme[data-scheme="id"]`.
+The registry takes up to four hex custom properties from it: canvas or background, the dominant or accent color, the link color, and the text color.
+
 == Example: a compose pack
 
 [source,markdown]

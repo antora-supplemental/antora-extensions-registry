@@ -1,3 +1,4 @@
+import { antoraMajorsOf } from '~/lib/antora-compat';
 import { createSignal, createMemo, For, Show } from 'solid-js';
 import { byFirstListedDesc, isNewListing } from '~/lib/new-items';
 import { inputClass } from '~/components/ui/text-field';
@@ -26,6 +27,7 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
   const [selectedTag, setSelectedTag] = createSignal<string | null>(null);
   const [viewMode, setViewMode] = createSignal<ViewMode>('all');
   const [newOnly, setNewOnly] = createSignal(false);
+  const [antoraFilter, setAntoraFilter] = createSignal<'all' | '3' | '4'>('all');
   const [sortBy, setSortBy] = createSignal<'name' | 'newest'>('name');
   const [appearanceFilter, setAppearanceFilter] = createSignal<ExtensionAppearanceFilter>('all');
 
@@ -64,6 +66,7 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
     if (tag) entries = entries.filter((entry) => entry.tags.includes(tag));
 
     if (newOnly()) entries = entries.filter((e) => isNewListing(e.firstListedAt));
+    if (antoraFilter() !== 'all') entries = entries.filter((e) => antoraMajorsOf(e).includes(Number(antoraFilter())));
     entries.sort((a, b) => (sortBy() === 'newest' ? byFirstListedDesc(a, b) : 0) || a.name.localeCompare(b.name));
     return entries;
   });
@@ -102,6 +105,18 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
           <For each={EXTENSION_APPEARANCE_OPTIONS}>
             {(opt) => <option value={opt.value}>{opt.label}</option>}
           </For>
+        </select>
+
+        <select
+          value={antoraFilter()}
+          aria-label="Filter by Antora version"
+          title="Filter by Antora version (from each release's declared compatibility)"
+          onChange={(e) => setAntoraFilter(e.currentTarget.value as 'all' | '3' | '4')}
+          class="px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white cursor-pointer"
+        >
+          <option value="all">Any Antora</option>
+          <option value="3">Antora 3</option>
+          <option value="4">Antora 4 (antora-solid)</option>
         </select>
 
         <select

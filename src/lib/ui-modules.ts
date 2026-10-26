@@ -1,3 +1,4 @@
+import { fetchRepoReleaseInfo } from '~/lib/repo-releases';
 import fs from 'node:fs';
 import path from 'node:path';
 import JSON5 from 'json5';
@@ -573,8 +574,22 @@ export async function buildExtensionCatalog(
         const declared = forkOf ?? upstreamFork(e);
         return { ...e, ...(declared ? { forkOf: declared } : {}), ...(info?.pushed_at ? { pushedAt: info.pushed_at } : {}) };
       });
-    const canonicalModules = withRepoInfo(applyRepoCanonicalNames(result.modules, ref, owner, repo));
-    const canonicalRecipes = withRepoInfo(applyRepoCanonicalNames(result.recipes, ref, owner, repo));
+    // Releases (per-release Antora compatibility) and declared color schemes; one lookup per repo.
+    const extras = info ? await fetchRepoReleaseInfo(owner, repo, info.default_branch ?? 'main') : null;
+    // Multi-package repos repeat the list on every entry: keep it short there (newest 12 plus rolling tags).
+    const many = result.modules.length + result.recipes.length > 3;
+    const repoReleases = extras ? (many ? [...extras.releases.filter((r) => !r.rolling).slice(0, 12), ...extras.releases.filter((r) => r.rolling)] : extras.releases) : [];
+    const withExtras = (list: ExtensionCatalogEntry[]) =>
+      extras
+        ? list.map((e) => ({
+            ...e,
+            ...(repoReleases.length ? { releases: repoReleases } : {}),
+            ...(extras.antora.length ? { antora: extras.antora } : {}),
+            ...(extras.colorSchemes.length ? { colorSchemes: extras.colorSchemes } : {}),
+          }))
+        : list;
+    const canonicalModules = withExtras(withRepoInfo(applyRepoCanonicalNames(result.modules, ref, owner, repo)));
+    const canonicalRecipes = withExtras(withRepoInfo(applyRepoCanonicalNames(result.recipes, ref, owner, repo)));
 
     let modCount = 0;
     let recCount = 0;

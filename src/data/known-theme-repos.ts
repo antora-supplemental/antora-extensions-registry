@@ -47,6 +47,19 @@ export const knownThemeRepos: KnownThemeRepo[] = [
     githubTopics: [ANTORA_TOPICS.THEME, ANTORA_APPEARANCE_TOPICS.LIGHT_THEME],
     demoUrl: 'https://antora-supplemental.github.io/architexture-theme/',
   },
+  {
+    owner: 'antora-supplemental',
+    repo: 'skittles-theme',
+    name: 'Skittles',
+    description: 'Candy-bright Antora paint: eleven color schemes (five flavors in light and dark, plus Grape Soda) over the Valentus chrome.',
+    githubTopics: [
+      ANTORA_TOPICS.THEME,
+      ANTORA_APPEARANCE_TOPICS.LIGHT_THEME,
+      ANTORA_APPEARANCE_TOPICS.DARK_THEME,
+      'antora-paint',
+    ],
+    demoUrl: 'https://antora-supplemental.org/skittles-theme/',
+  },
 ];
 
 function themeAppearanceOf(topics: string[]) {

@@ -28,6 +28,12 @@ export interface UiModuleInstall {
 
 /** Single module or recipe row in the extensions catalog. */
 export interface ExtensionCatalogEntry {
+  /** Tagged releases, newest first, each with its Antora line(s). See src/lib/antora-compat.ts for precedence. */
+  releases?: import('~/lib/antora-compat').ReleaseInfo[];
+  /** Repo-level default Antora line(s) from antoraRegistry.antora. */
+  antora?: number[];
+  /** Color schemes declared by the paint (`@color-schemes`). */
+  colorSchemes?: import('~/lib/color-schemes').ColorScheme[];
   /** Globally unique id: `{repoSlug}/{moduleId}` */
   catalogId: string;
   /** ISO date this entry was first listed in the registry (never changes). */
@@ -122,6 +128,10 @@ export interface AntoraRegistryMetadata {
   screenshots?: Array<string | { url?: string; src?: string; caption?: string; alt?: string }>;
   /** Full description shown below the summary. Paragraphs separated by blank lines; `code` spans allowed. */
   longDescription?: string;
+  /** Antora line(s) this repo targets by default: "3", 4, "antora-solid", [3, 4] or a range. Lowest precedence; see antora-compat.ts. */
+  antora?: string | number | Array<string | number>;
+  /** Path(s) to paint CSS with a `@color-schemes` comment; the registry shows each scheme with swatches. */
+  colorSchemes?: string | string[];
 }
 
 export interface RegistryModuleRef {

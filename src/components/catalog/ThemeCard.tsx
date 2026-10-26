@@ -1,3 +1,6 @@
+import { A } from '@solidjs/router';
+import CardPreviewLink from './CardPreviewLink';
+import { themeDetailHref } from '~/lib/theme-href';
 import { createSignal, Show, onMount } from 'solid-js';
 import { Card } from '~/components/ui/card';
 import { Badge } from '~/components/ui/badge';
@@ -5,7 +8,6 @@ import { buttonVariants } from '~/components/ui/button';
 import { cn } from '~/lib/utils';
 import { ColorModeIcons, splitModeTags, type ColorMode } from './ColorModeIcons';
 import { THEME_APPEARANCE_LABELS } from '~/lib/appearance-filter';
-import ReportButton from './ReportButton';
 import NewBadge from './NewBadge';
 import type { Theme } from '~/types/theme';
 
@@ -15,6 +17,7 @@ interface ThemeCardProps {
 
 export default function ThemeCard(props: ThemeCardProps) {
   const [imageError, setImageError] = createSignal(false);
+  const detailHref = () => themeDetailHref(props.theme);
   let imgRef: HTMLImageElement | undefined;
 
   const formatDate = (dateStr: string) => {
@@ -39,7 +42,8 @@ export default function ThemeCard(props: ThemeCardProps) {
 
   return (
     <Card class="group">
-      <div class="relative aspect-video overflow-hidden bg-slate-900">
+      <div class="thumb relative aspect-video overflow-hidden bg-slate-900">
+        <CardPreviewLink href={detailHref()} class="block w-full h-full">
         <Show
           when={!imageError()}
           fallback={
@@ -60,9 +64,10 @@ export default function ThemeCard(props: ThemeCardProps) {
             onError={() => setImageError(true)}
           />
         </Show>
-        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </CardPreviewLink>
+        <div class="thumb-scrim absolute inset-0 bg-black/40 pointer-events-none" />
 
-        <div class="absolute bottom-3 left-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
+        <div class="thumb-actions absolute bottom-3 left-3 right-3 flex gap-2">
           <a
             href={props.theme.demoUrl}
             target="_blank"
@@ -87,8 +92,8 @@ export default function ThemeCard(props: ThemeCardProps) {
 
       <div class="p-5">
         <div class="flex items-start justify-between gap-4 mb-3">
-          <h3 class="font-semibold text-lg text-white capitalize group-hover:text-primary-400 transition-colors">
-            {props.theme.name}
+          <h3 class="font-semibold text-lg text-white capitalize">
+            <A href={detailHref()} class="hover:text-primary-400 transition-colors focus-visible:outline-none focus-visible:underline">{props.theme.name}</A>
             <NewBadge firstListedAt={props.theme.firstListedAt} class="ml-2 align-middle normal-case" />
           </h3>
           <div class="flex items-center gap-1 text-yellow-400 shrink-0">
@@ -125,10 +130,7 @@ export default function ThemeCard(props: ThemeCardProps) {
 
         <div class="flex items-center justify-between text-xs text-slate-500">
           <span>by <span class="text-slate-400">{props.theme.author}</span></span>
-          <span class="flex items-center gap-3">
-            <span>Updated {formatDate(props.theme.lastUpdated)}</span>
-            <ReportButton itemKind="theme" itemId={props.theme.id} itemName={props.theme.name} />
-          </span>
+          <span>Updated {formatDate(props.theme.lastUpdated)}</span>
         </div>
       </div>
     </Card>

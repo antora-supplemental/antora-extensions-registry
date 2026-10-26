@@ -61,6 +61,20 @@ const ownerStmts = [
     args: [o.host, o.login, o.type, o.profileUrl, o.avatarUrl ?? null, o.avatar ?? null, o.displayName ?? null, countByOwner.get(`${o.host}/${o.login}`) ?? 0, now],
   })),
 ];
+// Releases per repository (drizzle-kit push creates catalog_release before this runs).
+const releaseRows = new Map<string, { repo: string; r: NonNullable<(typeof entries)[number]['releases']>[number] }>();
+for (const e of entries) {
+  const repo = `${e.repositoryOwner}/${e.repositoryName}`.toLowerCase();
+  for (const r of e.releases ?? []) releaseRows.set(`${repo}#${r.tag}`, { repo, r });
+}
+const releaseStmts = [
+  { sql: 'DELETE FROM catalog_release', args: [] },
+  ...[...releaseRows.values()].map(({ repo, r }) => ({
+    sql: 'INSERT INTO catalog_release (repo, tag, version, rolling, prerelease, antora, antoraSource, publishedAt, installSpec, assets, syncedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    args: [repo, r.tag, r.version, r.rolling ? 1 : 0, r.prerelease ? 1 : 0, JSON.stringify(r.antora), r.antoraSource ?? null, r.publishedAt ?? null, r.installSpec, JSON.stringify(r.assets), now],
+  })),
+];
+console.log(`[registry] releases: ${releaseRows.size} across ${new Set([...releaseRows.values()].map((x) => x.repo)).size} repos`);
 const curatedThemes = themesFromKnownRepos();
 const stmts = [
   { sql: 'DELETE FROM catalog_entry', args: [] },
@@ -91,7 +105,7 @@ const stmts = [
   { sql: "INSERT INTO catalog_meta (key, value) VALUES ('syncedAt', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", args: [new Date().toISOString()] },
   { sql: "INSERT INTO catalog_meta (key, value) VALUES ('discoveredRepoCount', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", args: [String(catalog.discoveredRepoCount)] },
 ];
-await db.batch([...stmts, ...ownerStmts], 'write');
+await db.batch([...stmts, ...ownerStmts, ...releaseStmts], 'write');
 console.log(`[registry] synced ${entries.length} catalog entries from ${catalog.indexedRepos.length} repos into the database`);
 
 // Newly discovered theme repositories: check and import the ones that meet the criteria.

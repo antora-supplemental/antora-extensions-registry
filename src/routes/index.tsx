@@ -37,7 +37,7 @@ export default function Home() {
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
               <A
                 href="/extensions"
-                class={cn(buttonVariants({ size: 'xl' }), 'shadow-lg shadow-primary-600/25')}
+                class={buttonVariants({ variant: 'secondary', size: 'xl' })}
               >
                 Extensions
               </A>

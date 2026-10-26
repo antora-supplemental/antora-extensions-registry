@@ -1,6 +1,7 @@
 import { A, createAsync, useParams } from '@solidjs/router';
 import { Meta, Title } from '@solidjs/meta';
 import { createMemo, createSignal, For, Show, Suspense } from 'solid-js';
+import { AntoraBadges, ReleasesTable, SchemeSwatches } from '~/components/catalog/AntoraCompat';
 import SiteLayout from '~/components/SiteLayout';
 import NewBadge from '~/components/catalog/NewBadge';
 import ReportButton from '~/components/catalog/ReportButton';
@@ -70,6 +71,7 @@ export default function ExtensionDetailPage() {
                     <div class="mb-4"><PackageTitle entry={e()} as="h1" link={false} titleClass="text-3xl lg:text-4xl font-bold text-white break-words" /></div>
                     <p class="text-slate-300 text-lg max-w-3xl">{e().description}</p>
                     <LayerBadges entry={e()} class="mt-3" />
+                    <div class="mt-3 flex flex-wrap items-center gap-2"><AntoraBadges entry={e()} /></div>
                     <ForkVersions current={e()} variants={forkVariants(e(), all())} />
                     <div class="mt-4 flex flex-wrap gap-2">
                       <a href={e().repository} target="_blank" rel="noopener noreferrer" class={buttonVariants({ variant: 'secondary', size: 'sm' })}>
@@ -87,6 +89,24 @@ export default function ExtensionDetailPage() {
                     <section class="mb-6" aria-label="Preview images">
                       <PreviewGallery previews={e().previews!} name={e().name} />
                     </section>
+                  </Show>
+
+                  <Show when={e().colorSchemes?.length}>
+                    <Card class="p-6 mb-6">
+                      <h2 class="text-lg font-semibold text-white mb-1">Color schemes</h2>
+                      <p class="text-sm text-slate-400 mb-4">Declared by the paint's <code class="font-mono">@color-schemes</code> comment. Swatches: canvas, accent, link, text.</p>
+                      <SchemeSwatches schemes={e().colorSchemes} showLabels />
+                    </Card>
+                  </Show>
+
+                  <Show when={e().releases?.length}>
+                    <Card class="p-6 mb-6">
+                      <h2 class="text-lg font-semibold text-white mb-1">Releases by Antora version</h2>
+                      <p class="text-sm text-slate-400 mb-4">
+                        Compatibility per release, from the tag's <code class="font-mono">+antora.N</code> build metadata, then <code class="font-mono">engines.antora</code>, then <code class="font-mono">@antora/*</code> peer dependencies, then the repository's <code class="font-mono">antoraRegistry.antora</code>.
+                      </p>
+                      <ReleasesTable releases={e().releases!} />
+                    </Card>
                   </Show>
 
                   <Show when={e().bundle}>

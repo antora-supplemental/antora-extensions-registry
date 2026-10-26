@@ -1,3 +1,6 @@
+import { AntoraBadges, SchemeSwatches } from './AntoraCompat';
+import { antoraMajorsOf } from '~/lib/antora-compat';
+import CardPreviewLink from './CardPreviewLink';
 import { previewFallback } from '~/lib/preview-fallback';
 import { createSignal, Show } from 'solid-js';
 import { A } from '@solidjs/router';
@@ -52,9 +55,9 @@ export default function ExtensionCard(props: ExtensionCardProps) {
   return (
     <Card class="overflow-hidden">
       <Show when={thumb()}>
-        <A href={`/extensions/${props.entry.catalogId}`} tabIndex={-1} aria-hidden="true" class="block border-b border-slate-700/50 bg-white dark:bg-[#111111]">
+        <CardPreviewLink href={`/extensions/${props.entry.catalogId}`} class="block border-b border-slate-700/50 bg-white dark:bg-[#111111]">
           <img src={thumb()!.url} onError={previewFallback(thumb()!)} alt="" loading="lazy" class="h-36 w-full object-cover object-top" />
-        </A>
+        </CardPreviewLink>
       </Show>
       <div class="p-5">
         <div class="flex items-start justify-between gap-3 mb-3">
@@ -122,6 +125,12 @@ export default function ExtensionCard(props: ExtensionCardProps) {
           </div>
         </Show>
 
+        <Show when={antoraMajorsOf(props.entry).length || props.entry.colorSchemes?.length}>
+          <div class="flex flex-wrap items-center gap-1.5 mb-2">
+            <AntoraBadges entry={props.entry} />
+            <SchemeSwatches schemes={props.entry.colorSchemes} max={8} />
+          </div>
+        </Show>
         <Show when={isThemePackage(props.entry) && splitModeTags(props.entry.tags).modes.length > 0}>
           <div class="flex items-center gap-1.5 mb-2" aria-label="Color modes">
             <ColorModeIcons modes={splitModeTags(props.entry.tags).modes} />
