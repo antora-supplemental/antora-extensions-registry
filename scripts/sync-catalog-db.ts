@@ -61,7 +61,14 @@ const ownerStmts = [
     args: [o.host, o.login, o.type, o.profileUrl, o.avatarUrl ?? null, o.avatar ?? null, o.displayName ?? null, countByOwner.get(`${o.host}/${o.login}`) ?? 0, now],
   })),
 ];
-// Releases per repository (drizzle-kit push creates catalog_release before this runs).
+// Releases per repository. Migration: create catalog_release here, idempotently. drizzle-kit
+// push cannot do it in CI: it stops at an interactive "created or renamed?" prompt because the
+// database still holds legacy tables, and exits without applying anything.
+await db.execute(`CREATE TABLE IF NOT EXISTS catalog_release (
+  repo text NOT NULL, tag text NOT NULL, version text NOT NULL,
+  rolling integer NOT NULL, prerelease integer NOT NULL, antora text NOT NULL,
+  antoraSource text, publishedAt text, installSpec text NOT NULL, assets text NOT NULL,
+  syncedAt integer NOT NULL, PRIMARY KEY (repo, tag))`);
 const releaseRows = new Map<string, { repo: string; r: NonNullable<(typeof entries)[number]['releases']>[number] }>();
 for (const e of entries) {
   const repo = `${e.repositoryOwner}/${e.repositoryName}`.toLowerCase();
