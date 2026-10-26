@@ -28,6 +28,17 @@
   /* Solid brand accent: dark text on orange (white on #FF5F00 fails WCAG AA). */
   --brand: #ff5f00;
   --brand-foreground: #111111;
+  /* Code (inline and blocks): one pairing per scheme. Light: #262626 on #f0f0f0 (13.1:1). */
+  --code: 0 0% 94.1%;
+  --code-foreground: 0 0% 14.9%;
+  --code-border: 0 0% 80%;
+  /* Image lightbox: always a dark stage in both schemes, so its controls use fixed light-on-dark tokens
+     (never the literal text-white / bg-slate utilities that the light-scheme remap flips). */
+  --lightbox-overlay: #111111;
+  --lightbox-fg: #ffffff;
+  --lightbox-btn: #111111;
+  --lightbox-btn-hover: #262626;
+  --lightbox-btn-border: rgb(255 255 255 / 0.6);
   color-scheme: light;
 }
 
@@ -55,6 +66,10 @@
   --chrome-bg: #111111;
   --brand: #ff5f00;
   --brand-foreground: #111111;
+  /* Code: a touch darker than the card so blocks read as inset. #d4d4d4 on #0d0d0d (13.9:1). */
+  --code: 0 0% 5.1%;
+  --code-foreground: 0 0% 83.1%;
+  --code-border: 0 0% 32%;
 }
 
 /* Rubber-band overscroll shows the root background: match the header/footer. */

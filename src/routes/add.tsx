@@ -30,7 +30,7 @@ const manifestExample = `{
   "demoUrl": "https://example.github.io/my-theme/"
 }`;
 
-const code = 'px-1.5 py-0.5 bg-slate-800 rounded text-primary-300 text-[0.9em]';
+const code = 'px-1.5 py-0.5 bg-code text-code-foreground rounded text-[0.9em]';
 
 export default function AddPage() {
   const session = createAsync(() => getSessionData());
@@ -134,12 +134,12 @@ export default function AddPage() {
               in the manifest. The card shows it as a color re-theme. A fork alone doesn't count.
             </li>
           </ul>
-          <pre class="bg-slate-900 rounded-xl p-4 overflow-x-auto text-sm text-slate-300 border border-slate-700/50 mb-6"><code>{manifestExample}</code></pre>
+          <pre class="bg-code text-code-foreground border border-code-border rounded-xl p-4 overflow-x-auto text-sm mb-6"><code>{manifestExample}</code></pre>
           <h3 class="text-lg font-semibold text-white mb-2">Screenshot workflow</h3>
           <p class="text-slate-400 text-sm mb-3">
             Add this GitHub Action to your theme repository to regenerate <code class={code}>preview.png</code> from your live demo:
           </p>
-          <pre class="bg-slate-900 rounded-xl p-4 overflow-x-auto text-sm text-slate-300 border border-slate-700/50 mb-6"><code>{screenshotWorkflow}</code></pre>
+          <pre class="bg-code text-code-foreground border border-code-border rounded-xl p-4 overflow-x-auto text-sm mb-6"><code>{screenshotWorkflow}</code></pre>
           <h3 class="text-lg font-semibold text-white mb-2">Starting points</h3>
           <ul class="list-disc pl-5 space-y-1 text-slate-300 mb-4">
             <li>Valentus: a complete theme with dark mode, good as a reference.</li>

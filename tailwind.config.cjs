@@ -27,6 +27,8 @@ module.exports = {
         muted: { DEFAULT: 'hsl(var(--muted) / <alpha-value>)', foreground: 'hsl(var(--muted-foreground) / <alpha-value>)' },
         accent: { DEFAULT: 'hsl(var(--accent) / <alpha-value>)', foreground: 'hsl(var(--accent-foreground) / <alpha-value>)' },
         card: { DEFAULT: 'hsl(var(--card) / <alpha-value>)', foreground: 'hsl(var(--card-foreground) / <alpha-value>)' },
+        code: { DEFAULT: 'hsl(var(--code) / <alpha-value>)', foreground: 'hsl(var(--code-foreground) / <alpha-value>)', border: 'hsl(var(--code-border) / <alpha-value>)' },
+        lightbox: { overlay: 'var(--lightbox-overlay)', fg: 'var(--lightbox-fg)', btn: 'var(--lightbox-btn)', 'btn-hover': 'var(--lightbox-btn-hover)', 'btn-border': 'var(--lightbox-btn-border)' },
         popover: { DEFAULT: 'hsl(var(--card) / <alpha-value>)', foreground: 'hsl(var(--card-foreground) / <alpha-value>)' },
       },
       borderRadius: {

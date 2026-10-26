@@ -165,7 +165,7 @@ export default function ExtensionCard(props: ExtensionCardProps) {
 
         <Show when={showInstall()}>
           <div class="relative mb-4">
-            <pre class="p-3 bg-slate-900/80 border border-slate-700/50 rounded-lg text-xs text-slate-300 overflow-x-auto font-mono whitespace-pre">
+            <pre class="p-3 bg-code border border-code-border text-code-foreground rounded-lg text-xs overflow-x-auto font-mono whitespace-pre">
               {formatInstallSnippet(props.entry)}
             </pre>
             <button

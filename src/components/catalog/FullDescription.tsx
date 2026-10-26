@@ -5,7 +5,7 @@ import { Card } from '~/components/ui/card';
 export function inline(text: string) {
   return text.split(/(`[^`]+`)/g).map((part) =>
     part.startsWith('`') && part.endsWith('`') && part.length > 2 ? (
-      <code class="font-mono text-[0.9em] px-1 py-0.5 rounded bg-slate-800/80 text-slate-200">{part.slice(1, -1)}</code>
+      <code class="font-mono text-[0.9em] px-1 py-0.5 rounded bg-code text-code-foreground">{part.slice(1, -1)}</code>
     ) : (
       part
     ),

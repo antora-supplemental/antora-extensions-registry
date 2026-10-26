@@ -11,7 +11,8 @@ const SOURCE_LABEL: Record<PreviewImage['source'], string> = {
 };
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5F00] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111111]';
-const NAV_BUTTON = `rounded-md border border-white/40 bg-[#111111] px-3 py-2 text-white hover:border-[#FF5F00] hover:text-[#FF5F00] ${FOCUS}`;
+/** Lightbox controls sit on the always-dark stage: fixed --lightbox-* tokens, so the light-scheme slate/white remap never flips them. */
+const NAV_BUTTON = `rounded-md border border-lightbox-btn-border bg-lightbox-btn px-3 py-2 text-lg leading-none text-lightbox-fg hover:bg-lightbox-btn-hover hover:border-brand hover:text-brand ${FOCUS}`;
 const SWIPE_MIN_PX = 50;
 
 /** Detail-page gallery: a large image with a thumbnail strip. Clicking the image opens an in-page lightbox. */
@@ -45,14 +46,14 @@ export default function PreviewGallery(props: { previews: PreviewImage[]; name: 
           <img src={current().url} onError={previewFallback(current())} alt={label(current())} class="w-full max-h-[28rem] object-contain bg-white dark:bg-[#111111]" loading="lazy" />
         </Dialog.Trigger>
         <Dialog.Portal>
-          <Dialog.Overlay class="fixed inset-0 z-50 bg-[#111111]/95" />
+          <Dialog.Overlay class="fixed inset-0 z-50 bg-lightbox-overlay/95" />
           <div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8">
             <Dialog.Content
-              class="relative flex max-h-full w-full max-w-6xl flex-col text-white outline-none"
+              class="relative flex max-h-full w-full max-w-6xl flex-col text-lightbox-fg outline-none"
               onKeyDown={onKeyDown}
             >
               <div class="mb-3 flex items-center justify-between gap-4">
-                <Dialog.Title class="text-sm font-medium text-white">
+                <Dialog.Title class="text-sm font-medium text-lightbox-fg">
                   {props.name} preview <span aria-live="polite">{index() + 1} / {count()}</span>
                 </Dialog.Title>
                 <Dialog.CloseButton class={NAV_BUTTON} aria-label="Close preview">
@@ -80,8 +81,8 @@ export default function PreviewGallery(props: { previews: PreviewImage[]; name: 
                   </button>
                 </Show>
               </div>
-              <Dialog.Description class="mt-3 text-center text-sm text-white/90">
-                {label(current())} <span class="text-white/70">· {SOURCE_LABEL[current().source]}</span>
+              <Dialog.Description class="mt-3 text-center text-sm text-lightbox-fg">
+                {label(current())} <span class="text-lightbox-fg opacity-80">· {SOURCE_LABEL[current().source]}</span>
               </Dialog.Description>
             </Dialog.Content>
           </div>

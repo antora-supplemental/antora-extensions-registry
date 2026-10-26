@@ -222,7 +222,7 @@ export default function ExtensionDetailPage() {
                       </button>
                     </div>
                     <For each={installGuidance(e())}>{(s) => <p class="text-sm text-slate-300 mb-2 max-w-3xl">{inline(s)}</p>}</For>
-                    <pre tabIndex={0} aria-label="Install snippet" class="p-3 bg-slate-900/80 border border-slate-700/50 rounded-lg text-xs text-slate-300 overflow-x-auto font-mono whitespace-pre">{formatInstallSnippet(e())}</pre>
+                    <pre tabIndex={0} aria-label="Install snippet" class="p-3 bg-code border border-code-border text-code-foreground rounded-lg text-xs overflow-x-auto font-mono whitespace-pre">{formatInstallSnippet(e())}</pre>
                     <a href={INSTALL_GUIDE_URL} target="_blank" rel="noopener noreferrer" class="inline-block mt-3 text-sm font-medium text-primary-400 hover:text-primary-300 hover:underline underline-offset-2">
                       Full installation guide
                     </a>
