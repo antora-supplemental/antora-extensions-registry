@@ -15,7 +15,7 @@
     "apply:registry-topics": "node scripts/apply-registry-topics.mjs --discover",
     "catalog:snapshot": "tsx scripts/build-catalog-snapshot.ts",
     "catalog:sync": "tsx scripts/sync-catalog-db.ts",
-    "test": "tsx --test tests/preview-images.test.ts tests/extension-deps.test.ts tests/bundle-members.test.ts tests/fork-groups.test.ts tests/preview-cache.test.ts tests/layers.test.ts tests/preview-route.test.ts tests/gitlab-owners.test.ts tests/browse-cache.test.ts tests/thumb-actions.test.ts tests/antora-compat.test.ts tests/pkg-compat.test.ts tests/theme-variants.test.ts tests/chunk-error.test.ts tests/password-auth.test.ts tests/catalog-groups.test.ts tests/docs-link.test.ts",
+    "test": "tsx --test tests/preview-images.test.ts tests/extension-deps.test.ts tests/bundle-members.test.ts tests/fork-groups.test.ts tests/preview-cache.test.ts tests/layers.test.ts tests/preview-route.test.ts tests/gitlab-owners.test.ts tests/browse-cache.test.ts tests/thumb-actions.test.ts tests/antora-compat.test.ts tests/pkg-compat.test.ts tests/theme-variants.test.ts tests/chunk-error.test.ts tests/password-auth.test.ts tests/catalog-groups.test.ts tests/docs-link.test.ts tests/stack.test.ts",
     "audit:previews": "tsx scripts/audit-previews.ts"
   },
   "type": "module",

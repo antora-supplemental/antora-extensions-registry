@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '~/co
 import { getSessionData } from '~/app';
 import { authClient } from '~/lib/auth-client';
 import ThemeToggle from '~/components/ThemeToggle';
+import StackCounter from '~/components/StackCounter';
 
 const DEFAULT_DESCRIPTION =
   'Unofficial, community-run catalog of Antora extensions (build-time pipeline extensions, CI checkers and validators, generators, utilities, and UI-side add-ons) and Antora UI themes, with install guidance. Not affiliated with the Antora project.';
@@ -132,6 +133,7 @@ export default function SiteLayout(props: SiteLayoutProps) {
       </nav>
 
       <main>{props.children}</main>
+      <StackCounter />
 
       <footer class="border-t border-slate-700/50 bg-slate-900/50 mt-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

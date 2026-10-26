@@ -11,6 +11,7 @@ import { ColorModeIcons, splitModeTags } from './ColorModeIcons';
 import NewBadge from './NewBadge';
 import LayerBadges from './LayerBadges';
 import PackageTitle from './PackageTitle';
+import StackToggle from './StackToggle';
 import { isBundle, isThemePackage } from '~/lib/layers';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 import { formatInstallSnippet } from '~/lib/ui-modules';
@@ -161,6 +162,7 @@ export default function ExtensionCard(props: ExtensionCardProps) {
           >
             Repository
           </a>
+          <StackToggle id={props.entry.catalogId} />
         </div>
 
         <Show when={showInstall()}>

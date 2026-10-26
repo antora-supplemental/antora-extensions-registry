@@ -6,6 +6,7 @@ import { AntoraBadges, ReleasesTable, SchemeSwatches } from '~/components/catalo
 import SiteLayout from '~/components/SiteLayout';
 import NewBadge from '~/components/catalog/NewBadge';
 import ReportButton from '~/components/catalog/ReportButton';
+import StackToggle from '~/components/catalog/StackToggle';
 import DependencyTree from '~/components/catalog/DependencyTree';
 import LayerBadges from '~/components/catalog/LayerBadges';
 import BundleContents from '~/components/catalog/BundleContents';
@@ -113,6 +114,7 @@ export default function ExtensionDetailPage() {
                       <a href={e().repository} target="_blank" rel="noopener noreferrer" class={buttonVariants({ variant: 'secondary', size: 'sm' })}>
                         Repository
                       </a>
+                      <StackToggle id={e().catalogId} />
                       <ReportButton itemKind="extension" itemId={e().catalogId} itemName={e().name} class="self-center ml-2" />
                     </div>
                   </header>
