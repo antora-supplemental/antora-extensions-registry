@@ -3,6 +3,7 @@ import { MetaProvider } from "@solidjs/meta";
 import { cache, Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { Suspense, type ParentProps } from "solid-js";
+import RouteErrorBoundary from "~/components/RouteErrorBoundary";
 import { getRequestEvent } from "solid-js/web";
 import "./app.css";
 import { auth, type Session } from "~/server/auth";
@@ -17,7 +18,9 @@ export const getSessionData = cache(async (): Promise<Session | null> => {
 function RootLayout(props: ParentProps) {
   return (
     <MetaProvider>
-      <Suspense>{props.children}</Suspense>
+      <RouteErrorBoundary>
+        <Suspense>{props.children}</Suspense>
+      </RouteErrorBoundary>
     </MetaProvider>
   );
 }
