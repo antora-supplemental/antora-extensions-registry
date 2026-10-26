@@ -10,6 +10,7 @@ import { loadExtensionCatalog, loadThemes } from '~/lib/server/catalog';
 import { byFirstListedDesc, isNewListing, NEW_WINDOW_DAYS } from '~/lib/new-items';
 import { entryLayerBoxes, isBundle, LAYERS, UNCLASSIFIED, type LayerBoxId } from '~/lib/layers';
 import { LayerColumn, LayerList, type LayerGroup } from '~/components/catalog/LayerNav';
+import { isListed, variantMatch } from '~/lib/catalog-groups';
 
 const LAYER_BOXES: Array<{ id: LayerBoxId; label: string }> = [...LAYERS.map((l) => ({ id: l.id as LayerBoxId, label: l.label })), { id: UNCLASSIFIED, label: 'Unclassified' }];
 const resultId = (catalogId: string) => `result-${catalogId}`;
@@ -64,8 +65,9 @@ export default function SearchPage() {
     if (!c) return [];
     const q = query().toLowerCase();
     const k = kind();
+    // Canonical entries only; a hit on a variant's title or keywords returns its canonical entry (with a note).
     const hits = [...c.modules, ...c.recipes].filter(
-      (e) => (!k || (k === 'bundle' ? isBundle(e) : e.type === k)) && matches(q, [displayTitle(e), e.name, e.id, e.description, e.titleDisambiguator ?? ''], e.tags) && (!newOnly() || isNewListing(e.firstListedAt)),
+      (e) => isListed(e) && (!k || (k === 'bundle' ? isBundle(e) : e.type === k)) && (matches(q, [displayTitle(e), e.name, e.id, e.description, e.titleDisambiguator ?? ''], e.tags) || Boolean(variantMatch(e, q))) && (!newOnly() || isNewListing(e.firstListedAt)),
     );
     return newOnly() ? hits.sort(byFirstListedDesc) : hits;
   });
@@ -192,6 +194,13 @@ export default function SearchPage() {
                         class={`scroll-mt-24 rounded-xl transition-shadow ${highlighted() === entry.catalogId ? 'ring-2 ring-primary-600' : ''}`}
                       >
                         <ExtensionCard entry={entry} />
+                        <Show when={variantMatch(entry, query().toLowerCase())}>
+                          {(v) => (
+                            <p class="mt-1 px-1 text-xs text-slate-400" data-variant-match>
+                              Matches variant <A href={`/extensions/${v().catalogId}`} class="text-primary-400 hover:text-primary-300 underline">{v().title}</A>
+                            </p>
+                          )}
+                        </Show>
                       </div>
                     )}
                   </For>

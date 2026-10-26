@@ -25,7 +25,8 @@ export function resolveTitleClaims<T extends ExtensionCatalogEntry>(entries: T[]
   for (const e of entries) {
     delete e.titleDisambiguator;
     delete e.titleInUseBy;
-    if (e.forkOf) continue;
+    // Forks and superseded entries make no claim (a replaced package is not a title clash).
+    if (e.forkOf || e.supersededBy || e.replacedBy) continue;
     const k = titleKey(displayTitle(e));
     if (!k) continue;
     const at = seen.get(`${k}\t${e.catalogId}`) ?? now;

@@ -1,5 +1,6 @@
 import { pickTitle } from '~/lib/package-title';
 import { readRelations } from '~/lib/pkg-compat';
+import { readGroupDecl } from '~/lib/catalog-groups';
 import { matchPackage } from './bundle-members';
 import { liveImages } from '~/lib/preview-check';
 /**
@@ -214,6 +215,7 @@ export function applyRepoMetadata(entry: ExtensionCatalogEntry, meta: RepoMetada
   if (meta.homepage) out.homepage = meta.homepage;
   if (meta.title && !out.title) out.title = meta.title;
   if (typeof d.upstream === 'string' && d.upstream.trim()) out.upstream = d.upstream.trim();
+  Object.assign(out, readGroupDecl(d));
   if (!out.layers?.length) {
     const declaredLayers = normalizeLayers(d.layers ?? d.layer);
     if (declaredLayers.length) {

@@ -7,6 +7,8 @@ import { isNewListing } from '~/lib/new-items';
 import { readCatalogOverlay } from '~/lib/catalog-db';
 import { applyOverlay, DEFAULT_FEATURED } from '~/lib/catalog-overlay';
 import { classifyEntry } from '~/lib/layers';
+import { applyGroups, isListed } from '~/lib/catalog-groups';
+import { CURATED_GROUPS } from '~/data/catalog-groups';
 import type { Theme } from '~/types/theme';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 
@@ -26,9 +28,12 @@ export const loadExtensionCatalog = cache(async (): Promise<ExtensionCatalogPayl
       buildFullExtensionCatalog({ includeTopicDiscovery: true }),
       readCatalogOverlay(),
     ]);
+    // Variants and their canonical entry can sit in different lists, so group across both, then split back.
+    const recipeIds = new Set(catalog.recipes.map((e) => e.catalogId));
+    const grouped = applyGroups(applyOverlay([...catalog.modules, ...catalog.recipes].map(classifyEntry), overlay), CURATED_GROUPS);
     return {
-      modules: applyOverlay(catalog.modules.map(classifyEntry), overlay),
-      recipes: applyOverlay(catalog.recipes.map(classifyEntry), overlay),
+      modules: grouped.filter((e) => !recipeIds.has(e.catalogId)),
+      recipes: grouped.filter((e) => recipeIds.has(e.catalogId)),
       discoveredRepoCount: catalog.discoveredRepoCount,
       catalogError: null,
       featured: overlay.featured,
@@ -62,12 +67,14 @@ export interface SearchIndexItem {
   href: string;
   /** First listed within NEW_WINDOW_DAYS. */
   isNew: boolean;
+  /** Variants nested under this canonical entry: a match on one returns this entry. */
+  variants?: Array<{ name: string; keywords: string[] }>;
 }
 
 export const loadSearchIndex = cache(async (): Promise<SearchIndexItem[]> => {
   'use server';
   const [catalog, themes] = await Promise.all([loadExtensionCatalog(), loadThemes()]);
-  const ext = [...catalog.modules, ...catalog.recipes].map((e) => ({
+  const ext = [...catalog.modules, ...catalog.recipes].filter(isListed).map((e) => ({
     kind: 'extension' as const,
     type: e.bundle ? 'bundle' : e.type,
     id: e.catalogId,
@@ -75,6 +82,7 @@ export const loadSearchIndex = cache(async (): Promise<SearchIndexItem[]> => {
     ...(e.titleDisambiguator ? { disambiguator: e.titleDisambiguator } : {}),
     href: `/extensions/${e.catalogId}`,
     isNew: isNewListing(e.firstListedAt),
+    ...(e.variants?.length ? { variants: e.variants.map((v) => ({ name: v.title, keywords: v.keywords ?? [] })) } : {}),
   }));
   // Theme detail pages live at /themes/<owner>/<repo>.
   const th = themes.map((t) => ({

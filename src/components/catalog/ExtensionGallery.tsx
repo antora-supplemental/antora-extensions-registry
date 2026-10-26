@@ -6,6 +6,7 @@ import type { ExtensionCatalogEntry } from '~/types/ui-module';
 import { hasDarkModeAddonTopic } from '~/data/github-topics';
 import ExtensionCard from './ExtensionCard';
 import { collapseForks } from '~/lib/fork-groups';
+import { isListed, variantMatch } from '~/lib/catalog-groups';
 
 interface ExtensionGalleryProps {
   initialQuery?: string;
@@ -31,7 +32,8 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
   const [sortBy, setSortBy] = createSignal<'name' | 'newest'>('name');
   const [appearanceFilter, setAppearanceFilter] = createSignal<ExtensionAppearanceFilter>('all');
 
-  const allEntries = createMemo(() => [...props.modules, ...props.recipes]);
+  /** Canonical entries only: variants are listed on their canonical page, superseded entries are hidden. */
+  const allEntries = createMemo(() => [...props.modules, ...props.recipes].filter(isListed));
 
   const allTags = createMemo(() => {
     const tags = new Set<string>();
@@ -58,7 +60,8 @@ export default function ExtensionGallery(props: ExtensionGalleryProps) {
           entry.name.toLowerCase().includes(query) ||
           entry.description.toLowerCase().includes(query) ||
           entry.id.toLowerCase().includes(query) ||
-          entry.catalogId.toLowerCase().includes(query),
+          entry.catalogId.toLowerCase().includes(query) ||
+          Boolean(variantMatch(entry, query)),
       );
     }
 

@@ -624,9 +624,10 @@ export async function buildExtensionCatalog(
         ? list.map((e) => {
             const pi = e.manifestPath ? perPkg.get(e.manifestPath) : undefined;
             if (!pi) return e;
-            const { relations: _repoRel, releases: _repoRels, antora: _repoAntora, colorSchemes: _repoCs, ...rest } = e;
+            const { relations: _repoRel, releases: _repoRels, antora: _repoAntora, colorSchemes: _repoCs, variantOf: _v, supersededBy: _s, variantLabel: _l, ...rest } = e;
             return {
               ...rest,
+              ...(pi.group ?? {}),
               ...(pi.relations ? { relations: pi.relations } : {}),
               ...(pi.releases.length ? { releases: pi.releases } : {}),
               ...(pi.antora.length ? { antora: pi.antora } : {}),

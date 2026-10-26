@@ -190,6 +190,40 @@ html.dark-theme[data-scheme="orangedark"] { ... }
 Swatch colors come from the scheme's own block: `light` is `:root`, `dark` is `html.dark-theme`, and any other id is `html[data-scheme="id"]` or `html.dark-theme[data-scheme="id"]`.
 The registry takes up to four hex custom properties from it: canvas or background, the dominant or accent color, the link color, and the text color.
 
+== Canonical entries and variants
+
+One thing, one listing. When several packages are ways of using the same feature (a module, a one-require extension, a recipe), pick one *canonical* entry and nest the others under it. When a package is replaced, point it at its replacement.
+
+[cols="1,3"]
+|===
+|Field |Meaning
+
+|`variantOf`
+|`host/owner/repo/package` (or the catalog id) of the canonical entry, for example `github.com/antora-supplemental/antora-ui-chassis/light-dark-mode`. The entry is left out of search, browse, Featured and the gallery, keeps its own URL, and its page shows "Part of <canonical title>". The canonical page lists it under *Ways to use it*.
+
+|`variantLabel`
+|Optional. One line for the *Ways to use it* list (else the package `description`).
+
+|`supersededBy`
+|Id of the entry that replaces this one. The entry is hidden from listings and search, makes no title claim (so it is never a title clash), and its page shows "Replaced by <title>" with a link. Use it for deprecated or compatibility repos, not for alternatives that are still maintained.
+|===
+
+A search that matches a variant's title, package name or keywords returns the canonical entry, with a note naming the matching variant. Chains resolve to the final entry; an unknown or circular target is ignored and the entry stays listed.
+
+In a monorepo, set the fields in each package's own `package.json`. A repository whose entries need different values, or one you do not own, is grouped by the registry's curated list (`src/data/catalog-groups.ts`); declared values win over curated ones.
+
+[source,json]
+----
+{
+  "name": "antora-dark-mode",
+  "antoraRegistry": {
+    "title": "Antora Dark Mode",
+    "variantOf": "github.com/antora-supplemental/antora-ui-chassis/light-dark-mode",
+    "variantLabel": "One require for the Default UI: toggle, palette and paint in a single Antora extension"
+  }
+}
+----
+
 == Example: a compose pack
 
 [source,markdown]

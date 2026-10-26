@@ -94,6 +94,20 @@ export interface ExtensionCatalogEntry {
   forkOf?: ForkInfo;
   /** Declared `antoraRegistry.upstream` (cross-host fork grouping). */
   upstream?: string;
+  /** Declared (or curated) `variantOf`: `host/owner/repo/package` of the canonical entry this one nests under. */
+  variantOf?: string;
+  /** Declared (or curated) `supersededBy`: the entry that replaces this one (hidden from listings, banner on its page). */
+  supersededBy?: string;
+  /** One-line description shown in the canonical entry's "Ways to use it" list (else `description`). */
+  variantLabel?: string;
+  /** Where variantOf/supersededBy came from: the repository's antoraRegistry block or the registry's curated list. */
+  groupSource?: 'declared' | 'curated';
+  /** Resolved at read time: the canonical entry this variant belongs to. */
+  partOf?: GroupLink;
+  /** Resolved at read time: the entry that replaces this one. */
+  replacedBy?: GroupLink;
+  /** Resolved at read time on canonical entries: the variants that nest under it. */
+  variants?: VariantLink[];
   /** Git host of the repository; omitted for github.com. */
   repositoryHost?: string;
   /** Owner (user or organization) metadata, filled by the catalog sync. */
@@ -106,6 +120,19 @@ export interface ExtensionCatalogEntry {
   /** Full description: `antoraRegistry.longDescription`, else the README intro. Plain text, paragraphs separated by blank lines. */
   longDescription?: string;
   longDescriptionSource?: 'declared' | 'readme';
+}
+
+export interface GroupLink {
+  catalogId: string;
+  title: string;
+}
+
+export interface VariantLink extends GroupLink {
+  type: string;
+  /** variantLabel, else the variant's description. */
+  description: string;
+  /** Lowercase name, package name, id and tags, so a search for a variant finds its canonical entry. */
+  keywords?: string[];
 }
 
 export type LayerId = 'engine' | 'chassis' | 'body-kit' | 'paint' | 'bolt-on';
@@ -134,6 +161,12 @@ export interface PreviewImage {
 export interface AntoraRegistryMetadata {
   /** Upstream repository URL when this repo continues another one on a different host (e.g. a GitHub copy of a GitLab project). Used for fork grouping. */
   upstream?: string;
+  /** `host/owner/repo/package` of the canonical entry this package nests under ("Ways to use it"). */
+  variantOf?: string;
+  /** Id of the entry that replaces this one; the registry hides this entry and links to the replacement. */
+  supersededBy?: string;
+  /** One line for the canonical entry's "Ways to use it" list. */
+  variantLabel?: string;
   layers?: string[] | string;
   layer?: string;
   /** `true`, or the member package names. */

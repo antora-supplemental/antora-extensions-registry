@@ -7,6 +7,7 @@ import SiteLayout from '~/components/SiteLayout';
 import ThemeCard from '~/components/catalog/ThemeCard';
 import { loadExtensionCatalog, loadThemes } from '~/lib/server/catalog';
 import FeaturedExtension from '~/components/catalog/FeaturedExtension';
+import { isListed } from '~/lib/catalog-groups';
 
 export default function Home() {
   // deferStream: hold the SSR stream until the data resolves so the cards render in place in the first HTML
@@ -17,7 +18,10 @@ export default function Home() {
     const c = catalog();
     if (!c) return [];
     const all = [...c.modules, ...c.recipes];
-    return c.featured.map((id) => all.find((e) => e.catalogId === id)).filter((e): e is NonNullable<typeof e> => Boolean(e));
+    // A featured variant or superseded entry shows its canonical entry instead (once).
+    const canon = (e: (typeof all)[number] | undefined) => (e && !isListed(e) ? all.find((x) => x.catalogId === (e.partOf ?? e.replacedBy)!.catalogId) : e);
+    const picked = c.featured.map((id) => canon(all.find((e) => e.catalogId === id))).filter((e): e is NonNullable<typeof e> => Boolean(e));
+    return picked.filter((e, i) => picked.indexOf(e) === i);
   };
   const allEntries = () => (catalog() ? [...catalog()!.modules, ...catalog()!.recipes] : []);
 

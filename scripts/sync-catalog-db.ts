@@ -43,6 +43,20 @@ const catalog = await buildFullExtensionCatalog({ includeTopicDiscovery: true, l
 const entries = [...catalog.modules, ...catalog.recipes];
 if (entries.length === 0) throw new Error('Catalog came back empty; refusing to wipe the database.');
 
+// Canonical entries: curated variantOf/supersededBy fill entries whose repo cannot declare them (read time resolves the rest).
+{
+  const { applyGroups } = await import('../src/lib/catalog-groups');
+  const { CURATED_GROUPS } = await import('../src/data/catalog-groups');
+  const grouped = applyGroups(entries, CURATED_GROUPS);
+  grouped.forEach((g, i) => {
+    if (g.groupSource !== 'curated') return;
+    for (const k of ['variantOf', 'supersededBy', 'variantLabel', 'groupSource'] as const) if (g[k]) (entries[i] as unknown as Record<string, unknown>)[k] = g[k];
+  });
+  const variants = grouped.filter((g) => g.partOf).length;
+  const replaced = grouped.filter((g) => g.replacedBy).length;
+  console.log(`[registry] canonical entries: ${variants} variants nested, ${replaced} superseded`);
+}
+
 // Display-title collisions (disambiguator on cards and search) and npm publication (cheap lookup, cached in the DB rows).
 {
   const { resolveTitleClaims, annotateNpm } = await import('../src/lib/title-collisions');

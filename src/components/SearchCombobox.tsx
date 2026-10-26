@@ -7,6 +7,16 @@ import { cn } from '~/lib/utils';
 
 const MAX_SUGGESTIONS = 8;
 
+/** Best variant match (title or keyword substring), scored just after direct substring hits. */
+function variantHit(q: string, item: SearchIndexItem): { s: number; name: string } | null {
+  for (const v of item.variants ?? []) {
+    const n = v.name.toLowerCase();
+    if (n.startsWith(q)) return { s: 0.5, name: v.name };
+    if (n.includes(q) || v.keywords.some((k) => k.includes(q))) return { s: 3.5, name: v.name };
+  }
+  return null;
+}
+
 /** Prefix beats substring beats in-order (fuzzy) character match; null when nothing matches. */
 function score(q: string, item: SearchIndexItem): number | null {
   const name = item.name.toLowerCase();
@@ -48,14 +58,18 @@ export default function SearchCombobox() {
       return SEARCH_CATEGORIES.map((c) => ({ key: c.href, label: c.label, meta: 'Category', href: c.href }));
     }
     return index()
-      .map((item) => ({ item, s: score(q, item) }))
-      .filter((r): r is { item: SearchIndexItem; s: number } => r.s !== null)
+      .map((item) => {
+        const direct = score(q, item);
+        const via = direct !== null && direct <= 3 ? null : variantHit(q, item);
+        return { item, s: via && (direct === null || via.s < direct) ? via.s : direct, via: via && (direct === null || via.s < direct) ? via.name : undefined };
+      })
+      .filter((r): r is { item: SearchIndexItem; s: number; via: string | undefined } => r.s !== null)
       .sort((a, b) => a.s - b.s || a.item.name.localeCompare(b.item.name))
       .slice(0, MAX_SUGGESTIONS)
-      .map(({ item }) => ({
+      .map(({ item, via }) => ({
         key: `${item.kind}:${item.id}`,
         label: item.name,
-        meta: (item.disambiguator ? `${item.disambiguator} · ` : '') + (item.kind === 'theme' ? 'Theme' : (EXTENSION_KIND_LABELS[item.type]?.replace(/s$/, '') ?? 'Extension')),
+        meta: (via ? `matches ${via} · ` : '') + (item.disambiguator ? `${item.disambiguator} · ` : '') + (item.kind === 'theme' ? 'Theme' : (EXTENSION_KIND_LABELS[item.type]?.replace(/s$/, '') ?? 'Extension')),
         href: item.href,
         isNew: item.isNew,
       }));

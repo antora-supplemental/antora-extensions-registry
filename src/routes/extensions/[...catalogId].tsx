@@ -80,9 +80,23 @@ export default function ExtensionDetailPage() {
                       <NewBadge firstListedAt={e().firstListedAt} />
                     </div>
                     <div class="mb-4"><PackageTitle entry={e()} as="h1" link={false} titleClass="text-3xl lg:text-4xl font-bold text-white break-words" /><p class="mt-1 font-mono text-sm text-slate-500 break-all" title="Package name">{rawPackageName(e())}<Show when={e().npmName}><span class="ml-2 font-sans text-xs">· also on <a href={`https://www.npmjs.com/package/${e().npmName}`} target="_blank" rel="noopener noreferrer" class="underline hover:text-slate-300">npm</a></span></Show></p>
-                    <Show when={e().titleInUseBy}>
+                    <Show when={e().titleInUseBy && !e().replacedBy}>
                       <p class="mt-2 rounded border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs text-amber-300" role="note">Title already in use by <A href={`/extensions/${e().titleInUseBy}`} class="underline">an earlier package</A>. Authors: set a unique <code>antoraRegistry.title</code> in package.json.</p>
                     </Show></div>
+                    <Show when={e().replacedBy}>
+                      {(r) => (
+                        <p class="mt-3 mb-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-200" role="note" data-replaced-by>
+                          Replaced by <A href={`/extensions/${r().catalogId}`} class="font-semibold underline">{r().title}</A>. This entry is kept for existing installs and is hidden from search.
+                        </p>
+                      )}
+                    </Show>
+                    <Show when={e().partOf}>
+                      {(p) => (
+                        <p class="mt-3 mb-3 rounded-lg border border-primary-500/40 bg-primary-500/10 px-3 py-2 text-sm text-slate-200" role="note" data-part-of>
+                          Part of <A href={`/extensions/${p().catalogId}`} class="font-semibold text-primary-400 hover:text-primary-300 underline">{p().title}</A>
+                        </p>
+                      )}
+                    </Show>
                     <p class="text-slate-300 text-lg max-w-3xl">{e().description}</p>
                     <LayerBadges entry={e()} class="mt-3" />
                     <div class="mt-3 flex flex-wrap items-center gap-2"><AntoraBadges entry={e()} /></div>
@@ -94,6 +108,23 @@ export default function ExtensionDetailPage() {
                       <ReportButton itemKind="extension" itemId={e().catalogId} itemName={e().name} class="self-center ml-2" />
                     </div>
                   </header>
+
+                  <Show when={e().variants?.length}>
+                    <section class="mb-8 rounded-xl border border-slate-700/60 bg-slate-800/30 p-5" aria-labelledby="ways-heading" data-ways-to-use>
+                      <h2 id="ways-heading" class="text-xl font-semibold text-white mb-3">Ways to use it</h2>
+                      <ul class="space-y-2">
+                        <For each={e().variants}>
+                          {(v) => (
+                            <li class="text-sm text-slate-300">
+                              <A href={`/extensions/${v.catalogId}`} class="font-semibold text-primary-400 hover:text-primary-300">{v.title}</A>
+                              <span class="ml-2 text-xs text-slate-500">{v.type}</span>
+                              <span class="block text-slate-400">{v.description}</span>
+                            </li>
+                          )}
+                        </For>
+                      </ul>
+                    </section>
+                  </Show>
 
                   <Show when={e().longDescription}>
                     <FullDescription text={e().longDescription!} repository={e().repository} />
