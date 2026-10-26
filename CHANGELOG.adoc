@@ -2,6 +2,10 @@
 
 == Unreleased
 
+* Default UI with light/dark mode (`gitlab.com/AMDphreak/antora-ui-default`, branch `feat/root-theme-transition`) is indexed and takes the home page's Default UI slot in Featured Themes, with its light and dark scheme swatches. The stock Default UI's page shows a generic "Also available with light/dark mode" link (curated `variantOf` on theme entries); the fork's schemes stay on the fork. GitLab-hosted packages now get the same repo-level extras as GitHub ones: `antoraRegistry.antora`, relations and contracts, and color schemes. Curated theme entries can set a forge `host` and their own preview image.
+* Header Themes link: the light-mode rainbow is full strength (no darkening toward the text color); dark mode is unchanged.
+* Preview screenshots are captured with scrollbars hidden and no scrollbar gutter; the Skittles preview was regenerated.
+
 * Package-to-package compatibility: `antoraRegistry` `requires`/`worksWith`/`conflictsWith` and `provides`/`uses` contracts, computed at sync into the snapshot and a new `catalog_compat` table. Detail pages show *Works with* (declared, curated, guaranteed, likely, with reasoning tooltips), *Conflicts with*, alternatives in the same layer, and an Antora-version overlap warning. Curated seeds cover the chassis packages and the stock Default UI.
 
 * Scheme swatches and light/dark circles now always render in label order (light, both, dark, other, then declared order) via one shared sort.

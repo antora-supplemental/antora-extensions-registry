@@ -1,11 +1,11 @@
 import { eq, desc } from 'drizzle-orm';
 import { sampleThemes } from '~/data/themes';
-import { knownThemeRepos } from '~/data/known-theme-repos';
+import { knownThemeRepos, knownThemeRepoUrl } from '~/data/known-theme-repos';
 
 /** Curated order first (Default UI leads), then everything else by stars. */
 function featuredRank(repoUrl: string): number {
   const i = knownThemeRepos.findIndex(
-    (r) => `https://github.com/${r.owner}/${r.repo}`.toLowerCase() === repoUrl.toLowerCase(),
+    (r) => knownThemeRepoUrl(r).toLowerCase() === repoUrl.toLowerCase(),
   );
   return i < 0 ? Number.MAX_SAFE_INTEGER : i;
 }

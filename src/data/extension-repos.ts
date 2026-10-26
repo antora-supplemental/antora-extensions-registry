@@ -60,4 +60,13 @@ export const knownExtensionRepos: KnownExtensionRepo[] = [
     discoveredVia: 'curated',
     githubTopics: [ANTORA_TOPICS.EXTENSION],
   },
+  {
+    // Default UI with light/dark mode: fork of antora/antora-ui-default; dark mode lives on this branch.
+    host: 'gitlab.com',
+    owner: 'AMDphreak',
+    repo: 'antora-ui-default',
+    branch: 'feat/root-theme-transition',
+    discoveredVia: 'curated',
+    githubTopics: [ANTORA_TOPICS.THEME, 'antora-light-theme', 'antora-dark-theme'],
+  },
 ];

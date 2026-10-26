@@ -1,6 +1,6 @@
 import { A, Navigate, createAsync, useParams } from '@solidjs/router';
 import { Title } from '@solidjs/meta';
-import { createMemo, Show, Suspense } from 'solid-js';
+import { createMemo, For, Show, Suspense } from 'solid-js';
 import SiteLayout from '~/components/SiteLayout';
 import NewBadge from '~/components/catalog/NewBadge';
 import ReportButton from '~/components/catalog/ReportButton';
@@ -10,6 +10,7 @@ import { cn } from '~/lib/utils';
 import { THEME_APPEARANCE_LABELS } from '~/lib/appearance-filter';
 import { loadExtensionCatalog, loadThemes } from '~/lib/server/catalog';
 import { themeRepoPath } from '~/lib/theme-href';
+import { themeVariantsOf } from '~/data/known-theme-repos';
 
 /** Theme detail page. When the theme's repo is also a catalog package, the package page is the detail page. */
 export default function ThemeDetailPage() {
@@ -46,6 +47,9 @@ export default function ThemeDetailPage() {
                     <p class="text-slate-400 mb-4">by {t().author} · ★ {t().stars}</p>
                     <img src={t().previewImage} alt={`Preview of ${t().name}`} class="w-full rounded-xl border border-slate-700/50 mb-6" />
                     <p class="text-slate-300 mb-4">{t().description}</p>
+                    <For each={themeVariantsOf(key())}>
+                      {(v) => <p class="mb-4"><A href={v.href} class="text-primary-400 hover:text-primary-300 font-medium">{v.label} →</A></p>}
+                    </For>
                     <Show when={t().appearance}>{(a) => <p class="text-sm text-slate-400 mb-4">{THEME_APPEARANCE_LABELS[a()]}</p>}</Show>
                     <div class="flex flex-wrap gap-2 mb-6">{t().tags.filter((x) => x !== 'theme').map((x) => <Badge>{x}</Badge>)}</div>
                     <div class="flex gap-3 items-center">

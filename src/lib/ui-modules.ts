@@ -1,3 +1,6 @@
+import { antoraRepoDefault } from '~/lib/antora-compat';
+import { parseColorSchemes, type ColorScheme } from '~/lib/color-schemes';
+import { readRelations } from '~/lib/pkg-compat';
 import { fetchRepoReleaseInfo } from '~/lib/repo-releases';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -497,6 +500,22 @@ export function upstreamFork(e: Pick<ExtensionCatalogEntry, 'upstream'>): ForkIn
   return source ? { parent: source, source } : undefined;
 }
 
+/** package.json antoraRegistry extras read through a forge's raw-file fetcher. */
+async function gitlabExtras(fetchText: (p: string) => Promise<string | null>) {
+  let pkg: any = null;
+  try { pkg = JSON.parse((await fetchText('package.json')) ?? 'null'); } catch { pkg = null; }
+  const antora = antoraRepoDefault(pkg);
+  const decl = pkg?.antoraRegistry?.colorSchemes;
+  const paths: string[] = (Array.isArray(decl) ? decl : decl ? [decl] : []).filter((p: unknown): p is string => typeof p === 'string').slice(0, 3);
+  const colorSchemes: ColorScheme[] = [];
+  for (const p of paths) {
+    const css = await fetchText(p.replace(/^\.?\//, ''));
+    if (css) colorSchemes.push(...parseColorSchemes(css));
+  }
+  const relations = readRelations(pkg?.antoraRegistry ?? pkg?.['antora-registry']);
+  return { antora, colorSchemes, relations };
+}
+
 /** GitLab project (gitlab.com or self-hosted): package.json-listed extension, same enrichment as GitHub. */
 async function indexGitLabRepo(ref: KnownExtensionRepo): Promise<ExtensionCatalogEntry[] | null> {
   const host = ref.host!.toLowerCase();
@@ -526,8 +545,13 @@ async function indexGitLabRepo(ref: KnownExtensionRepo): Promise<ExtensionCatalo
     return null;
   }
   const forkOf = fields.fork ? forkInfoFrom(fields, null) : upstreamFork(entry);
+  // Same repo-level extras as GitHub (no releases API here): Antora default, relations, declared color schemes.
+  const extras = await gitlabExtras((p) => fetchGitLabRaw(host, ref.owner, ref.repo, branch, p));
   return [{
+    ...(extras.relations ? { relations: extras.relations } : {}),
     ...entry,
+    ...(extras.antora.length ? { antora: extras.antora } : {}),
+    ...(extras.colorSchemes.length ? { colorSchemes: extras.colorSchemes } : {}),
     catalogId: `${host}/${ref.owner}/${ref.repo}`.toLowerCase() + `/${entry.id}`,
     repositoryHost: host,
     ...(forkOf ? { forkOf } : {}),
