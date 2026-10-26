@@ -1,0 +1,289 @@
+= Plugin Commands for Antora 4 (antora-solid)
+:navtitle: Antora 4 plugin commands spec
+:description: Design spec v0.1 for a native extension-command API in Antora 4 (codename antora-solid), so extensions can register CLI subcommands such as antora reg install. Covers discovery, registration, namespacing, help and completion, lifecycle and context, trust, and how antorareg becomes a plugin.
+:page-version: v0.1
+:revdate: 2026-10-26
+:toc: macro
+:toclevels: 2
+
+[IMPORTANT]
+.Source of truth
+====
+Spec version v0.1, recorded 2026-10-26. This is the source of truth for the extension-command API proposal for Antora 4 (antora-solid). Change it here, and add a changelog bullet.
+Related: xref:design/antorareg-cli-spec.adoc[antorareg CLI spec]. Antora 4 architecture: the antora-solidstart repo and the hub proposal `proposals/antora-next-shell.adoc` in antora-supplemental/docs.
+====
+
+_Design spec v0.1. Antora 3 has no way for an extension to add a CLI subcommand, and the upstream maintainers deferred Ryan's earlier proposal. This spec defines the API for the Antora 4 line (antora-solid), written so that it could also be offered upstream._
+
+toc::[]
+
+[#context]
+== Context
+
+Antora 4 (antora-solid) as recorded in the antora-solidstart notes:
+
+* A *Node orchestrator* (the build-time compiler) reads git sources and the playbook and emits a content manifest.
+* A *SolidStart reader shell* serves the manifest.
+* *asciidoctor-d* converts AsciiDoc over a CLI or IPC.
+
+The orchestrator owns the `antora` CLI, so command registration belongs there. Extensions on the Antora 4 line are a parallel SemVer line (`+antora.4` build metadata, or a `/next` entry point) gated by the playbook `runtime`.
+
+Antora 3 today: `antora` has `generate` only. Extensions register through `register(context)` and listen to generator events. There's no hook into the commander program, so tools like `antorareg` must be standalone binaries.
+
+[#principles]
+== Principles and decisions
+
+[NOTE]
+.Core call
+====
+Commands are declared statically and loaded lazily. Antora can list, namespace and complete every plugin command without running any plugin code. Code runs only when the user invokes that command.
+====
+
+* *Declare, then load*: Each package's manifest lists its commands. The entry module is imported only on invocation.
+* *Namespaced by default*: Plugin commands live under a namespace (`antora reg ...`). Built-in commands always win.
+* *Small context, no build*: A command gets the parsed playbook, a logger, paths and a cache, not a generator run. It may ask for a build explicitly.
+* *Same trust as extensions*: A command is code the user chose to install. There's no sandbox claim we can't keep, but there are clear consent and visibility rules.
+
+[cols="1,1",options="header"]
+|===
+|Decision |Status
+
+|Static declaration in `package.json` `antora.commands` |Proposed
+|Discovery from the playbook plus project-local installed packages |Proposed
+|Namespace required, e.g. `reg`; built-ins reserved |Proposed
+|No full build in the command context; `context.build()` on request |Proposed
+|`antorareg` ships as both a standalone binary and an Antora 4 plugin from one core |Decided in direction
+|===
+
+[#prior-art]
+== How other CLIs do it
+
+[cols="1,2,2,2",options="header"]
+|===
+|Tool |Discovery |Registration |Takeaway
+
+|git
+|Any `git-<name>` executable on `PATH`
+|None. The binary is the command. `git help <name>` opens its man page.
+|Zero coupling and language-agnostic, but no shared context, no completion metadata, and `PATH` is a trust boundary nobody thinks about.
+
+|cargo
+|`cargo-<name>` on `PATH` (usually from `cargo install`)
+|None. Cargo runs it with `<name>` as the first argument.
+|The same as git, plus a convention for passing the subcommand name. Works well because `cargo install` is the one way to get them.
+
+|npm / yarn
+|npm: none beyond `npx` and scripts. Yarn Berry: plugins listed in `.yarnrc.yml`
+|Yarn: a plugin module exports `commands` (clipanion classes) and `hooks`
+|Project-scoped, lockfile-pinned plugin lists are reproducible. The downside is that Yarn loads all plugins eagerly.
+
+|oclif
+|`oclif.plugins` in `package.json` plus user plugins installed with `plugins:install`
+|A manifest (`oclif.manifest.json`) lists commands, flags and descriptions. Command classes load lazily.
+|The best fit: a static manifest drives help and completion without loading code. Namespaced topics. Hooks (`init`, `prerun`).
+|===
+
+We take oclif's manifest and lazy loading, Yarn's project-scoped list, and git/cargo's fallback for a non-JS command (an `exec` entry).
+
+[#discovery]
+== Discovery
+
+Sources, in order:
+
+. *Built-ins* (`generate`, `serve`, `help`, `version`...). Reserved.
+. *Playbook*: `antora.extensions[]` entries whose package declares `antora.commands`. Commands are available only when a playbook is found. This is the default, and it matches how extensions are enabled today.
+. *Project-installed packages*: packages in the project's `node_modules` or the `antorareg` vendor dir (`.antorareg/`) that declare commands and are listed in `antora.commands.enable` in the playbook. This covers tools you want before they're in the playbook, such as `antora reg install` on a fresh project.
+. *User-global* (optional, off by default): `~/.config/antora/commands.yml` listing packages by path. Needed so `antora reg init` works with no playbook.
+
+Antora builds a command index from the manifests and caches it keyed by the lockfile or `package.json` hashes, so startup cost doesn't grow with plugin count.
+
+[#api]
+== Registration API
+
+=== Static declaration
+
+[source,json]
+----
+{
+  "name": "@antora-supplemental/antorareg",
+  "antora": {
+    "runtime": ">=4.0.0",
+    "commands": {
+      "namespace": "reg",
+      "entry": "./dist/commands.js",
+      "list": [
+        { "name": "install", "summary": "Add a registry package to the playbook",
+          "args": [{ "name": "id", "variadic": true }],
+          "options": [{ "flags": "--source <kind>", "choices": ["git", "asset", "npm"] },
+                      { "flags": "--dry-run" }] },
+        { "name": "list", "summary": "Show registry packages in this playbook" }
+      ]
+    }
+  }
+}
+----
+
+=== Runtime module
+
+[source,js]
+----
+// dist/commands.js
+export default function registerCommands (registry) {
+  registry.command('install', async (args, options, context) => { /* ... */ })
+  registry.command('list', async (_args, options, context) => { /* ... */ })
+}
+----
+
+Antora checks at load time that the runtime registration matches the static manifest. A mismatch is a load error naming the package, which stops drift between help text and behaviour.
+
+An `exec` form supports commands written in other languages, git style:
+
+[source,json]
+----
+{ "name": "lint", "exec": "./bin/asciidoc-lint", "summary": "Lint sources" }
+----
+
+Antora runs it with the arguments and passes context through `ANTORA_PLAYBOOK`, `ANTORA_CACHE_DIR`, `ANTORA_LOG_FORMAT`, plus a JSON context file at `ANTORA_CONTEXT_FILE`.
+
+[#namespacing]
+== Namespacing and collisions
+
+* Every plugin needs a `namespace` (`[a-z][a-z0-9-]*`). Commands are invoked as `antora <namespace> <command>`.
+* Built-in names and a reserved list (`generate`, `serve`, `help`, `version`, `init`, `config`, `cache`, `plugin`, `ext`) can't be namespaces.
+* If two packages claim the same namespace, both are disabled for that namespace and Antora prints both package IDs and how to fix it: `antora.commands.alias: { reg2: <package> }` in the playbook.
+* A plugin may ask for a top-level alias (for example `antora install` for `reg install`). Aliases apply only when the user opts in through `antora.commands.alias` in the playbook. They're never automatic.
+* The registry checks namespaces at publish time and warns about clashes with Listed packages.
+
+[#help]
+== Help and completion
+
+* `antora help` lists plugin namespaces in a separate "Extension commands" section with the source package and version.
+* `antora help reg install` and `antora reg install --help` render from the static manifest. No plugin code runs.
+* `antora completion bash|zsh|fish|pwsh` emits a script that calls `antora __complete <words>`. That answers from the cached command index. Plugins can add a `complete` function for dynamic values (for example package IDs from the registry), called only for that plugin's words, with a 500 ms timeout.
+
+[#lifecycle]
+== Lifecycle and context
+
+. Parse argv and resolve the command from the index.
+. Load the playbook (`--playbook`, or discover it). Commands that declare `"playbook": "optional"` run without one.
+. Import the entry module, call `registerCommands`, and validate against the manifest.
+. Call the handler with `(args, options, context)`.
+. Exit with the handler's return code. Errors are formatted by Antora's logger.
+
+The `context` object:
+
+[cols="1,3",options="header"]
+|===
+|Member |Purpose
+
+|`playbook` |The parsed, frozen playbook, plus `playbook.file` (path) and `playbook.document()` (a comment-preserving YAML document for edits, written back by Antora with a diff and atomic write)
+|`logger` |Antora's pino logger, scoped to the plugin, honouring `--log-level` and `--log-format`
+|`paths` |`cwd`, `cacheDir` (per plugin), `projectDir`
+|`antora` |`version`, `runtime`
+|`build(opts)` |An explicit, opt-in generator run (or a partial one, such as `{ stopAfter: 'contentClassified' }`). Never run implicitly.
+|`prompt` |TTY-aware confirmation; returns the default under `--yes` or with no TTY
+|`signal` |An `AbortSignal` wired to Ctrl+C
+|===
+
+Plugins also get two hooks: `commandsRegistered` (to see the full index, for meta-tools) and `beforeCommand`/`afterCommand` (for telemetry-free timing and cleanup). Normal build extensions don't see command runs.
+
+[#trust]
+== Security and trust model
+
+* *Code you chose*: Plugin commands carry the same trust as extensions in the playbook. Antora doesn't claim to sandbox them.
+* *No surprise sources*: Commands come only from the playbook, an explicit enable list, or the opt-in user config. There's no scanning of `PATH` or global `node_modules`, so a stray package can't add `antora deploy`.
+* *First-run consent*: The first time a namespace appears (or its package changes version), an interactive run asks for confirmation and lists the package, version and source. The answer is stored per project. `--yes` and `CI=true` skip the prompt, and in CI the lockfile is the consent.
+* *Visibility*: `antora plugin list` shows every namespace, package, version, source and checksum.
+* *Registry signals*: When the package is in the registry, Antora (or the `reg` plugin) can show tier and scan status. A security-blocked version prints a warning and refuses to run unless `--allow-blocked`.
+* *Lazy loading as defence*: Because help and completion never import code, listing commands is always safe.
+
+[#antorareg]
+== antorareg on both lines
+
+One core library (`@antora-supplemental/antorareg-core`: resolution, compat, CST edits, lockfile, cache) with two front ends:
+
+[cols="1,2,2",options="header"]
+|===
+| |Antora 3 |Antora 4 (antora-solid)
+
+|Invocation |`antorareg install ...` |`antora reg install ...`
+|Distribution |Standalone binary (no Node) |A plugin package declared in the playbook or enabled in the project; the binary also still works
+|Playbook edits |The core's own YAML CST editing |`context.playbook.document()`
+|Logger and output |Its own, following the CLI Output standard |Antora's logger
+|Bootstrapping |Works with no playbook (`antorareg init`) |`antora reg` needs the plugin enabled first, so `antorareg install antorareg` (or the user-global config) does that
+|===
+
+The plugin is a thin adapter of about 100 lines that maps `context` onto the core's interfaces. Both front ends share a test suite.
+
+[#example]
+== Minimal example extension
+
+[source,json]
+----
+// package.json
+{
+  "name": "antora-hello",
+  "type": "module",
+  "antora": {
+    "runtime": ">=4.0.0",
+    "commands": {
+      "namespace": "hello",
+      "entry": "./commands.js",
+      "list": [{ "name": "components", "summary": "List components named in the playbook" }]
+    }
+  }
+}
+----
+
+[source,js]
+----
+// commands.js
+export default function registerCommands (registry) {
+  registry.command('components', async (_args, options, { playbook, logger }) => {
+    const urls = playbook.content.sources.map((s) => s.url)
+    if (options.json) process.stdout.write(JSON.stringify(urls) + '\n')
+    else urls.forEach((u) => logger.info(u))
+    return 0
+  })
+}
+----
+
+[source,yaml]
+----
+# antora-playbook.yml
+antora:
+  extensions:
+    - require: antora-hello
+----
+
+[source,console]
+----
+$ antora help
+...
+Extension commands:
+  hello components   List components named in the playbook   (antora-hello 0.1.0)
+$ antora hello components
+----
+
+[#open-questions]
+== Open questions
+
+. *Upstream or fork-line only?* Should this be offered to antora/antora again as a v4 proposal (given the earlier deferral), or ship only in antora-solid with an upstream-compatible shape?
+. *Discovery without a playbook*: Is the opt-in user-global config acceptable, or should `antora reg` be special-cased as a bundled built-in?
+. *Manifest location*: Use `package.json` `antora.commands`, or a separate `antora-commands.json` generated at build time (oclif style) for non-npm git packages?
+. *Playbook writes*: Should Antora own write-back (`playbook.document()` with a diff) or leave it to plugins?
+. *Consent store*: Where should consent answers live, per project (`.antora/consent.json`) or per user?
+. *Exec commands*: Support non-JS `exec` commands in v1, or defer?
+
+[#plan]
+== Phased plan
+
+. *Phase 0*: Prototype in the antora-solidstart orchestrator: a static manifest, lazy load, namespaces, and help.
+. *Phase 1*: Context (`playbook`, `logger`, `paths`, `prompt`), consent, `antora plugin list`, and the first plugin `antora reg` on `antorareg-core`.
+. *Phase 2*: Completion (`__complete`), `context.build()`, `exec` commands, and registry trust signals.
+. *Phase 3*: Write up the upstream proposal with the prototype and the antorareg plugin as evidence.
+
+[#changelog]
+== Changelog
+
+* v0.1 (2026-10-26): First draft.
