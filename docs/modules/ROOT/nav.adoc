@@ -5,3 +5,5 @@
 * xref:filters.adoc[Registry filters]
 * Design
 ** xref:design/trust-and-quality-spec.adoc[Trust and quality spec]
+** xref:design/antorareg-cli-spec.adoc[antorareg CLI spec]
+** xref:design/antora4-plugin-commands-spec.adoc[Antora 4 plugin commands spec]

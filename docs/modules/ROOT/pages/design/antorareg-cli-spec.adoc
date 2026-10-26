@@ -1,0 +1,271 @@
+= antorareg: Standalone Registry CLI
+:navtitle: antorareg CLI spec
+:description: Design spec v0.1 for antorareg, the standalone command-line client for the Antora Extensions Registry. Installs, updates and removes UI bundles, extensions and supplemental files by editing antora-playbook.yml in place, with compat checks, a lockfile and git-first package identity.
+:page-version: v0.1
+:revdate: 2026-10-26
+:toc: macro
+:toclevels: 2
+
+[IMPORTANT]
+.Source of truth
+====
+Spec version v0.1, recorded 2026-10-26. This is the source of truth for the `antorareg` CLI. Change it here, and add a changelog bullet, instead of editing a separate draft.
+Related: xref:design/trust-and-quality-spec.adoc[Trust and quality spec] (stacks, baskets, tiers) and xref:design/antora4-plugin-commands-spec.adoc[Plugin commands for Antora 4].
+====
+
+_Design spec v0.1 for `antorareg`, the standalone CLI for registry.antora-supplemental.org. Draft for iteration. Nothing here is implemented yet._
+
+toc::[]
+
+[#principles]
+== Principles and decisions
+
+[NOTE]
+.Core call
+====
+`antorareg` is a standalone tool. It is not a wrapper around the `antora` CLI and never shells out to it for build work. It does one job: manage what a playbook pulls in, checked against the registry.
+====
+
+* *Registry, not store*: The name matches the registry branding. We register and index packages. We don't host them.
+* *No wrapper CLI*: `antorareg` doesn't proxy `antora generate` or re-export its flags. Users keep running `antora` (or `npx antora`) themselves.
+* *Git first, npm optional*: Package identity is `host/owner/repo/package`, never an npm name. Many Antora users avoid npm, and the tool must work for them.
+* *The playbook is the user's file*: Edits keep comments, key order, quoting and blank lines. A diff after `install` shows only the lines that changed.
+* *Reproducible by default*: Every resolved package is pinned in a lockfile with a commit SHA or asset checksum.
+
+[cols="1,1",options="header"]
+|===
+|Decision |Status
+
+|Name `antorareg` |Decided (Ryan)
+|Standalone tool, not an `antora` wrapper |Decided (Ryan)
+|Identity `host/owner/repo/package` |Decided
+|Git tags and release assets are first class; npm is optional |Decided
+|Single binary distribution, no `npx` needed |Proposed
+|Implementation language TypeScript, compiled to a binary |Proposed (see <<open-questions>>)
+|YAML CST library `yaml` (eemeli/yaml) Document API |Proposed
+|Lockfile `antorareg.lock` (YAML) next to the playbook |Proposed
+|Becomes an `antora reg` plugin on Antora 4 while staying standalone for Antora 3 |Decided in direction, see the plugin spec
+|===
+
+[#identity]
+== Package identity and sources
+
+A package ID has four segments:
+
+----
+<host>/<owner>/<repo>/<package>
+github.com/antora-supplemental/antora-dark-mode/antora-dark-mode
+gitlab.com/acme/docs-tools/lunr-extension
+----
+
+* For a single-package repo, `<package>` equals `<repo>`. The CLI accepts the three-segment short form and expands it.
+* A bare name such as `dark-mode` is a *search*, not an ID. It resolves only if the registry returns exactly one canonical entry (after `variantOf`/`supersededBy` folding). Otherwise the CLI lists candidates and exits with code 2.
+* The npm name is a registry *attribute* of a package and is never its identity.
+
+=== Version sources, in resolution order
+
+[cols="1,2,2",options="header"]
+|===
+|Source |Tag or locator |Notes
+
+|Release asset
+|GitHub/GitLab/Gitea release on tag `<package>-v<semver>` (monorepo) or `v<semver>` (single repo); asset named in registry metadata, e.g. `ui-bundle.zip`
+|Preferred for UI bundles. Checksum taken from the release API digest when the forge provides one, else computed and locked.
+
+|Git tag
+|`<package>-v<semver>` or `v<semver>`
+|Extensions referenced as git sources. Pinned to the tag's commit SHA in the lockfile.
+
+|npm (optional)
+|The package's `npm` attribute from the registry
+|Used only with `--source npm` or `source: npm` in config. Never required.
+|===
+
+=== Antora-targeted versions
+
+Releases may carry build metadata naming the Antora line they target, e.g. `4.2.0+antora.3` and `5.0.0+antora.4`. SemVer ignores build metadata for precedence, so the CLI treats it as a *filter*: when the playbook's Antora major is 3, only `+antora.3` releases (or releases with no `+antora` tag that the registry marks compatible) are candidates. `antorareg info` shows both lines side by side.
+
+[#commands]
+== Commands
+
+Every command accepts `--playbook <path>` (default: `antora-playbook.yml` in the current directory, then walk up), `--json`, `--verbose`, `--dry-run` and `--offline`. Output and exit codes follow the OpenShellOrg CLI Output standard.
+
+[cols="1,3",options="header"]
+|===
+|Command |Behaviour
+
+|`install <id>[@<range>] ...`
+|Resolve, run compat checks, edit the playbook, write the lockfile, and fetch into the cache. `--source git\|asset\|npm`. `--save-exact` pins the range to the resolved version.
+
+|`update [<id> ...]`
+|Move to the newest version within the recorded range (or `--latest` across majors, with a compat re-check). No IDs means all.
+
+|`list`
+|Show what the playbook uses, the locked version, the newest available, tier (Workshop/Listed) and any flags or security blocks from the registry.
+
+|`remove <id> ...`
+|Remove the playbook entry and any `supplemental_files` it added, then prune the lockfile.
+
+|`search <query>`
+|Query the registry API. Default results follow registry visibility (graduated or grandfathered); `--all` includes Indexed and Workshop items.
+
+|`info <id>`
+|Metadata, versions per Antora line, provides/requires/conflicts, docs link, changelog link and latest scan result.
+
+|`stack <basket-share-url>`
+|Fetch a basket (stack) from its share URL, show the plan as a diff, then apply it as one transaction: all or nothing.
+
+|`verify`
+|Recompute checksums of cached artifacts against the lockfile. Exit 1 on mismatch. Intended for CI.
+|===
+
+=== Playbook surfaces it edits
+
+[cols="1,2",options="header"]
+|===
+|Kind |Playbook key
+
+|UI bundle |`ui.bundle.url` (and `ui.bundle.snapshot` when the source is a moving ref)
+|Antora extension |`antora.extensions[]` entry, as a string or a `require:` map when it has config
+|Supplemental UI |`ui.supplemental_files` (a path or a list of `path`/`contents` entries)
+|===
+
+Only one UI bundle can be active. Installing a second one is a conflict unless `--replace` is given. Layers (supplemental UI that sits on a bundle) are checked against the active bundle's `provides` contracts.
+
+Each managed entry gets a trailing marker comment so the CLI can find its own edits without guessing:
+
+[source,yaml]
+----
+antora:
+  extensions:
+    - require: '@antora/lunr-extension'   # hand-written, left alone
+    - require: ./.antorareg/github.com/antora-supplemental/page-context/page-context/index.js  # antorareg: github.com/antora-supplemental/page-context/page-context@1.3.0
+----
+
+Git-sourced extensions are vendored into `.antorareg/<id>/` (gitignored by default, rebuilt from the lockfile) so `require:` points at a local path and Antora never needs npm.
+
+[#yaml]
+== Editing the playbook without damage
+
+Use the `yaml` package's Document API (eemeli/yaml). It parses into a CST/AST that keeps comments, blank lines, flow vs block style and scalar quoting, and it round-trips unchanged documents byte for byte.
+
+Rules:
+
+. Parse. If the file has errors, stop and report; never rewrite a broken file.
+. Change only the target nodes. Insert new list items with the indentation and quote style of their siblings.
+. Write UTF-8 without a BOM, keep the file's existing line endings, and write atomically (temp file then rename).
+. Show the unified diff in `--dry-run` and in `stack` before applying.
+
+Alternatives considered: `yaml-ast-parser` (no stringify), `js-yaml` (drops comments), Go `goccy/go-yaml` (good comment support, viable if the CLI moves to Go), Rust `yaml-edit`/`saphyr` (less mature round-tripping).
+
+[#compat]
+== Compatibility checks
+
+Before any change, the CLI sends the planned set (current playbook plus the change) to the registry compat endpoint, for example `POST /api/v1/compat`. The registry answers with:
+
+* `worksWith`: known-good pairings. Each carries a confidence of *guaranteed* (declared by both sides or tested in CI) or *likely* (inferred from contracts or installs).
+* `requires`: missing dependencies, such as a layer that needs a bundle providing `nav-tree@1`.
+* `conflicts`: hard conflicts, such as two UI bundles or two search extensions with the same hook.
+
+Behaviour: conflicts and unmet requirements block (exit 3) unless `--force`. Likely-only pairings print a notice. Offline, the CLI uses the cached compat data and labels the result `unverified`.
+
+[#lockfile]
+== Lockfile
+
+`antorareg.lock` sits next to the playbook. It is YAML so it diffs well and needs no extra parser.
+
+[source,yaml]
+----
+lockfileVersion: 1
+playbook: antora-playbook.yml
+antora: 3
+packages:
+  github.com/antora-supplemental/antora-dark-mode/antora-dark-mode:
+    version: 1.2.0
+    range: ^1.2.0
+    source: asset
+    url: https://github.com/antora-supplemental/antora-dark-mode/releases/download/v1.2.0/ui-bundle.zip
+    sha256: 9f2c...
+    surface: ui.bundle
+  github.com/antora-supplemental/page-context/page-context:
+    version: 1.3.0+antora.3
+    source: git
+    ref: page-context-v1.3.0
+    commit: 4b1e0d7c...
+    surface: antora.extensions
+----
+
+`antorareg install` with no arguments restores exactly what the lockfile says (like `npm ci`). Commit the lockfile.
+
+[#config]
+== Configuration
+
+Lookup order, last wins: built-in defaults, the user config (`$XDG_CONFIG_HOME/antorareg/config.yml` or `%APPDATA%\antorareg\config.yml`), the project file `.antorareg.yml`, environment variables (`ANTORAREG_*`), then flags.
+
+[source,yaml]
+----
+registry: https://registry.antora-supplemental.org
+source: git            # git | asset | npm
+vendorDir: .antorareg
+cacheDir: ~            # default per platform
+allowTiers: [listed]   # add workshop or indexed to widen
+hosts:
+  gitlab.example.com:
+    tokenEnv: GITLAB_TOKEN
+----
+
+Forge tokens are read from environment variables named in config (or from `gh`/`glab` auth when present). They are never written to config or the lockfile.
+
+[#cache]
+== Offline and cache behaviour
+
+* The cache is content-addressed by SHA-256 under the platform cache dir (`~/.cache/antorareg`, `%LOCALAPPDATA%\antorareg\Cache`, `~/Library/Caches/antorareg`).
+* Registry metadata is cached with ETags and a 24-hour soft TTL. `--offline` never touches the network. It succeeds when the lockfile and cache cover the request, and otherwise fails naming what is missing.
+* Git sources use shallow fetches of the exact tag, then store an archive of the tree, not a full clone.
+* `antorareg cache clean` and `cache path` manage it.
+
+[#security]
+== Security
+
+* *Pinned refs*: Tags are resolved to commit SHAs at install. A tag that later moves to a different commit is an error on `install` from the lockfile, not a silent update.
+* *Checksums*: Every asset and vendored tree is SHA-256 checked on fetch and by `verify`. Registry metadata may also carry the expected digest; a mismatch with the forge blocks the install.
+* *Registry trust signals*: Security-blocked versions refuse to install. Flagged or Workshop items need `--allow-tier`. Results show the latest scan verdict.
+* *No install scripts*: The CLI never runs package lifecycle scripts. With the npm source it fetches tarballs directly and does not run `npm install`.
+* *Signatures (later)*: Verify Sigstore or GitHub artifact attestations when present. Show `attested` in `info`.
+* *Transport*: HTTPS only. Custom hosts need to be listed in config.
+
+[#distribution]
+== Distribution
+
+Goal: one download, no Node or `npx` needed.
+
+* *Build*: TypeScript compiled to a standalone executable (`bun build --compile`, or Node SEA as a fallback).
+* *Targets*: the `common` release target pattern from agent-rules (`release-targets/patterns.sdl`, current year 2026): `windows-x64`, `windows-arm64`, `linux-x64`, `linux-arm64`, `macos-arm64`. FreeBSD only if the compiler supports it; mark it untested if it's cross-compiled only.
+* *Channels*: GitHub Releases with checksums and attestations, winget, Homebrew tap, Scoop, plus a `curl \| sh` and `irm \| iex` installer that verifies the checksum. An npm package is optional, for people who want it.
+* *Product essentials* (ship-app skill): `--version` with a build ID, `help`, `antorareg debug-dump` (redacted), `antorareg self-update` (replace the binary only after the process exits; on Windows, use a rename-then-replace step), and CI release through `polyglot-ci`.
+* *Versioning*: SemVer tags per the `tag-release` skill.
+
+[#open-questions]
+== Open questions
+
+. *Language*: Stay in TypeScript (shares registry types, `yaml` is the best round-tripping library) or use Go (smaller binaries, easy cross-compiling, `goccy/go-yaml`)? Bun's compiled binaries are about 50-90 MB, and support for `windows-arm64` needs checking.
+. *Vendoring*: Should git-sourced extensions be vendored into `.antorareg/` and committed, or gitignored and rebuilt from the lockfile in CI?
+. *Extensions with npm dependencies*: An extension pulled from git may have its own `dependencies`. Bundle them at release (the registry asks for a single-file `dist`), or resolve them in the CLI?
+. *Marker comments*: Are the trailing `# antorareg:` comments acceptable in playbooks, or should the lockfile alone track ownership?
+. *Compat endpoint*: Is the registry API contract (`/api/v1/compat`, guaranteed vs likely) ready to freeze as v1?
+. *Stack conflicts*: When a basket conflicts with an installed UI bundle, should `stack` replace it by default or stop?
+. *Playbook includes*: How should it handle multiple playbooks (for example `antora-playbook.local.yml`)? Use `--playbook` only, or a workspace file?
+
+[#plan]
+== Phased plan
+
+. *Phase 0, read-only*: `search`, `info`, `list` against the registry API. Binary pipeline and release CI.
+. *Phase 1, edits*: `install`, `remove` and `update` for UI bundles and extensions from release assets and git tags. CST editing, lockfile, cache, checksums.
+. *Phase 2, stacks*: `stack <url>` as a transaction with a diff preview. Compat endpoint integration. `supplemental_files`.
+. *Phase 3, hardening*: `--offline`, `verify`, attestations, an optional npm source, winget/Homebrew/Scoop.
+. *Phase 4, Antora 4*: Ship the same core as an `antora reg` plugin (see xref:design/antora4-plugin-commands-spec.adoc[Plugin commands for Antora 4]). The standalone binary stays for Antora 3.
+
+[#changelog]
+== Changelog
+
+* v0.1 (2026-10-26): First draft.
