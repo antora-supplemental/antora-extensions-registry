@@ -187,11 +187,11 @@ html.dark .new-badge { background-color: #431407; color: #ffc9a8; border-color: 
   pointer-events: none;
   user-select: none;
 }
-/* Light mode: saturated hues at 90%, so only 10% darkening toward the body text. Yellow is a deep gold so every
+/* Light mode: saturated hues at full strength, no darkening toward the body text. Yellow is a deep gold so every
    stop stays around 3:1 or better on white (decorative bold label). Dark mode keeps the 40% tint. */
 html:not(.dark) .nav-rainbow-overlay {
   background-image: linear-gradient(30deg, #e1102f, #f25c05, #d49a00, #12a53a, #0b63f0, #8b1ee6);
-  opacity: 0.9; /* 10% of the body-text color shows through */
+  opacity: 1; /* no body-text color shows through */
 }
 
 /*
