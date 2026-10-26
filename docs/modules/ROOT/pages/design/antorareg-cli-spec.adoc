@@ -1,7 +1,7 @@
 = antorareg: Standalone Registry CLI
 :navtitle: antorareg CLI spec
-:description: Design spec v0.1 for antorareg, the standalone command-line client for the Antora Extensions Registry. Installs, updates and removes UI bundles, extensions and supplemental files by editing antora-playbook.yml in place, with compat checks, a lockfile and git-first package identity.
-:page-version: v0.1
+:description: Design spec v0.2 for antorareg, the standalone command-line client for the Antora Extensions Registry. Installs, updates and removes UI bundles, extensions and supplemental files by editing antora-playbook.yml in place, with compat checks, a lockfile and git-first package identity.
+:page-version: v0.2
 :revdate: 2026-10-26
 :toc: macro
 :toclevels: 2
@@ -9,11 +9,11 @@
 [IMPORTANT]
 .Source of truth
 ====
-Spec version v0.1, recorded 2026-10-26. This is the source of truth for the `antorareg` CLI. Change it here, and add a changelog bullet, instead of editing a separate draft.
-Related: xref:design/trust-and-quality-spec.adoc[Trust and quality spec] (stacks, baskets, tiers) and xref:design/antora4-plugin-commands-spec.adoc[Plugin commands for Antora 4].
+Spec version v0.2, recorded 2026-10-26. This is the source of truth for the `antorareg` CLI. Change it here, and add a changelog bullet, instead of editing a separate draft.
+Related: xref:design/trust-and-quality-spec.adoc[Trust and quality spec] (stacks, baskets, tiers) and xref:design/antora4-plugin-commands-spec.adoc[Command routing in antora-solid].
 ====
 
-_Design spec v0.1 for `antorareg`, the standalone CLI for registry.antora-supplemental.org. Draft for iteration. Nothing here is implemented yet._
+_Design spec v0.2 for `antorareg`, the standalone CLI for registry.antora-supplemental.org. Draft for iteration. Nothing here is implemented yet._
 
 toc::[]
 
@@ -31,6 +31,7 @@ toc::[]
 * *Git first, npm optional*: Package identity is `host/owner/repo/package`, never an npm name. Many Antora users avoid npm, and the tool must work for them.
 * *The playbook is the user's file*: Edits keep comments, key order, quoting and blank lines. A diff after `install` shows only the lines that changed.
 * *Reproducible by default*: Every resolved package is pinned in a lockfile with a commit SHA or asset checksum.
+* *Built for Antora 3*: `antorareg` is purpose-built for the current Antora 3 line. It is not proposed upstream. On antora-solid, the `antora` CLI routes `antora reg` to it as a tool.
 
 [cols="1,1",options="header"]
 |===
@@ -40,11 +41,13 @@ toc::[]
 |Standalone tool, not an `antora` wrapper |Decided (Ryan)
 |Identity `host/owner/repo/package` |Decided
 |Git tags and release assets are first class; npm is optional |Decided
-|Single binary distribution, no `npx` needed |Proposed
-|Implementation language TypeScript, compiled to a binary |Proposed (see <<open-questions>>)
-|YAML CST library `yaml` (eemeli/yaml) Document API |Proposed
-|Lockfile `antorareg.lock` (YAML) next to the playbook |Proposed
-|Becomes an `antora reg` plugin on Antora 4 while staying standalone for Antora 3 |Decided in direction, see the plugin spec
+|Single binary distribution, no `npx` needed |Decided
+|Implementation language D (LDC), native single binary |Decided (Ryan), see <<language>>
+|Playbook edited as text by a minimal line/CST editor that preserves comments and formatting |Decided, see <<yaml>>
+|Registry API types generated from the OpenAPI/JSON schema |Decided
+|Lockfile `antorareg.lock` (YAML) next to the playbook; it alone records what the tool installed, with no playbook marker comments |Decided (Ryan), see <<drift>>
+|Extensions fetched from the lockfile into a gitignored cache; themes can be ejected (vendored) on request |Decided (Ryan), see <<fetch-vs-vendor>>
+|Not proposed upstream; on antora-solid the `antora` CLI routes `antora reg` to `antorareg` as a tool |Decided (Ryan), see the plugin spec
 |===
 
 [#identity]
@@ -98,10 +101,10 @@ Every command accepts `--playbook <path>` (default: `antora-playbook.yml` in the
 |Resolve, run compat checks, edit the playbook, write the lockfile, and fetch into the cache. `--source git\|asset\|npm`. `--save-exact` pins the range to the resolved version.
 
 |`update [<id> ...]`
-|Move to the newest version within the recorded range (or `--latest` across majors, with a compat re-check). No IDs means all.
+|Move to the newest version within the recorded range (or `--latest` across majors, with a compat re-check). No IDs means all. Vendored (ejected) packages are never overwritten: `update` reports the upstream changes available and offers a diff or 3-way merge help instead.
 
 |`list`
-|Show what the playbook uses, the locked version, the newest available, tier (Workshop/Listed) and any flags or security blocks from the registry.
+|Show what the playbook uses, the locked version, the newest available, tier (Workshop/Listed), vendored status and any flags or security blocks from the registry. Reports drift between the playbook and the lockfile (see <<drift>>).
 
 |`remove <id> ...`
 |Remove the playbook entry and any `supplemental_files` it added, then prune the lockfile.
@@ -115,8 +118,11 @@ Every command accepts `--playbook <path>` (default: `antora-playbook.yml` in the
 |`stack <basket-share-url>`
 |Fetch a basket (stack) from its share URL, show the plan as a diff, then apply it as one transaction: all or nothing.
 
+|`eject <id>`
+|Copy a theme's or extension's source into the repo (for example `ui/<name>/`), mark it `vendored` in the lockfile with the upstream version it came from, and point the playbook at the local path. See <<fetch-vs-vendor>>.
+
 |`verify`
-|Recompute checksums of cached artifacts against the lockfile. Exit 1 on mismatch. Intended for CI.
+|Recompute checksums of cached artifacts against the lockfile and check playbook/lockfile drift. Exit 1 on mismatch. Intended for CI.
 |===
 
 === Playbook surfaces it edits
@@ -132,22 +138,30 @@ Every command accepts `--playbook <path>` (default: `antora-playbook.yml` in the
 
 Only one UI bundle can be active. Installing a second one is a conflict unless `--replace` is given. Layers (supplemental UI that sits on a bundle) are checked against the active bundle's `provides` contracts.
 
-Each managed entry gets a trailing marker comment so the CLI can find its own edits without guessing:
+The CLI adds no marker comments to the playbook. The lockfile alone records what it installed (see <<drift>>):
 
 [source,yaml]
 ----
 antora:
   extensions:
     - require: '@antora/lunr-extension'   # hand-written, left alone
-    - require: ./.antorareg/github.com/antora-supplemental/page-context/page-context/index.js  # antorareg: github.com/antora-supplemental/page-context/page-context@1.3.0
+    - require: ./.antorareg/cache/github.com/antora-supplemental/page-context/page-context/index.js
 ----
 
-Git-sourced extensions are vendored into `.antorareg/<id>/` (gitignored by default, rebuilt from the lockfile) so `require:` points at a local path and Antora never needs npm.
+Git-sourced extensions are fetched into `.antorareg/cache/<id>/` (gitignored, rebuilt from the lockfile in CI) so `require:` points at a local path and Antora never needs npm.
+
+[#fetch-vs-vendor]
+=== Fetching versus vendoring
+
+* *Default, fetched*: Extensions, UI bundles and themes are fetched from the lockfile into `.antorareg/cache/`, which is gitignored and never committed. CI rebuilds it from the lockfile.
+* *Overrides go elsewhere*: Theme overrides go in the playbook's `ui.supplemental_files` folder (Antora's standard override mechanism, default `supplemental-ui/`). On first theme install the CLI scaffolds that folder and prints its path. The cache never sits inside, or shares a path with, the overrides folder, so users never edit a file the next fetch would replace.
+* *Eject, for modders*: Many people find it more natural to edit what is in front of them than to write override files. `antorareg eject <id>` copies the package's source into the repo (for example `ui/<name>/`), records it in the lockfile as `vendored: true` with `upstream:` set to the version it came from, and switches the playbook to the local path. From then on the copy is the user's code.
+* *Updates after eject*: `antorareg update` doesn't overwrite a vendored package. It reports that upstream has a newer version and offers a diff between `upstream` and the new version, or 3-way merge help against the local copy. Accepting a merge moves `upstream` forward.
 
 [#yaml]
 == Editing the playbook without damage
 
-Use the `yaml` package's Document API (eemeli/yaml). It parses into a CST/AST that keeps comments, blank lines, flow vs block style and scalar quoting, and it round-trips unchanged documents byte for byte.
+The playbook is edited as text. D's `dyaml` drops comments, so it is used only to read and validate the playbook, never to write it. Writes go through a minimal line-based CST editor that understands just the few keys the tool touches: `ui.bundle.url` (and `snapshot`), `antora.extensions`, and `ui.supplemental_files`. Every other byte is copied through unchanged.
 
 Rules:
 
@@ -156,7 +170,9 @@ Rules:
 . Write UTF-8 without a BOM, keep the file's existing line endings, and write atomically (temp file then rename).
 . Show the unified diff in `--dry-run` and in `stack` before applying.
 
-Alternatives considered: `yaml-ast-parser` (no stringify), `js-yaml` (drops comments), Go `goccy/go-yaml` (good comment support, viable if the CLI moves to Go), Rust `yaml-edit`/`saphyr` (less mature round-tripping).
+If the editor meets a structure it can't edit safely (flow-style lists, anchors or aliases on a target key, multi-document files), it stops and prints the exact change for the user to make by hand.
+
+Alternatives considered: TypeScript with eemeli/yaml (best round-tripping, shared registry types, but large compiled binaries), Go `goccy/go-yaml`, Rust `yaml-edit`/`saphyr`, and `dyaml` round-tripping (loses comments).
 
 [#compat]
 == Compatibility checks
@@ -195,7 +211,20 @@ packages:
     surface: antora.extensions
 ----
 
-`antorareg install` with no arguments restores exactly what the lockfile says (like `npm ci`). Commit the lockfile.
+A vendored package carries `vendored: true`, its local `path`, and `upstream` (the version and commit it was ejected from).
+
+`antorareg install` with no arguments restores exactly what the lockfile says (like `npm ci`). Commit the lockfile. It may be edited by hand or by the tool; the format is the same either way.
+
+[#drift]
+=== Drift between the playbook and the lockfile
+
+There are no marker comments, so ownership comes from the lockfile alone. `antorareg list` and `antorareg verify` compare the playbook with the lockfile and flag:
+
+* *Missing*: a lockfile entry whose playbook entry is gone. Offer to remove it from the lockfile or restore it to the playbook.
+* *Hand-edited*: a playbook entry that no longer matches its lockfile entry (another URL, ref or path). Offer to adopt the change into the lockfile.
+* *Stale paths*: a lockfile `path` or cache path that no longer exists. Re-fetch or prune.
+
+`verify` exits 1 on any drift so CI catches it. Entries in the playbook that the lockfile never listed are the user's own, and are left alone.
 
 [#config]
 == Configuration
@@ -206,8 +235,9 @@ Lookup order, last wins: built-in defaults, the user config (`$XDG_CONFIG_HOME/a
 ----
 registry: https://registry.antora-supplemental.org
 source: git            # git | asset | npm
-vendorDir: .antorareg
-cacheDir: ~            # default per platform
+cacheDir: .antorareg/cache   # project fetch cache, gitignored
+vendorDir: ui                # default parent for antorareg eject
+globalCacheDir: ~      # default per platform
 allowTiers: [listed]   # add workshop or indexed to widen
 hosts:
   gitlab.example.com:
@@ -239,19 +269,26 @@ Forge tokens are read from environment variables named in config (or from `gh`/`
 
 Goal: one download, no Node or `npx` needed.
 
-* *Build*: TypeScript compiled to a standalone executable (`bun build --compile`, or Node SEA as a fallback).
-* *Targets*: the `common` release target pattern from agent-rules (`release-targets/patterns.sdl`, current year 2026): `windows-x64`, `windows-arm64`, `linux-x64`, `linux-arm64`, `macos-arm64`. FreeBSD only if the compiler supports it; mark it untested if it's cross-compiled only.
-* *Channels*: GitHub Releases with checksums and attestations, winget, Homebrew tap, Scoop, plus a `curl \| sh` and `irm \| iex` installer that verifies the checksum. An npm package is optional, for people who want it.
+* *Build*: D compiled with LDC to a small static single binary, cross-compiled per target.
+* *DUB*: Also published to the DUB registry (`publish-to-dub` skill) so D users can `dub run antorareg`.
+* *Targets*: release binaries per the agent-rules `release-targets` skill, the `common` release target pattern from agent-rules (`release-targets/patterns.sdl`, current year 2026): `windows-x64`, `windows-arm64`, `linux-x64`, `linux-arm64`, `macos-arm64`. FreeBSD only if LDC supports it; mark it untested if it's cross-compiled only.
+* *Channels*: GitHub Releases with checksums and attestations, DUB, winget, Homebrew tap, Scoop, plus a `curl \| sh` and `irm \| iex` installer that verifies the checksum.
 * *Product essentials* (ship-app skill): `--version` with a build ID, `help`, `antorareg debug-dump` (redacted), `antorareg self-update` (replace the binary only after the process exits; on Windows, use a rename-then-replace step), and CI release through `polyglot-ci`.
 * *Versioning*: SemVer tags per the `tag-release` skill.
+
+[#language]
+== Implementation language
+
+Decided (Ryan): *D*. It compiles natively to small single binaries and cross-compiles with LDC, comparable to Go. TypeScript's only advantages were sharing the registry's types and a comment-preserving YAML library. Both are covered:
+
+* *Playbook edits*: a minimal text/CST editor for the few keys touched, see <<yaml>>.
+* *Registry types*: generated from the registry's OpenAPI/JSON schema at build time, so the CLI and the registry can't drift.
+* *Distribution*: DUB plus release binaries, see <<distribution>>.
 
 [#open-questions]
 == Open questions
 
-. *Language*: Stay in TypeScript (shares registry types, `yaml` is the best round-tripping library) or use Go (smaller binaries, easy cross-compiling, `goccy/go-yaml`)? Bun's compiled binaries are about 50-90 MB, and support for `windows-arm64` needs checking.
-. *Vendoring*: Should git-sourced extensions be vendored into `.antorareg/` and committed, or gitignored and rebuilt from the lockfile in CI?
 . *Extensions with npm dependencies*: An extension pulled from git may have its own `dependencies`. Bundle them at release (the registry asks for a single-file `dist`), or resolve them in the CLI?
-. *Marker comments*: Are the trailing `# antorareg:` comments acceptable in playbooks, or should the lockfile alone track ownership?
 . *Compat endpoint*: Is the registry API contract (`/api/v1/compat`, guaranteed vs likely) ready to freeze as v1?
 . *Stack conflicts*: When a basket conflicts with an installed UI bundle, should `stack` replace it by default or stop?
 . *Playbook includes*: How should it handle multiple playbooks (for example `antora-playbook.local.yml`)? Use `--playbook` only, or a workspace file?
@@ -259,13 +296,14 @@ Goal: one download, no Node or `npx` needed.
 [#plan]
 == Phased plan
 
-. *Phase 0, read-only*: `search`, `info`, `list` against the registry API. Binary pipeline and release CI.
-. *Phase 1, edits*: `install`, `remove` and `update` for UI bundles and extensions from release assets and git tags. CST editing, lockfile, cache, checksums.
-. *Phase 2, stacks*: `stack <url>` as a transaction with a diff preview. Compat endpoint integration. `supplemental_files`.
+. *Phase 0, read-only*: `search`, `info`, `list` against the registry API. Types generated from the OpenAPI schema. LDC binary pipeline, DUB package and release CI.
+. *Phase 1, edits*: `install`, `remove` and `update` for UI bundles and extensions from release assets and git tags. Text/CST editing, lockfile, `.antorareg/cache`, checksums, drift detection.
+. *Phase 2, stacks and themes*: `stack <url>` as a transaction with a diff preview. Compat endpoint integration. `supplemental_files` scaffolding, `eject`, and upstream-change reports for vendored packages.
 . *Phase 3, hardening*: `--offline`, `verify`, attestations, an optional npm source, winget/Homebrew/Scoop.
-. *Phase 4, Antora 4*: Ship the same core as an `antora reg` plugin (see xref:design/antora4-plugin-commands-spec.adoc[Plugin commands for Antora 4]). The standalone binary stays for Antora 3.
+. *Phase 4, antora-solid*: Register `antorareg` as a routed tool so antora-solid's `antora reg ...` runs it (see xref:design/antora4-plugin-commands-spec.adoc[Command routing in antora-solid]). The standalone binary is the same in both cases.
 
 [#changelog]
 == Changelog
 
+* v0.2 (2026-10-26): Recorded Ryan's decisions: D implementation with a text/CST playbook editor and schema-generated registry types; extensions fetched into gitignored `.antorareg/cache` with `antorareg eject` for vendoring themes; no playbook marker comments, with lockfile drift detection in `list` and `verify`; no upstream proposal, routed as a tool in antora-solid.
 * v0.1 (2026-10-26): First draft.

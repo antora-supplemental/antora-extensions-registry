@@ -1,7 +1,7 @@
-= Plugin Commands for Antora 4 (antora-solid)
-:navtitle: Antora 4 plugin commands spec
-:description: Design spec v0.1 for a native extension-command API in Antora 4 (codename antora-solid), so extensions can register CLI subcommands such as antora reg install. Covers discovery, registration, namespacing, help and completion, lifecycle and context, trust, and how antorareg becomes a plugin.
-:page-version: v0.1
+= Command Routing in antora-solid
+:navtitle: antora-solid command routing spec
+:description: Design spec v0.2 for how antora-solid's own antora CLI routes subcommands to tools and extensions natively, such as antora reg install. Covers discovery, registration, namespacing, help and completion, lifecycle and context, trust, and antorareg as a routed tool.
+:page-version: v0.2
 :revdate: 2026-10-26
 :toc: macro
 :toclevels: 2
@@ -9,11 +9,11 @@
 [IMPORTANT]
 .Source of truth
 ====
-Spec version v0.1, recorded 2026-10-26. This is the source of truth for the extension-command API proposal for Antora 4 (antora-solid). Change it here, and add a changelog bullet.
+Spec version v0.2, recorded 2026-10-26. This is the source of truth for command routing in antora-solid's `antora` CLI. Change it here, and add a changelog bullet.
 Related: xref:design/antorareg-cli-spec.adoc[antorareg CLI spec]. Antora 4 architecture: the antora-solidstart repo and the hub proposal `proposals/antora-next-shell.adoc` in antora-supplemental/docs.
 ====
 
-_Design spec v0.1. Antora 3 has no way for an extension to add a CLI subcommand, and the upstream maintainers deferred Ryan's earlier proposal. This spec defines the API for the Antora 4 line (antora-solid), written so that it could also be offered upstream._
+_Design spec v0.2. Antora 3 has no way for an extension to add a CLI subcommand. antora-solid's own `antora` CLI routes subcommands to tools and extensions natively. This is antora-solid's design, not a proposal for upstream Antora. `antorareg` stays purpose-built for current Antora 3 and is one of the routed tools._
 
 toc::[]
 
@@ -28,7 +28,7 @@ Antora 4 (antora-solid) as recorded in the antora-solidstart notes:
 
 The orchestrator owns the `antora` CLI, so command registration belongs there. Extensions on the Antora 4 line are a parallel SemVer line (`+antora.4` build metadata, or a `/next` entry point) gated by the playbook `runtime`.
 
-Antora 3 today: `antora` has `generate` only. Extensions register through `register(context)` and listen to generator events. There's no hook into the commander program, so tools like `antorareg` must be standalone binaries.
+Antora 3 today: `antora` has `generate` only. Extensions register through `register(context)` and listen to generator events. There's no hook into the commander program, so tools like `antorareg` are standalone binaries. antora-solid doesn't change that for Antora 3; it routes to those same binaries.
 
 [#principles]
 == Principles and decisions
@@ -36,7 +36,7 @@ Antora 3 today: `antora` has `generate` only. Extensions register through `regis
 [NOTE]
 .Core call
 ====
-Commands are declared statically and loaded lazily. Antora can list, namespace and complete every plugin command without running any plugin code. Code runs only when the user invokes that command.
+The `antora` CLI is a router. Commands are declared statically and loaded (or executed) lazily. Antora can list, namespace and complete every plugin command without running any plugin code. Code runs only when the user invokes that command.
 ====
 
 * *Declare, then load*: Each package's manifest lists its commands. The entry module is imported only on invocation.
@@ -52,7 +52,8 @@ Commands are declared statically and loaded lazily. Antora can list, namespace a
 |Discovery from the playbook plus project-local installed packages |Proposed
 |Namespace required, e.g. `reg`; built-ins reserved |Proposed
 |No full build in the command context; `context.build()` on request |Proposed
-|`antorareg` ships as both a standalone binary and an Antora 4 plugin from one core |Decided in direction
+|`antorareg` is a routed tool: `antora reg ...` runs the `antorareg` binary through an `exec` entry |Decided (Ryan)
+|antora-solid's own design; not proposed upstream |Decided (Ryan)
 |===
 
 [#prior-art]
@@ -198,22 +199,22 @@ Plugins also get two hooks: `commandsRegistered` (to see the full index, for met
 * *Lazy loading as defence*: Because help and completion never import code, listing commands is always safe.
 
 [#antorareg]
-== antorareg on both lines
+== antorareg as a routed tool
 
-One core library (`@antora-supplemental/antorareg-core`: resolution, compat, CST edits, lockfile, cache) with two front ends:
+`antorareg` is a D binary built for Antora 3. antora-solid doesn't embed or port it; its `antora` CLI routes the `reg` namespace to the binary through an `exec` entry:
 
 [cols="1,2,2",options="header"]
 |===
-| |Antora 3 |Antora 4 (antora-solid)
+| |Antora 3 |antora-solid
 
-|Invocation |`antorareg install ...` |`antora reg install ...`
-|Distribution |Standalone binary (no Node) |A plugin package declared in the playbook or enabled in the project; the binary also still works
-|Playbook edits |The core's own YAML CST editing |`context.playbook.document()`
-|Logger and output |Its own, following the CLI Output standard |Antora's logger
-|Bootstrapping |Works with no playbook (`antorareg init`) |`antora reg` needs the plugin enabled first, so `antorareg install antorareg` (or the user-global config) does that
+|Invocation |`antorareg install ...` |`antora reg install ...`, routed to `antorareg install ...`
+|Distribution |Standalone binary (no Node) |The same binary, registered as a routed tool in the playbook, project or user-global config
+|Playbook edits |Its own text/CST editor |The same; antora-solid passes the playbook path through `ANTORA_PLAYBOOK`
+|Logger and output |Its own, following the CLI Output standard |The same, with `ANTORA_LOG_FORMAT` honoured
+|Bootstrapping |Works with no playbook (`antorareg init`) |Registered through the user-global config so `antora reg init` works with no playbook
 |===
 
-The plugin is a thin adapter of about 100 lines that maps `context` onto the core's interfaces. Both front ends share a test suite.
+The static manifest for the `reg` namespace (command names, summaries, options) ships with `antorareg`, so help and completion work without running it.
 
 [#example]
 == Minimal example extension
@@ -268,22 +269,19 @@ $ antora hello components
 [#open-questions]
 == Open questions
 
-. *Upstream or fork-line only?* Should this be offered to antora/antora again as a v4 proposal (given the earlier deferral), or ship only in antora-solid with an upstream-compatible shape?
-. *Discovery without a playbook*: Is the opt-in user-global config acceptable, or should `antora reg` be special-cased as a bundled built-in?
 . *Manifest location*: Use `package.json` `antora.commands`, or a separate `antora-commands.json` generated at build time (oclif style) for non-npm git packages?
 . *Playbook writes*: Should Antora own write-back (`playbook.document()` with a diff) or leave it to plugins?
 . *Consent store*: Where should consent answers live, per project (`.antora/consent.json`) or per user?
-. *Exec commands*: Support non-JS `exec` commands in v1, or defer?
 
 [#plan]
 == Phased plan
 
 . *Phase 0*: Prototype in the antora-solidstart orchestrator: a static manifest, lazy load, namespaces, and help.
-. *Phase 1*: Context (`playbook`, `logger`, `paths`, `prompt`), consent, `antora plugin list`, and the first plugin `antora reg` on `antorareg-core`.
-. *Phase 2*: Completion (`__complete`), `context.build()`, `exec` commands, and registry trust signals.
-. *Phase 3*: Write up the upstream proposal with the prototype and the antorareg plugin as evidence.
+. *Phase 1*: `exec` routing, context (`playbook`, `logger`, `paths`, `prompt`), consent, `antora plugin list`, and the first routed tool, `antora reg` to `antorareg`.
+. *Phase 2*: Completion (`__complete`), `context.build()`, and registry trust signals.
 
 [#changelog]
 == Changelog
 
+* v0.2 (2026-10-26): Reframed as antora-solid's own command routing, not an upstream proposal. `antorareg` is a routed tool (`exec`), not a JS plugin. Removed the upstream phase and the resolved open questions (upstream, no-playbook discovery, exec support).
 * v0.1 (2026-10-26): First draft.
