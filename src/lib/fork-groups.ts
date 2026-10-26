@@ -5,6 +5,8 @@ export interface RepoForkFields {
   fork?: boolean;
   default_branch?: string;
   pushed_at?: string;
+  /** Repository About URL. */
+  homepage?: string | null;
   topics?: string[];
   owner?: { login: string };
   parent?: { full_name: string; default_branch?: string };

@@ -13,6 +13,7 @@ import ForkVersions from '~/components/catalog/ForkVersions';
 import PackageTitle from '~/components/catalog/PackageTitle';
 import { displayTitle, rawPackageName } from '~/lib/package-title';
 import { forkVariants } from '~/lib/fork-groups';
+import { pickDocsLink } from '~/lib/docs-link';
 import PreviewGallery from '~/components/catalog/PreviewGallery';
 import FullDescription, { inline } from '~/components/catalog/FullDescription';
 import { INSTALL_GUIDE_URL, installGuidance } from '~/lib/install-guidance';
@@ -102,6 +103,13 @@ export default function ExtensionDetailPage() {
                     <div class="mt-3 flex flex-wrap items-center gap-2"><AntoraBadges entry={e()} /></div>
                     <ForkVersions current={e()} variants={forkVariants(e(), all())} />
                     <div class="mt-4 flex flex-wrap gap-2">
+                      <Show when={pickDocsLink(e())}>
+                        {(d) => (
+                          <a href={d().url} target="_blank" rel="noopener noreferrer" data-docs-link={d().source} class={buttonVariants({ variant: 'default', size: 'sm' })}>
+                            Docs
+                          </a>
+                        )}
+                      </Show>
                       <a href={e().repository} target="_blank" rel="noopener noreferrer" class={buttonVariants({ variant: 'secondary', size: 'sm' })}>
                         Repository
                       </a>

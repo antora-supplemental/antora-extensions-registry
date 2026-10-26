@@ -597,7 +597,7 @@ export async function buildExtensionCatalog(
     const withRepoInfo = (list: ExtensionCatalogEntry[]) =>
       list.map((e) => {
         const declared = forkOf ?? upstreamFork(e);
-        return { ...e, ...(declared ? { forkOf: declared } : {}), ...(info?.pushed_at ? { pushedAt: info.pushed_at } : {}) };
+        return { ...e, ...(declared ? { forkOf: declared } : {}), ...(info?.pushed_at ? { pushedAt: info.pushed_at } : {}), ...(info?.homepage ? { repoHomepage: info.homepage } : {}) };
       });
     // Releases (per-release Antora compatibility) and declared color schemes; one lookup per repo.
     const extras = info ? await fetchRepoReleaseInfo(owner, repo, info.default_branch ?? 'main') : null;
@@ -628,6 +628,8 @@ export async function buildExtensionCatalog(
             return {
               ...rest,
               ...(pi.group ?? {}),
+              ...(pi.docs ? { docs: pi.docs } : {}),
+              ...(pi.homepage ? { homepage: pi.homepage } : {}),
               ...(pi.relations ? { relations: pi.relations } : {}),
               ...(pi.releases.length ? { releases: pi.releases } : {}),
               ...(pi.antora.length ? { antora: pi.antora } : {}),

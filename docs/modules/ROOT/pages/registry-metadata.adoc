@@ -190,6 +190,22 @@ html.dark-theme[data-scheme="orangedark"] { ... }
 Swatch colors come from the scheme's own block: `light` is `:root`, `dark` is `html.dark-theme`, and any other id is `html[data-scheme="id"]` or `html.dark-theme[data-scheme="id"]`.
 The registry takes up to four hex custom properties from it: canvas or background, the dominant or accent color, the link color, and the text color.
 
+== Documentation link
+
+Extension pages show a *Docs* button next to *Repository*. The registry picks the first of:
+
+. `antoraRegistry.docs` (an `https://` URL),
+. package.json `homepage`, unless it points at the repository itself (for example `.../repo#readme`),
+. the repository's About URL (GitHub or GitLab homepage),
+. a known Antora docs site for the repository.
+
+In a monorepo each package's own `package.json` is used.
+
+[source,json]
+----
+{ "antoraRegistry": { "docs": "https://example.org/my-extension/" } }
+----
+
 == Canonical entries and variants
 
 One thing, one listing. When several packages are ways of using the same feature (a module, a one-require extension, a recipe), pick one *canonical* entry and nest the others under it. When a package is replaced, point it at its replacement.

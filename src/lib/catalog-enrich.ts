@@ -213,6 +213,7 @@ export function applyRepoMetadata(entry: ExtensionCatalogEntry, meta: RepoMetada
   if (Object.keys(meta.dependencySpecs ?? {}).length) out.dependencySpecs = meta.dependencySpecs;
   if (meta.privatePackage) out.privatePackage = true;
   if (meta.homepage) out.homepage = meta.homepage;
+  if (typeof d.docs === 'string' && d.docs.trim()) out.docs = d.docs.trim();
   if (meta.title && !out.title) out.title = meta.title;
   if (typeof d.upstream === 'string' && d.upstream.trim()) out.upstream = d.upstream.trim();
   Object.assign(out, readGroupDecl(d));

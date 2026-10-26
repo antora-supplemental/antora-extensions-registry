@@ -117,6 +117,12 @@ export interface ExtensionCatalogEntry {
   /** package.json `"private": true`: not on npm, install from the Git repository. */
   privatePackage?: boolean;
   homepage?: string;
+  /** antoraRegistry.docs: documentation URL. */
+  docs?: string;
+  /** Repository About URL (GitHub/GitLab homepage). */
+  repoHomepage?: string;
+  /** Known Antora docs site built from the repository. */
+  docsSite?: string;
   /** Full description: `antoraRegistry.longDescription`, else the README intro. Plain text, paragraphs separated by blank lines. */
   longDescription?: string;
   longDescriptionSource?: 'declared' | 'readme';
@@ -159,6 +165,8 @@ export interface PreviewImage {
 
 /** The `antoraRegistry` block in package.json (or the antora-registry.md frontmatter). */
 export interface AntoraRegistryMetadata {
+  /** Documentation URL; shown as the Docs button. */
+  docs?: string;
   /** Upstream repository URL when this repo continues another one on a different host (e.g. a GitHub copy of a GitLab project). Used for fork grouping. */
   upstream?: string;
   /** `host/owner/repo/package` of the canonical entry this package nests under ("Ways to use it"). */
