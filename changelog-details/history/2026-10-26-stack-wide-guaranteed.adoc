@@ -1,0 +1,40 @@
+= Stack-wide guaranteed compatibility
+:revdate: 2026-10-26
+
+== What was happening
+
+A package's link was *guaranteed* only when one provider, or a one-hop chain (A -> B -> C), provided every contract the
+package uses. Skittles uses `valentus-layout-markup`, `color-scheme-tokens` and `light-dark-slots`, which come from
+three packages (Valentus Layout, Color scheme, Light/Dark Mode), so a real stack never reached guaranteed.
+
+== Change
+
+* `src/lib/pkg-compat.ts`:
+** `stackCoverage(members, nodes)`: unions `provides` across the members and checks every member's `uses` at its range.
+   Guaranteed when everything is covered and every indexed `requires` is in the stack at a satisfied version;
+   otherwise *declared* (members tied by declared requires/worksWith), *likely* (some coverage) or *none* (also on a
+   declared conflict inside the stack). Returns covered and missing contracts.
+** `stackClosure(seeds, nodes)`: declared requires, then a provider for each open `uses` contract (preferring one a member
+   declares, then declared metadata, then the widest coverage); never adds a package that shares a single exclusive
+   layer with a member or that a member conflicts with.
+** `minimalStack` prunes the closure (last added first) while it stays guaranteed; `computeStacks` runs it per package.
+   `makeResolver` is the name lookup `computeCompat` already used, now shared.
+* `scripts/sync-catalog-db.ts`: stores the result as `stack` in each entry payload (no schema change).
+* `src/components/catalog/PackageCompat.tsx`: a *Guaranteed as a stack* (or *Best stack found*) panel in *Works with*,
+  listing the members, missing contracts and an *Open this stack* link to `/stack?s=...`.
+* `src/lib/stack.ts`, `src/routes/stack.tsx`: `analyzeStack` returns `coverage` from the same `stackCoverage`; the
+  basket shows the stack status, the missing contracts, and a *Missing contract* issue with a provider to add.
+
+== Live data (2026-10-26)
+
+* Skittles: guaranteed with Valentus doc site chrome, Color scheme, Light/Dark mode and Antora Default UI (the fork that
+  declares `antora-ui-model`, which Valentus uses). Without the Default UI the stack is declared, missing
+  `antora-ui-model`.
+* Guaranteed: light-dark-mode, soft-nav, page-state, contrast-check, facto-stack, valentus-site.
+* Partial (declared): default-paint and dark-mode-only, missing `default-ui-markup@2`: its only provider is a paint, the
+  same single exclusive layer as default-paint.
+
+== Tests
+
+`tests/pkg-compat.test.ts` (Skittles four-package stack, minimal stack, declared vs likely partial coverage, unsatisfied
+range, requires outside the stack) and `tests/stack.test.ts` (missing contract suggestion, guaranteed once added).

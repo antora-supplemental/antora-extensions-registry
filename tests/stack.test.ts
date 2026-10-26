@@ -48,3 +48,16 @@ test('a ui-bundle pick supplies ui.bundle.url from its release zip', () => {
   const b = E({ catalogId: 'o/r/ui', id: 'ui', type: 'ui-bundle', releases: [{ antora: [], assets: [{ name: 'ui-bundle.zip', url: 'https://x/ui-bundle.zip' }] }] });
   assert.match(stackPlaybook([b]), /url: https:\/\/x\/ui-bundle\.zip/);
 });
+
+test('stack-wide coverage: missing contracts are listed with a provider to add, then guaranteed once added', () => {
+  const prov = E({ catalogId: 'o/r/tokens', id: 'tokens', relations: { source: 'declared', provides: { tokens: '0.5' } } });
+  const a = E({ catalogId: 'o/r/a', id: 'a', relations: { source: 'declared', uses: { tokens: '^0.5' } } });
+  const r = analyzeStack([a], [a, prov]);
+  assert.equal(r.coverage.status, 'none');
+  const i = r.issues.find((x) => x.kind === 'contract');
+  assert.equal(i?.missing, 'tokens');
+  assert.equal(i?.suggest?.catalogId, 'o/r/tokens');
+  const ok = analyzeStack([a, prov], [a, prov]);
+  assert.equal(ok.coverage.status, 'guaranteed');
+  assert.equal(ok.issues.filter((x) => x.kind === 'contract').length, 0);
+});

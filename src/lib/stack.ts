@@ -1,6 +1,7 @@
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 import { antoraMajorsOf } from './antora-compat';
 import { resolveModuleId } from './extension-deps';
+import { satisfies, stackCoverage, type CompatNode, type StackCoverage } from './pkg-compat';
 
 /** localStorage key for the "Build a stack" basket. */
 export const STACK_KEY = 'antora-registry:stack';
@@ -24,7 +25,7 @@ export function decodeStack(v: string | null | undefined): string[] {
   return out;
 }
 
-export type StackIssueKind = 'conflict' | 'alternative' | 'missing' | 'antora';
+export type StackIssueKind = 'conflict' | 'alternative' | 'missing' | 'contract' | 'antora';
 export interface StackIssue {
   kind: StackIssueKind;
   message: string;
@@ -40,7 +41,7 @@ const label = (e: ExtensionCatalogEntry) => e.title ?? e.name;
 const names = (e: ExtensionCatalogEntry) => [e.name, e.packageName, e.id].filter((x): x is string => !!x).map((x) => x.toLowerCase());
 
 /** Pairwise compat between picks (from the precomputed compat links), missing requirements, and Antora line overlap. */
-export function analyzeStack(picks: ExtensionCatalogEntry[], all: ExtensionCatalogEntry[]): { issues: StackIssue[]; antora: number[] | null } {
+export function analyzeStack(picks: ExtensionCatalogEntry[], all: ExtensionCatalogEntry[]): { issues: StackIssue[]; antora: number[] | null; coverage: StackCoverage } {
   const issues: StackIssue[] = [];
   const ids = new Set(picks.map((p) => p.catalogId));
   const pickNames = new Set(picks.flatMap(names));
@@ -91,9 +92,18 @@ export function analyzeStack(picks: ExtensionCatalogEntry[], all: ExtensionCatal
       issues.push({ kind: 'antora', ids: declared.map((x) => x.p.catalogId), message: `No Antora line fits every pick: ${declared.map((x) => `${label(x.p)} (Antora ${x.m.join(', ')})`).join('; ')}` });
     }
   }
-  const order: StackIssueKind[] = ['conflict', 'missing', 'antora', 'alternative'];
+  // Stack-wide contracts: the union of provides across the picks against every pick's uses (same logic as the sync).
+  const node = (e: ExtensionCatalogEntry) => ({ ...e, repositoryOwner: e.repositoryOwner ?? '', repositoryName: e.repositoryName ?? '' }) as CompatNode;
+  const coverage = stackCoverage(picks.map(node), all.map(node));
+  for (const c of coverage.missingContracts) {
+    const users = picks.filter((p) => p.relations?.uses?.[c] !== undefined);
+    const range = users[0]?.relations?.uses?.[c] ?? '*';
+    const suggest = all.find((e) => !ids.has(e.catalogId) && e.relations?.provides?.[c] !== undefined && satisfies(e.relations.provides[c], range));
+    issues.push({ kind: 'contract', ids: users.map((u) => u.catalogId), missing: c, suggest, message: `Nothing in the stack provides ${c}@${range} (used by ${users.map(label).join(', ')})` });
+  }
+  const order: StackIssueKind[] = ['conflict', 'missing', 'contract', 'antora', 'alternative'];
   issues.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
-  return { issues, antora };
+  return { issues, antora, coverage };
 }
 
 const gitSpec = (e: ExtensionCatalogEntry) =>

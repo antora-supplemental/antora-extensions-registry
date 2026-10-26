@@ -1,5 +1,6 @@
 import { For, Show } from 'solid-js';
-import type { CompatLink } from '~/lib/pkg-compat';
+import type { CompatLink, StackCoverage } from '~/lib/pkg-compat';
+import { encodeStack } from '~/lib/stack';
 
 const BADGE: Record<string, { label: string; cls: string }> = {
   declared: { label: 'Declared', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40' },
@@ -21,16 +22,44 @@ function Target(props: { l: CompatLink }) {
 }
 
 /** "Works with" (declared, then guaranteed, then likely), a smaller "Conflicts with", and an Antora overlap warning. */
-export function PackageCompat(props: { links?: CompatLink[] }) {
+const STACK_BADGE: Record<StackCoverage['status'], { label: string; cls: string }> = {
+  guaranteed: BADGE.guaranteed,
+  declared: BADGE.declared,
+  likely: BADGE.likely,
+  none: { label: 'Incomplete', cls: 'bg-rose-500/10 text-rose-300 border-rose-500/30' },
+};
+
+/** The smallest stack whose combined provides cover every contract (or the best partial one), with a /stack share link. */
+export function StackGuarantee(props: { stack: StackCoverage }) {
+  const ok = () => props.stack.status === 'guaranteed';
+  return (
+    <div class="mb-4 rounded-lg border border-sky-500/30 bg-sky-500/5 p-3 text-sm" data-testid="stack-guarantee" data-stack-status={props.stack.status}>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="font-semibold text-white">{ok() ? 'Guaranteed as a stack' : 'Best stack found'}</span>
+        <span class={`rounded border px-1.5 py-0.5 text-xs ${STACK_BADGE[props.stack.status].cls}`} title={[props.stack.why, props.stack.covered.length ? `Contracts: ${props.stack.covered.join(', ')}` : ''].filter(Boolean).join('\n')}>{STACK_BADGE[props.stack.status].label}</span>
+        <a class="text-xs text-sky-300 hover:underline" href={`/stack?s=${encodeStack(props.stack.members)}`} data-testid="stack-guarantee-link">Open this stack</a>
+      </div>
+      <p class="mt-1 text-slate-300">
+        <For each={props.stack.members}>{(id, i) => <>{i() > 0 ? ' + ' : ''}<a class="text-sky-300 hover:underline" href={`/extensions/${id}`}>{props.stack.memberNames[i()] ?? id}</a></>}</For>
+      </p>
+      <Show when={props.stack.missing.length}>
+        <p class="mt-1 text-xs text-amber-300" data-testid="stack-missing">Missing: {props.stack.missing.join('; ')}</p>
+      </Show>
+    </div>
+  );
+}
+
+export function PackageCompat(props: { links?: CompatLink[]; stack?: StackCoverage }) {
   const works = () => (props.links ?? []).filter((l) => l.relation === 'works-with');
   const conflicts = () => (props.links ?? []).filter((l) => l.relation === 'conflicts');
   const mismatch = () => (props.links ?? []).filter((l) => l.relation === 'antora-mismatch');
   const alts = () => (props.links ?? []).filter((l) => l.relation === 'alternative');
   return (
-    <Show when={(props.links?.length ?? 0) > 0}>
+    <Show when={(props.links?.length ?? 0) > 0 || props.stack}>
       <section class="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-6" aria-label="Works with" data-testid="works-with">
         <h2 class="text-lg font-semibold text-white mb-1">Works with</h2>
         <p class="text-sm text-slate-400 mb-4">Declared relations first, then contract-guaranteed chains, then inferred ones. Hover a badge for the reasoning.</p>
+        <Show when={props.stack}>{(s) => <StackGuarantee stack={s()} />}</Show>
         <Show when={works().length} fallback={<p class="text-sm text-slate-500">No compatible packages declared or inferred yet.</p>}>
           <ul class="space-y-2">
             <For each={works()}>

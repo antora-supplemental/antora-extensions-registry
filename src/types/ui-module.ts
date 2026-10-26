@@ -38,6 +38,8 @@ export interface ExtensionCatalogEntry {
   relations?: import('~/lib/pkg-compat').DeclaredRelations;
   /** Computed at sync: works-with / conflicts / alternatives with confidence and reasoning. */
   compat?: import('~/lib/pkg-compat').CompatLink[];
+  /** Computed at sync: the smallest stack (requires/uses closure) that covers every contract, or the best partial one. */
+  stack?: import('~/lib/pkg-compat').StackCoverage;
   /** Globally unique id: `{repoSlug}/{moduleId}` */
   catalogId: string;
   /** ISO date this entry was first listed in the registry (never changes). */

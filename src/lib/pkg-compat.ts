@@ -163,13 +163,17 @@ const sameExclusive = (a: CompatNode, b: CompatNode) =>
 const layersCollide = (a: CompatNode, b: CompatNode) => (a.layers ?? []).some((l) => EXCLUSIVE.includes(l) && (b.layers ?? []).includes(l));
 const label = (n: CompatNode) => `${n.name}@${n.version}`;
 
-/** Computes compatibility links for every node. Pure: same input, same output. */
-export function computeCompat(nodes: CompatNode[]): Map<string, CompatLink[]> {
+/** Name / package / repo lookup. A repo name resolves to the entry that speaks for the package: one carrying relations, then a recipe/bundle. */
+export function makeResolver(nodes: CompatNode[]): { index: Map<string, CompatNode>; find: (name: string) => CompatNode | undefined } {
   const index = new Map<string, CompatNode>();
-  // A repo name resolves to the entry that speaks for the package: one carrying relations, then a recipe/bundle.
   const weight = (n: CompatNode) => (n.relations ? 0 : 2) + ((n as { type?: string }).type === 'recipe' || n.bundle ? 0 : 1);
   for (const n of [...nodes].sort((a, b) => weight(a) - weight(b))) for (const k of keysOf(n)) if (!index.has(k)) index.set(k, n);
-  const find = (name: string) => index.get(name.toLowerCase());
+  return { index, find: (name: string) => index.get(name.toLowerCase()) };
+}
+
+/** Computes compatibility links for every node. Pure: same input, same output. */
+export function computeCompat(nodes: CompatNode[]): Map<string, CompatLink[]> {
+  const { index, find } = makeResolver(nodes);
 
   // Direct declared edges (requires implies works-with), both directions.
   type Edge = { range: string; declaredAs: string; from: CompatNode; kind: 'works' | 'conflict'; source: 'declared' | 'curated' };
@@ -307,4 +311,151 @@ export function computeCompat(nodes: CompatNode[]): Map<string, CompatLink[]> {
 const ORDER: Record<CompatConfidence, number> = { declared: 0, curated: 1, guaranteed: 2, likely: 3 };
 export function sortLinks(links: CompatLink[]): CompatLink[] {
   return [...links].sort((x, y) => ORDER[x.confidence] - ORDER[y.confidence] || x.targetName.localeCompare(y.targetName));
+}
+
+// ---- stack-wide contracts ----
+// A stack is guaranteed when the union of `provides` across every member covers every `uses` contract of every member
+// at satisfied versions, and every indexed `requires` is in the stack at a satisfied version. Partial coverage is
+// "declared" when the members are held together by declared requires/worksWith, otherwise "likely".
+
+export type StackStatus = 'guaranteed' | 'declared' | 'likely' | 'none';
+export interface StackCoverage {
+  status: StackStatus;
+  /** Catalog ids, root (or first pick) first. */
+  members: string[];
+  /** Display names, same order as members. */
+  memberNames: string[];
+  /** "contract@range (Provider)" for every satisfied use. */
+  covered: string[];
+  /** "contract@range (used by X)" or "requires Y range (used by X)" for every gap. */
+  missing: string[];
+  /** Contract names nobody in the stack provides, for suggestions. */
+  missingContracts: string[];
+  why: string;
+}
+
+const providesAt = (n: CompatNode, c: string, range: string) => n.relations?.provides?.[c] !== undefined && satisfies(n.relations.provides[c], range);
+
+/** Coverage of one fixed set of packages. `nodes` (the whole registry) resolves declared names; defaults to the members. */
+export function stackCoverage(members: CompatNode[], nodes: CompatNode[] = members): StackCoverage {
+  const { find } = makeResolver(nodes.length ? nodes : members);
+  const ids = new Set(members.map((m) => m.catalogId));
+  const covered: string[] = [];
+  const missing: string[] = [];
+  const missingContracts: string[] = [];
+  const conflicts: string[] = [];
+  let usesCount = 0;
+  for (const m of members) {
+    for (const [c, range] of Object.entries(m.relations?.uses ?? {})) {
+      usesCount++;
+      const p = members.find((n) => providesAt(n, c, range));
+      if (p) covered.push(`${c}@${range} (${p.name})`);
+      else {
+        missing.push(`${c}@${range} (used by ${m.name})`);
+        if (!missingContracts.includes(c)) missingContracts.push(c);
+      }
+    }
+    for (const [name, range] of Object.entries(m.relations?.requires ?? {})) {
+      const t = find(name);
+      if (!t) continue; // not in the registry: cannot be checked here
+      const inStack = members.find((x) => x.catalogId === t.catalogId);
+      if (!inStack) missing.push(`requires ${t.name} ${range} (used by ${m.name})`);
+      else if (range !== '*' && name.toLowerCase() === (t.packageName ?? t.name).toLowerCase() && !satisfies(t.version, range)) missing.push(`requires ${t.name} ${range}, stack has ${t.version} (used by ${m.name})`);
+    }
+    for (const name of Object.keys(m.relations?.conflictsWith ?? {})) {
+      const t = find(name);
+      if (t && ids.has(t.catalogId)) conflicts.push(`${m.name} conflicts with ${t.name}`);
+    }
+  }
+  const glued = members.length > 1 && members.slice(1).every((x) => members.some((y) => y !== x && (
+    Object.keys({ ...(y.relations?.requires ?? {}), ...(y.relations?.worksWith ?? {}) }).some((k) => find(k)?.catalogId === x.catalogId) ||
+    Object.keys({ ...(x.relations?.requires ?? {}), ...(x.relations?.worksWith ?? {}) }).some((k) => find(k)?.catalogId === y.catalogId))));
+  let status: StackStatus;
+  let why: string;
+  if (conflicts.length) {
+    status = 'none';
+    why = conflicts.join('; ');
+  } else if (usesCount && !missing.length) {
+    status = 'guaranteed';
+    why = `The stack provides every contract its packages use (${covered.length}) at satisfied versions`;
+  } else if (glued) {
+    status = 'declared';
+    why = missing.length ? `Declared relations tie the stack together; missing ${missing.join(', ')}` : 'Declared relations tie the stack together; no contracts declared';
+  } else if (covered.length) {
+    status = 'likely';
+    why = `Partial contract coverage; missing ${missing.join(', ')}`;
+  } else {
+    status = 'none';
+    why = missing.length ? `Missing ${missing.join(', ')}` : 'No contracts or relations declared';
+  }
+  return { status, members: members.map((m) => m.catalogId), memberNames: members.map((m) => (m as { title?: string }).title ?? m.name), covered, missing, missingContracts, why };
+}
+
+/**
+ * The requires/uses closure of `seeds`: declared requires (indexed ones), then for every unprovided use a provider from
+ * the registry (preferring one a member declares requires/worksWith on, then declared metadata, then the one covering the
+ * most open contracts, then catalog id). Never adds a package that shares a single exclusive layer with a member.
+ */
+export function stackClosure(seeds: CompatNode[], nodes: CompatNode[], max = 40): CompatNode[] {
+  const { find } = makeResolver(nodes);
+  const out: CompatNode[] = [...seeds];
+  const has = (n: CompatNode) => out.some((x) => x.catalogId === n.catalogId);
+  const blocked = (n: CompatNode) => out.some((x) => sameExclusive(x, n)) ||
+    out.some((x) => Object.keys(x.relations?.conflictsWith ?? {}).some((k) => find(k)?.catalogId === n.catalogId)) ||
+    Object.keys(n.relations?.conflictsWith ?? {}).some((k) => { const t = find(k); return !!t && has(t); });
+  for (let i = 0; i < out.length && out.length < max; i++) {
+    const m = out[i];
+    for (const name of Object.keys(m.relations?.requires ?? {})) {
+      const t = find(name);
+      if (t && !has(t)) out.push(t);
+    }
+  }
+  for (let i = 0; i < out.length && out.length < max; i++) {
+    const m = out[i];
+    for (const [c, range] of Object.entries(m.relations?.uses ?? {})) {
+      if (out.some((n) => providesAt(n, c, range))) continue;
+      const declaredOn = new Set(out.flatMap((x) => Object.keys({ ...(x.relations?.requires ?? {}), ...(x.relations?.worksWith ?? {}) }).map((k) => find(k)?.catalogId)).filter(Boolean));
+      const open = out.flatMap((x) => Object.entries(x.relations?.uses ?? {})).filter(([k, r]) => !out.some((n) => providesAt(n, k, r)));
+      const score = (n: CompatNode) => open.filter(([k, r]) => providesAt(n, k, r)).length;
+      const cands = nodes.filter((n) => !has(n) && providesAt(n, c, range) && !blocked(n)).sort((a, b) =>
+        Number(declaredOn.has(b.catalogId)) - Number(declaredOn.has(a.catalogId)) ||
+        Number(b.relations?.source === 'declared') - Number(a.relations?.source === 'declared') ||
+        score(b) - score(a) || a.catalogId.localeCompare(b.catalogId));
+      const p = cands[0];
+      if (!p) continue;
+      out.push(p);
+      for (let j = out.length - 1; j < out.length && out.length < max; j++) {
+        for (const name of Object.keys(out[j].relations?.requires ?? {})) {
+          const t = find(name);
+          if (t && !has(t)) out.push(t);
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/** The smallest stack (by pruning the closure, last added first) that makes `root` guaranteed, or the best partial one. */
+export function minimalStack(root: CompatNode, nodes: CompatNode[]): StackCoverage | undefined {
+  if (!Object.keys(root.relations?.uses ?? {}).length) return undefined;
+  let members = stackClosure([root], nodes);
+  const full = stackCoverage(members, nodes);
+  if (full.status === 'guaranteed') {
+    for (let i = members.length - 1; i >= 1; i--) {
+      const trial = members.filter((_, j) => j !== i);
+      if (stackCoverage(trial, nodes).status === 'guaranteed') members = trial;
+    }
+    return stackCoverage(members, nodes);
+  }
+  return full;
+}
+
+/** `minimalStack` for every node that uses contracts. */
+export function computeStacks(nodes: CompatNode[]): Map<string, StackCoverage> {
+  const out = new Map<string, StackCoverage>();
+  for (const n of nodes) {
+    const s = minimalStack(n, nodes);
+    if (s && s.members.length > 1) out.set(n.catalogId, s);
+  }
+  return out;
 }

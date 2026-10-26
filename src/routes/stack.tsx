@@ -8,10 +8,19 @@ import { loadExtensionCatalog } from '~/lib/server/catalog';
 import { analyzeStack, decodeStack, encodeStack, stackPlaybook, type StackIssue } from '~/lib/stack';
 import { addToStack, clearStack, removeFromStack, replaceStack, stackPicks } from '~/lib/stack-store';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
+import type { StackCoverage } from '~/lib/pkg-compat';
+
+const STATUS: Record<StackCoverage['status'], { label: string; cls: string; text: string }> = {
+  guaranteed: { label: 'Guaranteed', cls: 'border-sky-500/40 bg-sky-500/15 text-sky-300', text: 'The picks together provide every contract they use, at satisfied versions.' },
+  declared: { label: 'Declared', cls: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300', text: 'Declared relations tie the picks together, but contract coverage is incomplete.' },
+  likely: { label: 'Likely (inferred)', cls: 'border-amber-500/30 bg-amber-500/10 text-amber-300', text: 'Some contracts are covered; others are missing.' },
+  none: { label: 'Incomplete', cls: 'border-rose-500/30 bg-rose-500/10 text-rose-300', text: 'No contract coverage or relations tie these picks together.' },
+};
 
 const ISSUE: Record<StackIssue['kind'], { label: string; cls: string }> = {
   conflict: { label: 'Conflict', cls: 'border-red-500/40 bg-red-500/10 text-red-300' },
   missing: { label: 'Missing requirement', cls: 'border-amber-500/40 bg-amber-500/10 text-amber-300' },
+  contract: { label: 'Missing contract', cls: 'border-amber-500/40 bg-amber-500/10 text-amber-300' },
   antora: { label: 'Antora version', cls: 'border-orange-500/40 bg-orange-500/10 text-orange-300' },
   alternative: { label: 'Alternatives', cls: 'border-sky-500/40 bg-sky-500/10 text-sky-300' },
 };
@@ -106,6 +115,13 @@ export default function StackPage() {
               Every pair checked with the same engine as <em>Works with</em> on each page.
               <Show when={result().antora?.length}> Fits Antora {result().antora!.join(', ')}.</Show>
             </p>
+            <div class="mb-3 flex flex-wrap items-center gap-2 text-sm" data-stack-status={result().coverage.status}>
+              <span class={`rounded border px-1.5 py-0.5 text-xs ${STATUS[result().coverage.status].cls}`} title={result().coverage.covered.length ? `Contracts: ${result().coverage.covered.join(', ')}` : undefined}>Stack: {STATUS[result().coverage.status].label}</span>
+              <span class="text-slate-400">{STATUS[result().coverage.status].text}</span>
+              <Show when={result().coverage.missing.length}>
+                <span class="w-full text-xs text-amber-300" data-stack-missing>Missing: {result().coverage.missing.join('; ')}</span>
+              </Show>
+            </div>
             <Show when={result().issues.length} fallback={<p class="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm text-emerald-300" data-stack-ok>No conflicts, missing requirements or Antora mismatches found.</p>}>
               <ul class="space-y-2">
                 <For each={result().issues}>
@@ -113,10 +129,10 @@ export default function StackPage() {
                     <li class="flex flex-wrap items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/30 p-3 text-sm" data-stack-issue={i.kind}>
                       <span class={`rounded border px-1.5 py-0.5 text-xs ${ISSUE[i.kind].cls}`}>{ISSUE[i.kind].label}</span>
                       <span class="text-slate-300 flex-1 min-w-[12rem]">{i.message}</span>
-                      <Show when={i.kind === 'missing' && i.suggest && !viewingShared()}>
+                      <Show when={(i.kind === 'missing' || i.kind === 'contract') && i.suggest && !viewingShared()}>
                         <button type="button" class={buttonVariants({ variant: 'soft', size: 'sm' })} onClick={() => addToStack([i.suggest!.catalogId])}>Add {i.suggest!.title ?? i.suggest!.name}</button>
                       </Show>
-                      <Show when={i.kind === 'missing' && !i.suggest}>
+                      <Show when={(i.kind === 'missing' || i.kind === 'contract') && !i.suggest}>
                         <span class="text-xs text-slate-500">not in the registry; install it yourself</span>
                       </Show>
                     </li>

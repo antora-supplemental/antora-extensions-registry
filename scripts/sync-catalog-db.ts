@@ -15,7 +15,7 @@ import { checkRepository } from '../src/lib/registry-check';
 import { sqlPreviewStore, syncPreviewCache } from '../src/lib/preview-cache';
 import { OWNERS_DDL, ownerKeys, syncOwners } from '../src/lib/owners';
 import { firstListedStatements } from '../src/lib/first-listed';
-import { computeCompat, sortLinks } from '../src/lib/pkg-compat';
+import { computeCompat, computeStacks, sortLinks } from '../src/lib/pkg-compat';
 import { seedFor } from '../src/data/compat-seeds';
 import { SEED_TRUSTED_PUBLISHERS, repoStatus, trustedReason, upsertApprovedTheme } from '../src/lib/registry-write';
 
@@ -81,11 +81,18 @@ for (const e of entries) {
     if (s) e.relations = s;
   }
 }
-const compat = computeCompat(entries.map((e) => ({ ...e, repositoryOwner: e.repositoryOwner ?? '', repositoryName: e.repositoryName ?? '' })));
+const compatNodes = entries.map((e) => ({ ...e, repositoryOwner: e.repositoryOwner ?? '', repositoryName: e.repositoryName ?? '' }));
+const compat = computeCompat(compatNodes);
+// Stack-wide contracts: union of provides over the requires/uses closure; the smallest guaranteed stack per package.
+const stacks = computeStacks(compatNodes);
 for (const e of entries) {
   const links = compat.get(e.catalogId);
   if (links) e.compat = sortLinks(links);
+  const st = stacks.get(e.catalogId);
+  if (st) e.stack = st;
+  else delete e.stack;
 }
+console.log(`[registry] stacks: ${[...stacks.values()].filter((s) => s.status === 'guaranteed').length} guaranteed, ${[...stacks.values()].filter((s) => s.status !== 'guaranteed').length} partial`);
 
 // Cache previews in Turso and serve them from /previews/<hash>: never cache a failed first fetch, keep the
 // cached copy (marked stale) when the source later breaks or leaves the README, refresh on a changed image.

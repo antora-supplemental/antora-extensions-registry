@@ -9,7 +9,7 @@ const expect = (v: any) => ({
   toContain: (x: string) => assert.ok(String(v).includes(x), `${v} should contain ${x}`),
   toMatchObject: (x: Record<string, any>) => { for (const k of Object.keys(x)) assert.deepEqual(v?.[k], x[k], k); },
 });
-import { computeCompat, readRelations, satisfies, type CompatNode } from '../src/lib/pkg-compat';
+import { computeCompat, computeStacks, minimalStack, readRelations, satisfies, stackCoverage, type CompatNode } from '../src/lib/pkg-compat';
 
 const n = (id: string, layers: any[], rel?: any, antora?: number[], version = '1.0.0'): CompatNode => ({
   catalogId: id, name: id, version, repositoryOwner: 'o', repositoryName: id, layers, antora, relations: rel ? { source: 'declared', ...rel } : undefined,
@@ -94,4 +94,53 @@ it('a repo name resolves to the entry carrying relations, not the first module',
   const site = { ...n('site', ['body-kit'], { provides: { m: '1' } }), repositoryName: 'theme' };
   const m = computeCompat([mod, site, n('pack', ['chassis'], { requires: { theme: '*' } })]);
   expect(m.get('pack')?.[0].target).toBe('site');
+});
+
+describe('stack-wide contracts', () => {
+  const N = (o: Partial<CompatNode> & { catalogId: string; name: string }, rel?: any): CompatNode => ({ version: '1.0.0', repositoryOwner: 'antora-supplemental', repositoryName: o.catalogId.split('/')[1], layers: [], ...o, relations: rel ? { source: 'declared', ...rel } : undefined });
+  const cs = N({ catalogId: 'antora-supplemental/antora-ui-chassis/color-scheme', name: 'Color scheme', version: '0.5.3', layers: ['chassis'], packageName: '@antora-supplemental/color-scheme' }, { provides: { 'color-scheme-tokens': '0.5' } });
+  const ldm = N({ catalogId: 'antora-supplemental/antora-ui-chassis/light-dark-mode', name: 'Light/Dark Mode', version: '0.1.3', layers: ['chassis'], packageName: '@antora-supplemental/light-dark-mode' }, { requires: { '@antora-supplemental/color-scheme': '^0.5.3' }, provides: { 'light-dark-slots': '0.1' }, uses: { 'color-scheme-tokens': '^0.5' } });
+  const val = N({ catalogId: 'antora-supplemental/valentus-theme/valentus-site', name: 'Valentus Layout', layers: ['body-kit'] }, { worksWith: { '@antora-supplemental/color-scheme': '>=0.4.0' }, provides: { 'valentus-layout-markup': '4' }, uses: { 'color-scheme-tokens': '^0.5' } });
+  const sk = N({ catalogId: 'antora-supplemental/skittles-theme/skittles-theme', name: 'Skittles', version: '0.1.0', layers: ['body-kit', 'paint'] }, {
+    worksWith: { 'valentus-theme': '^4.2.2', '@antora-supplemental/color-scheme': '^0.5.3', '@antora-supplemental/light-dark-mode': '^0.1.3' },
+    provides: { 'skittles-paint-tokens': '0.1' }, uses: { 'valentus-layout-markup': '4', 'color-scheme-tokens': '^0.5', 'light-dark-slots': '^0.1' },
+  });
+  const other = N({ catalogId: 'x/other-paint/other-paint', name: 'Other paint', layers: ['paint'] }, { provides: { 'color-scheme-tokens': '0.5' } });
+  const all = [sk, cs, ldm, val, other];
+
+  it('Skittles: no single provider or one-hop chain covers it, but the four-package stack is guaranteed', () => {
+    const m = computeCompat(all);
+    expect(m.get(sk.catalogId)!.some((l) => l.confidence === 'guaranteed' && l.target === val.catalogId)).toBe(false);
+    const s = stackCoverage([sk, val, cs, ldm], all);
+    expect(s.status).toBe('guaranteed');
+    expect(s.missing).toEqual([]);
+  });
+  it('Skittles: the minimal guaranteed stack is Skittles + Valentus Layout + Color scheme + Light/Dark Mode', () => {
+    const s = minimalStack(sk, all)!;
+    expect(s.status).toBe('guaranteed');
+    expect([...s.members].sort()).toEqual([sk, val, cs, ldm].map((n) => n.catalogId).sort());
+    expect(s.members[0]).toBe(sk.catalogId);
+    expect(computeStacks(all).get(sk.catalogId)?.status).toBe('guaranteed');
+  });
+  it('partial coverage is declared when relations tie the stack, likely otherwise, and lists the missing contracts', () => {
+    const declared = stackCoverage([sk, cs], all);
+    expect(declared.status).toBe('declared');
+    expect(declared.missingContracts.sort()).toEqual(['light-dark-slots', 'valentus-layout-markup']);
+    expect(declared.missing.join('; ')).toContain('valentus-layout-markup@4 (used by Skittles)');
+    const loose = N({ catalogId: 'x/loose/loose', name: 'Loose', layers: ['bolt-on'] }, { uses: { 'color-scheme-tokens': '^0.5', 'nav-api': '1' } });
+    const likely = stackCoverage([loose, cs], [loose, cs]);
+    expect(likely.status).toBe('likely');
+    expect(likely.missingContracts).toEqual(['nav-api']);
+  });
+  it('an unsatisfied version range is not covered', () => {
+    const old = { ...cs, relations: { source: 'declared' as const, provides: { 'color-scheme-tokens': '0.4' } } };
+    const s = stackCoverage([ldm, old], [ldm, old]);
+    expect(s.status === 'guaranteed').toBe(false);
+    expect(s.missingContracts).toEqual(['color-scheme-tokens']);
+  });
+  it('a declared requires outside the stack blocks guaranteed', () => {
+    const s = stackCoverage([ldm, other], [ldm, other, cs]);
+    expect(s.status === 'guaranteed').toBe(false);
+    expect(s.missing.join()).toContain('requires Color scheme');
+  });
 });

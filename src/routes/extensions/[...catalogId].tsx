@@ -146,7 +146,7 @@ export default function ExtensionDetailPage() {
                     </section>
                   </Show>
 
-                  <PackageCompat links={e().compat} />
+                  <PackageCompat links={e().compat} stack={e().stack} />
 
                   <Show when={siblings().length > 0}>
                     <Card class="p-6 mb-6">
