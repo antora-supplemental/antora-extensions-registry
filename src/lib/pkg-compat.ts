@@ -160,7 +160,7 @@ export function computeCompat(nodes: CompatNode[]): Map<string, CompatLink[]> {
   const find = (name: string) => index.get(name.toLowerCase());
 
   // Direct declared edges (requires implies works-with), both directions.
-  type Edge = { range: string; from: CompatNode; kind: 'works' | 'conflict'; source: 'declared' | 'curated' };
+  type Edge = { range: string; declaredAs: string; from: CompatNode; kind: 'works' | 'conflict'; source: 'declared' | 'curated' };
   const edges = new Map<string, Map<string, Edge>>(); // a.catalogId -> target key -> edge
   const put = (a: CompatNode, key: string, e: Edge) => {
     const m = edges.get(a.catalogId) ?? new Map();
@@ -174,13 +174,13 @@ export function computeCompat(nodes: CompatNode[]): Map<string, CompatLink[]> {
     const src = r.source ?? 'declared';
     for (const [name, range] of Object.entries({ ...(r.worksWith ?? {}), ...(r.requires ?? {}) })) {
       const b = find(name);
-      put(a, b?.catalogId ?? name, { range, from: a, kind: 'works', source: src });
-      if (b) put(b, a.catalogId, { range: '*', from: a, kind: 'works', source: src });
+      put(a, b?.catalogId ?? name, { range, declaredAs: name, from: a, kind: 'works', source: src });
+      if (b) put(b, a.catalogId, { range: '*', declaredAs: name, from: a, kind: 'works', source: src });
     }
     for (const [name, range] of Object.entries(r.conflictsWith ?? {})) {
       const b = find(name);
-      put(a, b?.catalogId ?? name, { range, from: a, kind: 'conflict', source: src });
-      if (b) put(b, a.catalogId, { range: '*', from: a, kind: 'conflict', source: src });
+      put(a, b?.catalogId ?? name, { range, declaredAs: name, from: a, kind: 'conflict', source: src });
+      if (b) put(b, a.catalogId, { range: '*', declaredAs: name, from: a, kind: 'conflict', source: src });
     }
   }
   const declaredWorks = (a: CompatNode, b: CompatNode) => edges.get(a.catalogId)?.get(b.catalogId)?.kind === 'works';
@@ -206,11 +206,12 @@ export function computeCompat(nodes: CompatNode[]): Map<string, CompatLink[]> {
       const name = b?.name ?? key;
       const conf = e.source;
       if (e.kind === 'conflict') {
-        add({ target: b?.catalogId ?? key, targetName: name, indexed: Boolean(b), relation: 'conflicts', confidence: conf, why: e.from === a ? `${a.name} declares conflictsWith ${key} ${e.range}` : `${e.from.name} declares conflictsWith ${a.name}` });
+        add({ target: b?.catalogId ?? key, targetName: name, indexed: Boolean(b), relation: 'conflicts', confidence: conf, why: e.from === a ? `${a.name} declares conflictsWith ${e.declaredAs} ${e.range}` : `${e.from.name} declares conflictsWith ${a.name}` });
         continue;
       }
-      const versionNote = b && e.from === a && e.range !== '*' && !satisfies(b.version, e.range) ? ` (current ${b.version} is outside ${e.range})` : '';
-      add({ target: b?.catalogId ?? key, targetName: name, indexed: Boolean(b), relation: 'works-with', confidence: conf, why: (e.from === a ? `${a.name} declares worksWith/requires ${key} ${e.range}` : `${e.from.name} declares it works with ${a.name}`) + versionNote });
+      // Only compare versions when the range names this exact package (a repo name may resolve to a recipe with its own version).
+      const versionNote = b && e.from === a && e.declaredAs.toLowerCase() === b.name.toLowerCase() && e.range !== '*' && !satisfies(b.version, e.range) ? ` (current ${b.version} is outside ${e.range})` : '';
+      add({ target: b?.catalogId ?? key, targetName: name, indexed: Boolean(b), relation: 'works-with', confidence: conf, why: (e.from === a ? `${a.name} declares worksWith/requires ${e.declaredAs} ${e.range}` : `${e.from.name} declares it works with ${a.name}`) + versionNote });
     }
 
     for (const b of nodes) {
