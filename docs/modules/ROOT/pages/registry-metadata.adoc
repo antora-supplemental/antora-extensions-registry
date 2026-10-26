@@ -198,8 +198,14 @@ The registry computes links at each catalog sync, stores them in the entry snaps
 
 . *Declared conflict*: always wins.
 . *Antora mismatch*: two related packages that share no Antora major get a warning instead of "works with".
-. *Declared* (or *Curated*, for registry seeds of packages that cannot declare yet): from `requires`/`worksWith`.
 . *Guaranteed*: a package provides every contract the other uses, or a cross-layer chain A -> B -> C has strict layering: every contract A uses is provided by B or C at a compatible version, every contract B uses is provided by C, A does not reach C's contracts directly, and the current B version satisfies the ranges both A and C declare.
+. *Declared* (or *Curated*, for registry seeds of packages that cannot declare yet): from `requires`/`worksWith`.
 . *Likely (inferred)*: any other declared chain, with the reason (for example "A reaches C's markup directly, not via B").
+. *Alternative*: lowest. Declared relations and satisfied contracts always take precedence over layer inference.
 
-Nothing is inferred between packages in the same exclusive layer (engine, chassis, body kit, paint): they are listed as alternatives.
+Layers are either exclusive or composable:
+
+* *Exclusive* (one per site): engine, body kit (layout), paint. Two packages in the same exclusive layer are listed as alternatives only when neither declares `requires`/`worksWith` toward the other and neither's `uses` contracts are provided by the other.
+* *Composable* (sets of cooperating packages): chassis, extensions/bolt-ons. Alternatives are never inferred there; for example `light-dark-mode` and `color-scheme` are both chassis packages and work together.
+
+Packages in the same monorepo that declare relations to each other are never alternatives. A declared name resolves by the package's `package.json` name (for example `@antora-supplemental/color-scheme`), its catalog id, or its repository.

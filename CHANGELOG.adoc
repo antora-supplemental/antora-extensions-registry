@@ -2,6 +2,7 @@
 
 == Unreleased
 
+* Compatibility: declared `requires`/`worksWith` and satisfied `provides`/`uses` contracts now take precedence over the same-layer "alternatives" inference, and a contract-guaranteed link outranks a plain declared one. Only exclusive layers (engine, body kit, paint) produce alternatives, and only when nothing relates the two packages; composable layers (chassis, extensions) never do. Declared names also resolve by a monorepo package's `package.json` name, so `@antora-supplemental/color-scheme` finds the chassis color-scheme entry.
 * Monorepo packages (for example antora-ui-chassis) now get per-package releases, Antora compatibility, relations and color schemes. Each package reads its own `package.json` and maps `<package>-v<semver>` tags (such as `color-scheme-v0.5.3`) to its own install specs. The singular `layer` field in a registry index is now honored, so layers show as declared instead of inferred.
 * Package detail pages list "More from this repo" siblings and show repository-level details (stars, repository, package directory). Browse cards for packages from a multi-package repo show a "part of <repo>" badge.
 * Retired the curated compatibility seeds for color-scheme, light-dark-mode and default-paint, which now declare their own `antoraRegistry` blocks.

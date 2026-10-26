@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 const describe = (_: string, fn: () => void) => fn();
 const expect = (v: any) => ({
   toBe: (x: any) => assert.equal(v, x),
+  toBeUndefined: () => assert.equal(v, undefined),
+  not: { toBe: (x: any) => assert.notEqual(v, x) },
   toEqual: (x: any) => assert.deepEqual(v, x),
   toContain: (x: string) => assert.ok(String(v).includes(x), `${v} should contain ${x}`),
   toMatchObject: (x: Record<string, any>) => { for (const k of Object.keys(x)) assert.deepEqual(v?.[k], x[k], k); },
@@ -34,9 +36,33 @@ describe('computeCompat', () => {
     expect(link(m, 'a', 'b')).toMatchObject({ relation: 'works-with', confidence: 'declared' });
     expect(link(m, 'b', 'a')).toMatchObject({ relation: 'works-with', confidence: 'declared' });
   });
-  it('same exclusive layer is an alternative, never compatible', () => {
-    const m = computeCompat([n('p1', ['paint'], { uses: { x: '1' } }), n('p2', ['paint'], { provides: { x: '1' } })]);
+  it('same exclusive layer with nothing declared is an alternative', () => {
+    const m = computeCompat([n('p1', ['paint']), n('p2', ['paint'])]);
     expect(link(m, 'p1', 'p2')?.relation).toBe('alternative');
+  });
+  it('satisfied contracts beat the same-layer alternative inference', () => {
+    const m = computeCompat([n('p1', ['paint'], { uses: { x: '1' } }), n('p2', ['paint'], { provides: { x: '1' } })]);
+    expect(link(m, 'p1', 'p2')).toMatchObject({ relation: 'works-with', confidence: 'guaranteed' });
+    expect(link(m, 'p2', 'p1')?.relation).not.toBe('alternative');
+  });
+  it('declared requires beats the same-layer alternative inference', () => {
+    const m = computeCompat([n('p1', ['paint'], { requires: { p2: '^1' } }), n('p2', ['paint'])]);
+    expect(link(m, 'p1', 'p2')).toMatchObject({ relation: 'works-with', confidence: 'declared' });
+    expect(link(m, 'p2', 'p1')?.relation).toBe('works-with');
+  });
+  it('composable layers (chassis, bolt-on) never infer alternatives', () => {
+    const m = computeCompat([n('c1', ['chassis']), n('c2', ['chassis']), n('b1', ['bolt-on']), n('b2', ['bolt-on'])]);
+    expect(link(m, 'c1', 'c2')).toBeUndefined();
+    expect(link(m, 'b1', 'b2')).toBeUndefined();
+  });
+  it('chassis monorepo: light-dark-mode requiring color-scheme by package name is works-with, not alternative', () => {
+    const cs = { ...n('color-scheme', ['chassis'], { provides: { 'color-scheme-tokens': '0.5' } }), catalogId: 'o/chassis/color-scheme', name: 'Color scheme', version: '0.5.3', repositoryOwner: 'o', repositoryName: 'chassis', packageName: '@o/color-scheme' };
+    const ldm = { ...n('light-dark-mode', ['chassis'], { requires: { '@o/color-scheme': '^0.5.3' }, uses: { 'color-scheme-tokens': '^0.5' } }), catalogId: 'o/chassis/light-dark-mode', repositoryOwner: 'o', repositoryName: 'chassis', packageName: '@o/light-dark-mode' };
+    const sk = { ...n('skittles', ['paint'], { requires: { '@o/color-scheme': '^0.5.0' }, uses: { 'color-scheme-tokens': '^0.5' } }), catalogId: 'o/sk/skittles' };
+    const m = computeCompat([cs, ldm, sk]);
+    expect(link(m, 'o/chassis/light-dark-mode', 'o/chassis/color-scheme')).toMatchObject({ relation: 'works-with', confidence: 'guaranteed' });
+    expect(link(m, 'o/chassis/color-scheme', 'o/chassis/light-dark-mode')?.relation).toBe('works-with');
+    expect(link(m, 'o/sk/skittles', 'o/chassis/color-scheme')).toMatchObject({ relation: 'works-with', confidence: 'guaranteed' });
   });
   it('declared conflict overrides', () => {
     const m = computeCompat([n('a', ['bolt-on'], { worksWith: { b: '*' }, conflictsWith: { b: '*' } }), n('b', ['chassis'])]);

@@ -73,7 +73,7 @@ export async function fetchRepoReleaseInfo(owner: string, repo: string, branch: 
   return { releases, antora: repoDefault, colorSchemes, ...(relations ? { relations } : {}) };
 }
 
-export interface PackageInfo { relations?: DeclaredRelations; antora: number[]; releases: ReleaseInfo[]; colorSchemes: ColorScheme[] }
+export interface PackageInfo { packageName?: string; relations?: DeclaredRelations; antora: number[]; releases: ReleaseInfo[]; colorSchemes: ColorScheme[] }
 
 /**
  * Monorepo packages (manifestPath under a subdirectory): each package's own package.json antoraRegistry block,
@@ -114,7 +114,7 @@ export async function fetchMonorepoPackageInfo(
       if (css) colorSchemes.push(...parseColorSchemes(css));
     }
     const relations = readRelations(pkg?.antoraRegistry ?? pkg?.['antora-registry']);
-    out.set(p.manifestPath, { antora: repoDefault, releases, colorSchemes, ...(relations ? { relations } : {}) });
+    out.set(p.manifestPath, { ...(typeof pkg.name === 'string' ? { packageName: pkg.name } : {}), antora: repoDefault, releases, colorSchemes, ...(relations ? { relations } : {}) });
   }
   return out;
 }

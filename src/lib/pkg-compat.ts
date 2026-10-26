@@ -5,9 +5,10 @@
  *   requires / worksWith / conflictsWith : { "<package name | owner/repo>": "<semver range>" } or ["name@range", ...]
  *   provides / uses                      : { "<contract>": "<version | range>" } or ["contract@version", ...]
  *
- * Precedence: declared conflict > Antora-version mismatch > declared works-with (requires implies works-with)
- * > contract-guaranteed > likely (inferred). Inferred results are never shown as declared, and nothing is ever
- * inferred between two packages in the same layer: same exclusive layer = alternatives.
+ * Precedence: declared conflict > Antora-version mismatch > contract-guaranteed > declared works-with (requires
+ * implies works-with) > likely (inferred) > alternative. Declared relations and satisfied contracts always beat
+ * layer inference: two packages are alternatives only when they share an exclusive layer (engine, body kit, paint)
+ * and nothing relates them. Composable layers (chassis, extensions) never produce alternatives.
  */
 import { antoraMajorsOf, type ReleaseInfo } from '~/lib/antora-compat';
 import type { LayerId } from '~/types/ui-module';
@@ -49,9 +50,17 @@ export interface CompatNode {
   releases?: ReleaseInfo[];
   antora?: number[];
   relations?: DeclaredRelations;
+  /** package.json name when it differs from the display name (monorepo packages). */
+  packageName?: string;
 }
 
-const EXCLUSIVE: LayerId[] = ['engine', 'chassis', 'body-kit', 'paint'];
+/**
+ * Exclusive layers hold one package per site (pick one engine, one layout/body kit, one paint); two packages there are
+ * alternatives. Composable layers (chassis, extensions/bolt-ons) are sets of cooperating packages: never alternatives.
+ */
+export const EXCLUSIVE_LAYERS: LayerId[] = ['engine', 'body-kit', 'paint'];
+const EXCLUSIVE = EXCLUSIVE_LAYERS;
+export const isExclusiveLayer = (l: LayerId) => EXCLUSIVE.includes(l);
 
 /** Accepts { name: range }, ["name@range"], ["name"]. Scoped names keep their leading @. */
 export function toRangeMap(v: unknown): RangeMap {
@@ -128,7 +137,10 @@ export function satisfies(version: string, range: string): boolean {
 // ---- graph ----
 function keysOf(n: CompatNode): string[] {
   const repo = `${n.repositoryOwner}/${n.repositoryName}`.toLowerCase();
-  return [n.catalogId.toLowerCase(), n.name.toLowerCase(), repo, n.repositoryName.toLowerCase()];
+  const id = n.catalogId.split('/').pop()!.toLowerCase();
+  const keys = [n.catalogId.toLowerCase(), n.name.toLowerCase(), repo, n.repositoryName.toLowerCase(), `${repo}/${id}`, `@${n.repositoryOwner.toLowerCase()}/${id}`];
+  if (n.packageName) keys.unshift(n.packageName.toLowerCase());
+  return keys;
 }
 
 function contractsSatisfied(uses: RangeMap, providers: CompatNode[]): { ok: string[]; missing: string[]; by: Map<string, CompatNode> } {
@@ -189,13 +201,23 @@ export function computeCompat(nodes: CompatNode[]): Map<string, CompatLink[]> {
     return e && e.from === a ? e.range : undefined;
   };
 
+  /** Declared edge either way, or either side's contracts satisfied by the other: never alternatives. */
+  const usesSatisfiedBy = (x: CompatNode, y: CompatNode) => {
+    const u = x.relations?.uses ?? {};
+    if (!Object.keys(u).length) return false;
+    const r = contractsSatisfied(u, [y]);
+    return r.ok.length > 0;
+  };
+  const related = (a: CompatNode, b: CompatNode) =>
+    edges.get(a.catalogId)?.has(b.catalogId) || edges.get(b.catalogId)?.has(a.catalogId) || usesSatisfiedBy(a, b) || usesSatisfiedBy(b, a);
+
   const out = new Map<string, CompatLink[]>();
   for (const a of nodes) {
     const links = new Map<string, CompatLink>();
     const add = (l: CompatLink) => {
       const prev = links.get(l.target);
       const rank = (x: CompatLink) =>
-        x.relation === 'conflicts' && (x.confidence === 'declared' || x.confidence === 'curated') ? 0 : x.relation === 'antora-mismatch' ? 1 : x.confidence === 'declared' || x.confidence === 'curated' ? 2 : x.confidence === 'guaranteed' ? 3 : x.relation === 'alternative' ? 4 : 5;
+        x.relation === 'conflicts' && (x.confidence === 'declared' || x.confidence === 'curated') ? 0 : x.relation === 'antora-mismatch' ? 1 : x.confidence === 'guaranteed' ? 2 : x.confidence === 'declared' || x.confidence === 'curated' ? 3 : x.relation === 'alternative' ? 5 : 4;
       if (!prev || rank(l) < rank(prev)) links.set(l.target, l);
     };
     const aAntora = antoraMajorsOf(a);
@@ -216,16 +238,17 @@ export function computeCompat(nodes: CompatNode[]): Map<string, CompatLink[]> {
 
     for (const b of nodes) {
       if (b === a) continue;
-      // 2) same exclusive layer: alternatives, never inferred compatible
-      if (sameExclusive(a, b)) {
-        if (!links.has(b.catalogId)) add({ target: b.catalogId, targetName: b.name, indexed: true, relation: 'alternative', confidence: 'likely', why: `Both fill the ${a.layers![0]} layer; use one or the other` });
+      // 2) contracts first: everything A uses is provided by B (declared data beats layer inference)
+      const uses = a.relations?.uses ?? {};
+      const s = Object.keys(uses).length ? contractsSatisfied(uses, [b]) : null;
+      if (s && s.ok.length && !s.missing.length) {
+        add({ target: b.catalogId, targetName: b.name, indexed: true, relation: 'works-with', confidence: 'guaranteed', why: `${b.name} provides every contract ${a.name} uses`, contracts: s.ok.map((c) => `${c}@${b.relations!.provides![c]}`) });
         continue;
       }
-      // 3) direct contracts: everything A uses is provided by B
-      const uses = a.relations?.uses ?? {};
-      if (Object.keys(uses).length && !layersCollide(a, b)) {
-        const s = contractsSatisfied(uses, [b]);
-        if (s.ok.length && !s.missing.length) add({ target: b.catalogId, targetName: b.name, indexed: true, relation: 'works-with', confidence: 'guaranteed', why: `${b.name} provides every contract ${a.name} uses`, contracts: s.ok.map((c) => `${c}@${b.relations!.provides![c]}`) });
+      // 3) same exclusive layer: alternatives only when nothing declared relates the two (either direction)
+      if (sameExclusive(a, b) && !related(a, b)) {
+        if (!links.has(b.catalogId)) add({ target: b.catalogId, targetName: b.name, indexed: true, relation: 'alternative', confidence: 'likely', why: `Both fill the ${a.layers![0]} layer; use one or the other` });
+        continue;
       }
     }
 

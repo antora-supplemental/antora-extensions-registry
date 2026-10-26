@@ -70,6 +70,8 @@ export interface ExtensionCatalogEntry {
   layers?: LayerId[];
   /** Packages listed from the same repository when it is a monorepo (more than one package directory). */
   packageCount?: number;
+  /** package.json `name` of a monorepo package (e.g. @antora-supplemental/color-scheme), used to resolve declared relations. */
+  packageName?: string;
   /** Where `layers` came from: the repo declared them, the sync guessed, or an admin set them. */
   layerSource?: MetadataSource;
   /** Set when the entry is a bundle (compose pack) of other extensions. */

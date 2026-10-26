@@ -343,6 +343,75 @@ Keep the summary to the main behavior in plain, complete sentences, and put exce
 </div>
 </div>
 <div class="sect1">
+<h2 id="_antora_version_compatibility"><a class="anchor" href="#_antora_version_compatibility"></a>Antora version compatibility</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The registry lists each tagged release of a repository and the Antora line it targets, so a theme or extension can ship different releases for Antora 3 and Antora 4 (antora-solid).
+The sync reads the repository&#8217;s GitHub releases and tags (newest 40 full SemVer releases; repositories with more than three packages keep the newest 12) and resolves each release&#8217;s compatibility.
+The first rule that matches wins:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Build metadata on the tag.</strong> <code>v4.2.0+antora.3</code> means Antora 3; <code>+antora-solid</code> means Antora 4.
+An alias tag on the same version (<code>v4.2.0</code> released, <code>v4.2.0+antora.3</code> tagged next to it) counts for that release and is not listed twice.</p>
+</li>
+<li>
+<p><strong><code>engines.antora</code></strong> in <code>package.json</code> at that tag, as an npm range: <code>"^3.1.0"</code>, <code>"&gt;=3 &lt;5"</code>.</p>
+</li>
+<li>
+<p><strong>Peer dependencies</strong> on core Antora packages (<code>antora</code>, <code>@antora/site-generator</code>, <code>@antora/cli</code> and the other pipeline packages) in <code>package.json</code> at that tag.
+Add-ons such as <code>@antora/lunr-extension</code> version on their own and are ignored.</p>
+</li>
+<li>
+<p><strong>Repository default</strong>: <code>antoraRegistry.antora</code> in <code>package.json</code> on the default branch: <code>"3"</code>, <code>4</code>, <code>"antora-solid"</code> or <code>[3, 4]</code>.</p>
+</li>
+<li>
+<p>Otherwise the release is shown under "Antora version not declared". Nothing is guessed.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Rolling tags such as <code>v4</code> or <code>v4.2</code> take the compatibility of the newest full release they cover and are marked "rolling".
+Each release lists its install spec (<code>github:owner/repo#tag</code>) and its release assets, such as <code>ui-bundle.zip</code>.</p>
+</div>
+<div class="paragraph">
+<p>The package page shows a <strong>Releases by Antora version</strong> table, grouped by Antora line with the latest stable release of each line highlighted.
+Cards show an "Antora N" badge for every line with a release, and the extensions page has an Antora version filter (Antora 3, Antora 4).
+Releases are stored in the entry payload and in the <code>catalog_release</code> table (one row per repository and tag), which <code>drizzle-kit push</code> creates before each sync and deploy.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">"engines": { "antora": "^3.1.0" },
+"antoraRegistry": { "antora": "3" }</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_color_schemes"><a class="anchor" href="#_color_schemes"></a>Color schemes</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A paint can list its color schemes so the registry shows them as swatches on the card and with labels on the package page.
+Point <code>antoraRegistry.colorSchemes</code> at the paint CSS (a path or a list of paths on the default branch).
+The file starts with a <code>@color-schemes</code> comment mapping each scheme id to a label, optional <code>slots</code> (<code>["dark"]</code> for a dark scheme, <code>[]</code> for a special one) and an optional <code>base</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-css hljs" data-lang="css">/* @color-schemes
+{ "light": {"label":"Strawberry (light)"}, "orangedark": {"label":"Orange (dark)","slots":["dark"]} }
+*/
+:root { --sk-canvas: #ffebee; --sk-dominant: #ff002b; --sk-link: #0042db; --sk-ink: #1e050a; }
+html.dark-theme[data-scheme="orangedark"] { ... }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Swatch colors come from the scheme&#8217;s own block: <code>light</code> is <code>:root</code>, <code>dark</code> is <code>html.dark-theme</code>, and any other id is <code>html[data-scheme="id"]</code> or <code>html.dark-theme[data-scheme="id"]</code>.
+The registry takes up to four hex custom properties from it: canvas or background, the dominant or accent color, the link color, and the text color.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_example_a_compose_pack"><a class="anchor" href="#_example_a_compose_pack"></a>Example: a compose pack</h2>
 <div class="sectionbody">
 <div class="listingblock">
@@ -356,6 +425,81 @@ previews:
   - url: "docs/assets/facto-light.png"
     caption: "Facto stack demo, light"
 ---</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_package_compatibility"><a class="anchor" href="#_package_compatibility"></a>Package compatibility</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Declare how your package relates to others in <code>package.json</code> under <code>antoraRegistry</code>. Ranges are semver. Keys are package names, <code>owner/repo</code>, or repository names.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">"antoraRegistry": {
+  "requires":      { "@antora-supplemental/color-scheme": "^0.4.0" },
+  "worksWith":     { "valentus-theme": "^4.1.0" },
+  "conflictsWith": { "antora-dark-mode": "*" },
+  "provides":      { "skittles-paint-tokens": "0.1" },
+  "uses":          { "valentus-layout-markup": "4", "color-scheme-tokens": "^0.4", "light-dark-slots": "^0.1" }
+}</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>requires</code>, <code>worksWith</code>, <code>conflictsWith</code></dt>
+<dd>
+<p>Direct relations. <code>requires</code> implies <code>worksWith</code>. Relations are shown on both packages.</p>
+</dd>
+<dt class="hdlist1"><code>provides</code>, <code>uses</code></dt>
+<dd>
+<p>Contracts: named, versioned interfaces such as <code>color-scheme-tokens@0.5</code>, <code>light-dark-slots@0.1</code>, <code>valentus-layout-markup@4</code>, <code>default-ui-markup@2</code>, <code>antora-ui-model@3</code>.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>The registry computes links at each catalog sync, stores them in the entry snapshot and the <code>catalog_compat</code> table, and shows them on the detail page under <strong>Works with</strong> (prominent) and <strong>Conflicts with</strong> (smaller), with the reasoning in a tooltip.</p>
+</div>
+<div class="sect2">
+<h3 id="_confidence_and_precedence"><a class="anchor" href="#_confidence_and_precedence"></a>Confidence and precedence</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Declared conflict</strong>: always wins.</p>
+</li>
+<li>
+<p><strong>Antora mismatch</strong>: two related packages that share no Antora major get a warning instead of "works with".</p>
+</li>
+<li>
+<p><strong>Guaranteed</strong>: a package provides every contract the other uses, or a cross-layer chain A &#8594; B &#8594; C has strict layering: every contract A uses is provided by B or C at a compatible version, every contract B uses is provided by C, A does not reach C&#8217;s contracts directly, and the current B version satisfies the ranges both A and C declare.</p>
+</li>
+<li>
+<p><strong>Declared</strong> (or <strong>Curated</strong>, for registry seeds of packages that cannot declare yet): from <code>requires</code>/<code>worksWith</code>.</p>
+</li>
+<li>
+<p><strong>Likely (inferred)</strong>: any other declared chain, with the reason (for example "A reaches C&#8217;s markup directly, not via B").</p>
+</li>
+<li>
+<p><strong>Alternative</strong>: lowest. Declared relations and satisfied contracts always take precedence over layer inference.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Layers are either exclusive or composable:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Exclusive</strong> (one per site): engine, body kit (layout), paint. Two packages in the same exclusive layer are listed as alternatives only when neither declares <code>requires</code>/<code>worksWith</code> toward the other and neither&#8217;s <code>uses</code> contracts are provided by the other.</p>
+</li>
+<li>
+<p><strong>Composable</strong> (sets of cooperating packages): chassis, extensions/bolt-ons. Alternatives are never inferred there; for example <code>light-dark-mode</code> and <code>color-scheme</code> are both chassis packages and work together.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Packages in the same monorepo that declare relations to each other are never alternatives. A declared name resolves by the package&#8217;s <code>package.json</code> name (for example <code>@antora-supplemental/color-scheme</code>), its catalog id, or its repository.</p>
 </div>
 </div>
 </div>
