@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { displayTitle, humanizePackageName, isRawName, pickTitle, readmeHeading } from '../src/lib/package-title';
-import { annotateNpm, annotateTitleCollisions, titleKey } from '../src/lib/title-collisions';
+import { annotateNpm, resolveTitleClaims, titleKey } from '../src/lib/title-collisions';
 import type { ExtensionCatalogEntry } from '../src/types/ui-module';
 
 const e = (o: Partial<ExtensionCatalogEntry>) => ({ catalogId: o.name, id: o.name, type: 'antora-extension', repositoryOwner: 'acme', repositoryName: 'r', manifestPath: 'package.json', ...o }) as ExtensionCatalogEntry;
@@ -19,21 +19,25 @@ test('title precedence: registry title, displayName, README heading, humanized n
   assert.equal(displayTitle(e({ name: 'page-state' })), 'Page State');
 });
 
-test('collisions are case/punctuation-insensitive, skip forks, add forge only when hosts differ', () => {
+test('first-seen entry holds a title; later ones are flagged; title frees when the holder leaves', () => {
   assert.equal(titleKey('Color-Scheme'), titleKey('color scheme'));
-  const a = e({ name: 'a', title: 'Color Scheme', repositoryOwner: 'one' });
-  const b = e({ name: 'b', title: 'color-scheme', repositoryOwner: 'two', repositoryHost: 'gitlab.com' });
-  const f = e({ name: 'c', title: 'Color Scheme', repositoryOwner: 'three', forkOf: { source: 'one/r' } as any });
-  const u = e({ name: 'u', title: 'Unique' });
-  annotateTitleCollisions([a, b, f, u]);
+  const a = e({ name: 'a', catalogId: 'a', title: 'Color Scheme', repositoryOwner: 'one' });
+  const b = e({ name: 'b', catalogId: 'b', title: 'color-scheme', repositoryOwner: 'two', repositoryHost: 'gitlab.com' });
+  const f = e({ name: 'c', catalogId: 'c', title: 'Color Scheme', repositoryOwner: 'three', forkOf: { source: 'one/r' } as any });
+  const u = e({ name: 'u', catalogId: 'u', title: 'Unique' });
+  const prior = [{ titleKey: 'colorscheme', catalogId: 'b', firstSeenAt: 1 }];
+  const r = resolveTitleClaims([a, b, f, u], prior, 100);
+  assert.equal(b.titleDisambiguator, undefined); // b was seen first
   assert.equal(a.titleDisambiguator, 'one · GitHub');
-  assert.equal(b.titleDisambiguator, 'two · GitLab');
-  assert.equal(f.titleDisambiguator, undefined);
-  assert.equal(u.titleDisambiguator, undefined);
-  const x = e({ name: 'x', title: 'Same', repositoryOwner: 'p' });
-  const y = e({ name: 'y', title: 'Same', repositoryOwner: 'q' });
-  annotateTitleCollisions([x, y]);
-  assert.equal(x.titleDisambiguator, 'p');
+  assert.equal(a.titleInUseBy, 'b');
+  assert.equal(f.titleInUseBy, undefined);
+  assert.equal(r.conflicts.length, 1);
+  assert.ok(!r.claims.some((c) => c.catalogId === 'c'));
+  // b renames: a now holds the title, keeping its first-seen time.
+  b.title = 'Something Else';
+  resolveTitleClaims([a, b], r.claims, 200);
+  assert.equal(a.titleInUseBy, undefined);
+  assert.equal(a.titleDisambiguator, undefined);
 });
 
 test('npm lookup only counts packages whose repository matches', async () => {

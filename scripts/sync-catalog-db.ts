@@ -45,10 +45,19 @@ if (entries.length === 0) throw new Error('Catalog came back empty; refusing to 
 
 // Display-title collisions (disambiguator on cards and search) and npm publication (cheap lookup, cached in the DB rows).
 {
-  const { annotateTitleCollisions, annotateNpm } = await import('../src/lib/title-collisions');
-  annotateTitleCollisions(entries);
+  const { resolveTitleClaims, annotateNpm } = await import('../src/lib/title-collisions');
+  // Migration: first-seen time per (normalized title, entry); the earliest current entry holds the title.
+  await db.execute(`CREATE TABLE IF NOT EXISTS title_claim (
+    titleKey TEXT NOT NULL, catalogId TEXT NOT NULL, firstSeenAt INTEGER NOT NULL, PRIMARY KEY (titleKey, catalogId))`);
+  const existing = (await db.execute('SELECT titleKey, catalogId, firstSeenAt FROM title_claim')).rows.map((r) => ({ titleKey: String(r.titleKey), catalogId: String(r.catalogId), firstSeenAt: Number(r.firstSeenAt) }));
+  const { claims, conflicts } = resolveTitleClaims(entries, existing, Date.now());
+  await db.batch([
+    { sql: 'DELETE FROM title_claim', args: [] },
+    ...claims.map((c) => ({ sql: 'INSERT INTO title_claim (titleKey, catalogId, firstSeenAt) VALUES (?, ?, ?)', args: [c.titleKey, c.catalogId, c.firstSeenAt] })),
+  ], 'write');
+  for (const c of conflicts) console.log(`[registry] title already in use: "${c.title}" held by ${c.holder}; also on ${c.others.join(', ')} (ask them to set a unique antoraRegistry.title)`);
   await annotateNpm(entries);
-  console.log(`[registry] titles: ${entries.filter((e) => e.titleDisambiguator).length} disambiguated; npm: ${entries.filter((e) => e.npmName).length} published`);
+  console.log(`[registry] titles: ${claims.length} claimed, ${conflicts.length} in use by more than one entry; npm (extra info): ${entries.filter((e) => e.npmName).length}`);
 }
 
 // Package-to-package compatibility: declared relations win; curated seeds fill packages that cannot declare yet.

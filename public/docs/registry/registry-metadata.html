@@ -308,6 +308,66 @@ Use PNG or WebP, at least 1200 px wide, and show light and dark mode if you supp
 </div>
 </div>
 <div class="sect1">
+<h2 id="_display_title"><a class="anchor" href="#_display_title"></a>Display title</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Cards, search and package headings show a display title, picked in this order:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>antoraRegistry.title</code> in <code>package.json</code>.</p>
+</li>
+<li>
+<p><code>displayName</code> in <code>package.json</code>.</p>
+</li>
+<li>
+<p>The first heading of the package README.</p>
+</li>
+<li>
+<p>The package name, humanized: scope stripped, words split on hyphens and title-cased, acronyms such as UI, CSS and TOC kept.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The raw package name stays visible on the package page and in title tooltips.</p>
+</div>
+<div class="sect2">
+<h3 id="_titles_are_unique"><a class="anchor" href="#_titles_are_unique"></a>Titles are unique</h3>
+<div class="paragraph">
+<p>Display titles are unique across the registry, compared ignoring case and punctuation (<code>Color Scheme</code> and <code>color-scheme</code> are the same title). Fork-grouped entries are not counted. The rule is soft: titles are never used to address a package (identity stays host, owner, repository and package), and it never blocks indexing.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The entry first indexed with a title holds it.</p>
+</li>
+<li>
+<p>Later entries with the same title are still listed. They show the owner (and GitHub or GitLab when the hosts differ) after the title, and their package page shows a "title already in use" notice. Set a unique <code>antoraRegistry.title</code> to clear it.</p>
+</li>
+<li>
+<p>When the holder renames or leaves the registry, the title passes to the next earliest entry at the next sync.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Search the registry for your title before you pick one.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">"antoraRegistry": {
+  "title": "Light/Dark Mode",
+  "antora": "3"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>An npm name, when the package is published there from the same repository, appears only as extra information: Antora playbooks can point at repository URLs, and npm is never treated as identity.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_full_description"><a class="anchor" href="#_full_description"></a>Full description</h2>
 <div class="sectionbody">
 <div class="paragraph">

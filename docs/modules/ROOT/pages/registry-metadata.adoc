@@ -92,6 +92,37 @@ Where previews come from, in order:
 
 The first preview is the card thumbnail; the detail page shows them all as a gallery.
 
+== Display title
+
+Cards, search and package headings show a display title, picked in this order:
+
+. `antoraRegistry.title` in `package.json`.
+. `displayName` in `package.json`.
+. The first heading of the package README.
+. The package name, humanized: scope stripped, words split on hyphens and title-cased, acronyms such as UI, CSS and TOC kept.
+
+The raw package name stays visible on the package page and in title tooltips.
+
+=== Titles are unique
+
+Display titles are unique across the registry, compared ignoring case and punctuation (`Color Scheme` and `color-scheme` are the same title). Fork-grouped entries are not counted. The rule is soft: titles are never used to address a package (identity stays host, owner, repository and package), and it never blocks indexing.
+
+* The entry first indexed with a title holds it.
+* Later entries with the same title are still listed. They show the owner (and GitHub or GitLab when the hosts differ) after the title, and their package page shows a "title already in use" notice. Set a unique `antoraRegistry.title` to clear it.
+* When the holder renames or leaves the registry, the title passes to the next earliest entry at the next sync.
+
+Search the registry for your title before you pick one.
+
+[source,json]
+----
+"antoraRegistry": {
+  "title": "Light/Dark Mode",
+  "antora": "3"
+}
+----
+
+An npm name, when the package is published there from the same repository, appears only as extra information: Antora playbooks can point at repository URLs, and npm is never treated as identity.
+
 == Full description
 
 The detail page shows the package `description` as the summary, and a *Full description* section below it.

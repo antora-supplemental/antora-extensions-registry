@@ -79,8 +79,9 @@ export default function ExtensionDetailPage() {
                       <span class="font-mono text-sm text-slate-500">v{e().version}</span>
                       <NewBadge firstListedAt={e().firstListedAt} />
                     </div>
-                    <div class="mb-4"><PackageTitle entry={e()} as="h1" link={false} titleClass="text-3xl lg:text-4xl font-bold text-white break-words" /><Show when={e().npmName} fallback={<p class="mt-1 font-mono text-sm text-slate-500 break-all" title="Package name (use this in install commands)">{rawPackageName(e())}</p>}>
-                      <p class="mt-1 flex items-center gap-2"><a href={`https://www.npmjs.com/package/${e().npmName}`} target="_blank" rel="noopener noreferrer" class="font-mono text-sm text-slate-300 hover:text-white break-all" title="Published on npm: install with this name">{e().npmName}</a><Badge variant="npm">npm</Badge></p>
+                    <div class="mb-4"><PackageTitle entry={e()} as="h1" link={false} titleClass="text-3xl lg:text-4xl font-bold text-white break-words" /><p class="mt-1 font-mono text-sm text-slate-500 break-all" title="Package name">{rawPackageName(e())}<Show when={e().npmName}><span class="ml-2 font-sans text-xs">· also on <a href={`https://www.npmjs.com/package/${e().npmName}`} target="_blank" rel="noopener noreferrer" class="underline hover:text-slate-300">npm</a></span></Show></p>
+                    <Show when={e().titleInUseBy}>
+                      <p class="mt-2 rounded border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs text-amber-300" role="note">Title already in use by <A href={`/extensions/${e().titleInUseBy}`} class="underline">an earlier package</A>. Authors: set a unique <code>antoraRegistry.title</code> in package.json.</p>
                     </Show></div>
                     <p class="text-slate-300 text-lg max-w-3xl">{e().description}</p>
                     <LayerBadges entry={e()} class="mt-3" />

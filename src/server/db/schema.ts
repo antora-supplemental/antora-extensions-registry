@@ -137,6 +137,15 @@ export const catalogCompat = sqliteTable("catalog_compat", {
     pk: primaryKey({ columns: [table.source, table.target] }),
 }));
 
+/** Display-title claims: first-seen time per normalized title and entry; the earliest current entry holds the title. */
+export const titleClaim = sqliteTable("title_claim", {
+    titleKey: text("titleKey").notNull(),
+    catalogId: text("catalogId").notNull(),
+    firstSeenAt: integer("firstSeenAt").notNull(),
+}, (table) => ({
+    pk: primaryKey({ columns: [table.titleKey, table.catalogId] }),
+}));
+
 /** Sync bookkeeping (last run, counts). */
 export const catalogMeta = sqliteTable("catalog_meta", {
     key: text("key").primaryKey(),
