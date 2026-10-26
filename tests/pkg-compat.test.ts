@@ -62,3 +62,10 @@ describe('computeCompat', () => {
     expect(l?.why).toContain("A reaches C's chassis-markup directly, not via B");
   });
 });
+
+it('a repo name resolves to the entry carrying relations, not the first module', () => {
+  const mod = { ...n('mod', ['bolt-on']), repositoryName: 'theme' };
+  const site = { ...n('site', ['body-kit'], { provides: { m: '1' } }), repositoryName: 'theme' };
+  const m = computeCompat([mod, site, n('pack', ['chassis'], { requires: { theme: '*' } })]);
+  expect(m.get('pack')?.[0].target).toBe('site');
+});

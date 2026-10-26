@@ -154,7 +154,9 @@ const label = (n: CompatNode) => `${n.name}@${n.version}`;
 /** Computes compatibility links for every node. Pure: same input, same output. */
 export function computeCompat(nodes: CompatNode[]): Map<string, CompatLink[]> {
   const index = new Map<string, CompatNode>();
-  for (const n of nodes) for (const k of keysOf(n)) if (!index.has(k)) index.set(k, n);
+  // A repo name resolves to the entry that speaks for the package: one carrying relations, then a recipe/bundle.
+  const weight = (n: CompatNode) => (n.relations ? 0 : 2) + ((n as { type?: string }).type === 'recipe' || n.bundle ? 0 : 1);
+  for (const n of [...nodes].sort((a, b) => weight(a) - weight(b))) for (const k of keysOf(n)) if (!index.has(k)) index.set(k, n);
   const find = (name: string) => index.get(name.toLowerCase());
 
   // Direct declared edges (requires implies works-with), both directions.
