@@ -132,7 +132,7 @@ export default function StackPage() {
               <button type="button" class={buttonVariants({ variant: 'secondary', size: 'sm' })} onClick={() => copy('yaml')}>{copied() === 'yaml' ? 'Copied' : 'Copy'}</button>
             </div>
             <p class="text-sm text-slate-400 mb-2">Merge into your playbook; keep your own <code class="font-mono">site</code> and <code class="font-mono">content</code> keys.</p>
-            <pre class="overflow-x-auto rounded-lg border border-slate-700/60 bg-slate-900/60 p-4 text-sm text-slate-200" data-stack-yaml><code>{yaml()}</code></pre>
+            <pre tabIndex={0} aria-label="Playbook snippet" class="p-4 bg-code border border-code-border text-code-foreground rounded-lg text-sm overflow-x-auto font-mono whitespace-pre" data-stack-yaml>{yaml()}</pre>
           </section>
         </Show>
       </div>
