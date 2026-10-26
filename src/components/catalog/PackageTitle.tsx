@@ -3,7 +3,7 @@ import { Dynamic } from 'solid-js/web';
 import { Show, type JSX } from 'solid-js';
 import ProviderIcon from '~/components/icons/ProviderIcon';
 import { ownerHost, ownerPath } from '~/lib/owner-paths';
-import { displayTitle } from '~/lib/package-title';
+import { displayTitle, rawPackageName } from '~/lib/package-title';
 import type { ExtensionCatalogEntry } from '~/types/ui-module';
 
 interface PackageTitleProps {
@@ -33,10 +33,13 @@ export default function PackageTitle(props: PackageTitleProps) {
 
   const name = () => (
     <Dynamic component={props.as ?? 'h3'} class={props.titleClass ?? 'font-semibold text-lg text-white'}>
-      <Show when={props.link !== false} fallback={<span><span class="sr-only">{props.entry.repositoryOwner}/</span>{displayTitle(props.entry)}</span>}>
-        <A href={`/extensions/${props.entry.catalogId}`} aria-label={a11yName()} class="hover:text-primary-400 transition-colors focus-visible:outline-none focus-visible:underline break-words">
+      <Show when={props.link !== false} fallback={<span title={rawPackageName(props.entry)}><span class="sr-only">{props.entry.repositoryOwner}/</span>{displayTitle(props.entry)}</span>}>
+        <A href={`/extensions/${props.entry.catalogId}`} aria-label={a11yName()} title={rawPackageName(props.entry)} class="hover:text-primary-400 transition-colors focus-visible:outline-none focus-visible:underline break-words">
           {displayTitle(props.entry)}
         </A>
+      </Show>
+      <Show when={props.entry.titleDisambiguator}>
+        <span class="ml-1.5 align-middle text-xs font-normal text-slate-500" title="Another package has the same title">({props.entry.titleDisambiguator})</span>
       </Show>
     </Dynamic>
   );

@@ -1,3 +1,4 @@
+import { displayTitle } from '~/lib/package-title';
 import { themeDetailHref } from '~/lib/theme-href';
 import { cache } from '@solidjs/router';
 import { buildFullExtensionCatalog } from '~/lib/extension-catalog';
@@ -56,6 +57,8 @@ export interface SearchIndexItem {
   type: string;
   id: string;
   name: string;
+  /** Owner (and forge) when another entry shares this title. */
+  disambiguator?: string;
   href: string;
   /** First listed within NEW_WINDOW_DAYS. */
   isNew: boolean;
@@ -68,7 +71,8 @@ export const loadSearchIndex = cache(async (): Promise<SearchIndexItem[]> => {
     kind: 'extension' as const,
     type: e.bundle ? 'bundle' : e.type,
     id: e.catalogId,
-    name: e.name,
+    name: displayTitle(e),
+    ...(e.titleDisambiguator ? { disambiguator: e.titleDisambiguator } : {}),
     href: `/extensions/${e.catalogId}`,
     isNew: isNewListing(e.firstListedAt),
   }));

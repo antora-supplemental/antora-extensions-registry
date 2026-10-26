@@ -55,7 +55,7 @@ export default function SearchCombobox() {
       .map(({ item }) => ({
         key: `${item.kind}:${item.id}`,
         label: item.name,
-        meta: item.kind === 'theme' ? 'Theme' : (EXTENSION_KIND_LABELS[item.type]?.replace(/s$/, '') ?? 'Extension'),
+        meta: (item.disambiguator ? `${item.disambiguator} · ` : '') + (item.kind === 'theme' ? 'Theme' : (EXTENSION_KIND_LABELS[item.type]?.replace(/s$/, '') ?? 'Extension')),
         href: item.href,
         isNew: item.isNew,
       }));

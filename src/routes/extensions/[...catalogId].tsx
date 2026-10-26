@@ -11,6 +11,7 @@ import LayerBadges from '~/components/catalog/LayerBadges';
 import BundleContents from '~/components/catalog/BundleContents';
 import ForkVersions from '~/components/catalog/ForkVersions';
 import PackageTitle from '~/components/catalog/PackageTitle';
+import { displayTitle, rawPackageName } from '~/lib/package-title';
 import { forkVariants } from '~/lib/fork-groups';
 import PreviewGallery from '~/components/catalog/PreviewGallery';
 import FullDescription, { inline } from '~/components/catalog/FullDescription';
@@ -69,7 +70,7 @@ export default function ExtensionDetailPage() {
             >
               {(e) => (
                 <>
-                  <Title>{`${e().name} - Antora Registry`}</Title>
+                  <Title>{`${displayTitle(e())} - Antora Registry`}</Title>
                   <Meta name="description" content={e().description} />
                   <header class="mt-6 mb-8">
                     <div class="flex flex-wrap items-center gap-2 mb-2">
@@ -78,7 +79,9 @@ export default function ExtensionDetailPage() {
                       <span class="font-mono text-sm text-slate-500">v{e().version}</span>
                       <NewBadge firstListedAt={e().firstListedAt} />
                     </div>
-                    <div class="mb-4"><PackageTitle entry={e()} as="h1" link={false} titleClass="text-3xl lg:text-4xl font-bold text-white break-words" /></div>
+                    <div class="mb-4"><PackageTitle entry={e()} as="h1" link={false} titleClass="text-3xl lg:text-4xl font-bold text-white break-words" /><Show when={e().npmName} fallback={<p class="mt-1 font-mono text-sm text-slate-500 break-all" title="Package name (use this in install commands)">{rawPackageName(e())}</p>}>
+                      <p class="mt-1 flex items-center gap-2"><a href={`https://www.npmjs.com/package/${e().npmName}`} target="_blank" rel="noopener noreferrer" class="font-mono text-sm text-slate-300 hover:text-white break-all" title="Published on npm: install with this name">{e().npmName}</a><Badge variant="npm">npm</Badge></p>
+                    </Show></div>
                     <p class="text-slate-300 text-lg max-w-3xl">{e().description}</p>
                     <LayerBadges entry={e()} class="mt-3" />
                     <div class="mt-3 flex flex-wrap items-center gap-2"><AntoraBadges entry={e()} /></div>
@@ -113,7 +116,7 @@ export default function ExtensionDetailPage() {
                         <For each={siblings()}>
                           {(s) => (
                             <li class="text-sm">
-                              <A href={`/extensions/${s.catalogId}`} class="text-primary-400 hover:text-primary-300 font-medium">{s.name}</A>
+                              <A href={`/extensions/${s.catalogId}`} class="text-primary-400 hover:text-primary-300 font-medium" title={rawPackageName(s)}>{displayTitle(s)}</A>
                               <span class="text-slate-500 font-mono text-xs ml-2">v{s.version}</span>
                               <Show when={s.layers?.length}><span class="text-slate-500 text-xs ml-2">{s.layers!.map(layerLabel).join(', ')}</span></Show>
                             </li>
@@ -167,7 +170,7 @@ export default function ExtensionDetailPage() {
                           <For each={dependents(e(), all())}>
                             {(d) => (
                               <li class="flex items-center gap-2 text-sm">
-                                <A href={`/extensions/${d.entry.catalogId}`} class="text-primary-400 hover:text-primary-300">{d.entry.name}</A>
+                                <A href={`/extensions/${d.entry.catalogId}`} class="text-primary-400 hover:text-primary-300" title={rawPackageName(d.entry)}>{displayTitle(d.entry)}</A>
                                 <Badge variant={d.relation === 'requires' ? 'warning' : d.relation === 'bundled-in' ? 'primary' : 'muted'} title={d.relation === 'bundled-in' ? `${e().name} is bundled in ${d.entry.name}` : undefined}>{dependentLabel(d.relation)}</Badge>
                                 <Show when={d.mutual}>
                                   <Badge variant="muted" title="This package also depends on it, so the two form a cycle">mutual</Badge>

@@ -43,6 +43,14 @@ const catalog = await buildFullExtensionCatalog({ includeTopicDiscovery: true, l
 const entries = [...catalog.modules, ...catalog.recipes];
 if (entries.length === 0) throw new Error('Catalog came back empty; refusing to wipe the database.');
 
+// Display-title collisions (disambiguator on cards and search) and npm publication (cheap lookup, cached in the DB rows).
+{
+  const { annotateTitleCollisions, annotateNpm } = await import('../src/lib/title-collisions');
+  annotateTitleCollisions(entries);
+  await annotateNpm(entries);
+  console.log(`[registry] titles: ${entries.filter((e) => e.titleDisambiguator).length} disambiguated; npm: ${entries.filter((e) => e.npmName).length} published`);
+}
+
 // Package-to-package compatibility: declared relations win; curated seeds fill packages that cannot declare yet.
 for (const e of entries) {
   if (!e.relations) {

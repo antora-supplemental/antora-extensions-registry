@@ -72,6 +72,12 @@ export interface ExtensionCatalogEntry {
   packageCount?: number;
   /** package.json `name` of a monorepo package (e.g. @antora-supplemental/color-scheme), used to resolve declared relations. */
   packageName?: string;
+  /** Display title (antoraRegistry.title > displayName > README heading); UI falls back to a humanized name. */
+  title?: string;
+  /** Set at sync when another non-fork entry has the same display title: owner (and forge when hosts differ). */
+  titleDisambiguator?: string;
+  /** npm package name, set at sync when published to npm from this repository. */
+  npmName?: string;
   /** Where `layers` came from: the repo declared them, the sync guessed, or an admin set them. */
   layerSource?: MetadataSource;
   /** Set when the entry is a bundle (compose pack) of other extensions. */

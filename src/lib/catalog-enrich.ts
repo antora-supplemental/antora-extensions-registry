@@ -1,3 +1,4 @@
+import { pickTitle } from '~/lib/package-title';
 import { readRelations } from '~/lib/pkg-compat';
 import { matchPackage } from './bundle-members';
 import { liveImages } from '~/lib/preview-check';
@@ -35,6 +36,8 @@ export interface RepoMetadata {
   homepage?: string;
   readmeImages: PreviewImage[];
   readmeIntro?: string;
+  /** Display title: antoraRegistry.title, displayName, then README first heading. */
+  title?: string;
 }
 
 type FetchText = (path: string) => Promise<string | null>;
@@ -54,6 +57,7 @@ export async function readRepoMetadata(owner: string, repo: string, branch: stri
     homepage: pkg?.homepage,
     readmeImages: await liveImages(readmeImages(owner, repo, branch, readme, md === null), MAX_README_PREVIEWS),
     readmeIntro: readme ? readmeIntro(readme) : undefined,
+    title: pickTitle({ registryTitle: (declared as { title?: unknown }).title, displayName: (pkg as { displayName?: unknown } | null | undefined)?.displayName, readme, name: pkg?.name }),
   };
 }
 
@@ -208,6 +212,7 @@ export function applyRepoMetadata(entry: ExtensionCatalogEntry, meta: RepoMetada
   if (Object.keys(meta.dependencySpecs ?? {}).length) out.dependencySpecs = meta.dependencySpecs;
   if (meta.privatePackage) out.privatePackage = true;
   if (meta.homepage) out.homepage = meta.homepage;
+  if (meta.title && !out.title) out.title = meta.title;
   if (typeof d.upstream === 'string' && d.upstream.trim()) out.upstream = d.upstream.trim();
   if (!out.layers?.length) {
     const declaredLayers = normalizeLayers(d.layers ?? d.layer);

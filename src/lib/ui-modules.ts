@@ -632,6 +632,7 @@ export async function buildExtensionCatalog(
               ...(pi.antora.length ? { antora: pi.antora } : {}),
               ...(pi.colorSchemes.length ? { colorSchemes: pi.colorSchemes } : {}),
               ...(pi.packageName ? { packageName: pi.packageName } : {}),
+              ...(pi.title ? { title: pi.title } : {}),
               packageCount: subPkgs.length,
             };
           })

@@ -62,8 +62,8 @@ test('owner metadata mapping and paths', () => {
   assert.equal(sizedAvatar('https://avatars.githubusercontent.com/u/1?v=4', 'github.com'), 'https://avatars.githubusercontent.com/u/1?v=4&s=64');
   assert.equal(sizedAvatar('https://gitlab.com/uploads/a.png', 'gitlab.com'), 'https://gitlab.com/uploads/a.png?width=64');
   assert.equal(ownerPath('GitLab.com', 'antora'), '/owners/gitlab.com/antora');
-  assert.equal(displayTitle({ name: '@antora-supplemental/article-zones', repositoryOwner: 'antora-supplemental' }), 'article-zones');
-  assert.equal(displayTitle({ name: '@antora/lunr-extension', repositoryOwner: 'someone' }), '@antora/lunr-extension');
+  assert.equal(displayTitle({ name: '@antora-supplemental/article-zones', repositoryOwner: 'antora-supplemental' }), 'Article Zones');
+  assert.equal(displayTitle({ name: '@antora/lunr-extension', repositoryOwner: 'someone' }), 'Lunr Extension');
 });
 
 test('avatars: cached on success, failed first fetch never cached, cached survives a later failure', async () => {

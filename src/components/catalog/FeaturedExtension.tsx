@@ -1,3 +1,4 @@
+import { displayTitle, rawPackageName } from '~/lib/package-title';
 import CardPreviewLink from './CardPreviewLink';
 import { previewFallback } from '~/lib/preview-fallback';
 import { A } from '@solidjs/router';
@@ -25,7 +26,7 @@ export default function FeaturedExtension(props: { entry: ExtensionCatalogEntry;
             <Badge variant="primary">Featured</Badge>
             <Show when={props.entry.bundle}><Badge variant="muted">Bundle · {props.entry.bundle!.members.length} packages</Badge></Show>
           </div>
-          <h3 class="text-2xl font-bold text-white mb-2">{props.entry.name}</h3>
+          <h3 class="text-2xl font-bold text-white mb-2" title={rawPackageName(props.entry)}>{displayTitle(props.entry)}</h3>
           <p class="text-slate-300 mb-4 max-w-2xl">{props.entry.description}</p>
           <LayerBadges entry={props.entry} class="mb-4" />
           <Show when={props.entry.bundle}>

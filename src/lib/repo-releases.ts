@@ -1,3 +1,4 @@
+import { pickTitle } from '~/lib/package-title';
 import { readRelations, type DeclaredRelations } from '~/lib/pkg-compat';
 import { antoraRepoDefault, buildReleases, type RawRelease, type ReleaseInfo } from '~/lib/antora-compat';
 import { parseColorSchemes, type ColorScheme } from '~/lib/color-schemes';
@@ -73,7 +74,7 @@ export async function fetchRepoReleaseInfo(owner: string, repo: string, branch: 
   return { releases, antora: repoDefault, colorSchemes, ...(relations ? { relations } : {}) };
 }
 
-export interface PackageInfo { packageName?: string; relations?: DeclaredRelations; antora: number[]; releases: ReleaseInfo[]; colorSchemes: ColorScheme[] }
+export interface PackageInfo { packageName?: string; title?: string; relations?: DeclaredRelations; antora: number[]; releases: ReleaseInfo[]; colorSchemes: ColorScheme[] }
 
 /**
  * Monorepo packages (manifestPath under a subdirectory): each package's own package.json antoraRegistry block,
@@ -114,7 +115,9 @@ export async function fetchMonorepoPackageInfo(
       if (css) colorSchemes.push(...parseColorSchemes(css));
     }
     const relations = readRelations(pkg?.antoraRegistry ?? pkg?.['antora-registry']);
-    out.set(p.manifestPath, { ...(typeof pkg.name === 'string' ? { packageName: pkg.name } : {}), antora: repoDefault, releases, colorSchemes, ...(relations ? { relations } : {}) });
+    const readme = (await rawText(owner, repo, branch, `${dir}/README.md`)) ?? (await rawText(owner, repo, branch, `${dir}/README.adoc`));
+    const title = pickTitle({ registryTitle: pkg?.antoraRegistry?.title, displayName: pkg?.displayName, readme, name: pkg?.name });
+    out.set(p.manifestPath, { ...(title ? { title } : {}), ...(typeof pkg.name === 'string' ? { packageName: pkg.name } : {}), antora: repoDefault, releases, colorSchemes, ...(relations ? { relations } : {}) });
   }
   return out;
 }

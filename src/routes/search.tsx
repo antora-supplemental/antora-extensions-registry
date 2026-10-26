@@ -1,3 +1,4 @@
+import { displayTitle } from '~/lib/package-title';
 import { A, createAsync, useNavigate, useSearchParams } from '@solidjs/router';
 import { createMemo, createSignal, For, Show, Suspense } from 'solid-js';
 import SiteLayout from '~/components/SiteLayout';
@@ -64,7 +65,7 @@ export default function SearchPage() {
     const q = query().toLowerCase();
     const k = kind();
     const hits = [...c.modules, ...c.recipes].filter(
-      (e) => (!k || (k === 'bundle' ? isBundle(e) : e.type === k)) && matches(q, [e.name, e.id, e.description], e.tags) && (!newOnly() || isNewListing(e.firstListedAt)),
+      (e) => (!k || (k === 'bundle' ? isBundle(e) : e.type === k)) && matches(q, [displayTitle(e), e.name, e.id, e.description, e.titleDisambiguator ?? ''], e.tags) && (!newOnly() || isNewListing(e.firstListedAt)),
     );
     return newOnly() ? hits.sort(byFirstListedDesc) : hits;
   });
