@@ -1,7 +1,7 @@
 = antorareg: Standalone Registry CLI
 :navtitle: antorareg CLI spec
-:description: Design spec v0.2 for antorareg, the standalone command-line client for the Antora Extensions Registry. Installs, updates and removes UI bundles, extensions and supplemental files by editing antora-playbook.yml in place, with compat checks, a lockfile and git-first package identity.
-:page-version: v0.2
+:description: Design spec v0.3 for antorareg, the standalone command-line client for the Antora Extensions Registry. Installs, updates and removes UI bundles, extensions and supplemental files by editing antora-playbook.yml in place, with compat checks, a lockfile and git-first package identity.
+:page-version: v0.3
 :revdate: 2026-10-26
 :toc: macro
 :toclevels: 2
@@ -9,11 +9,11 @@
 [IMPORTANT]
 .Source of truth
 ====
-Spec version v0.2, recorded 2026-10-26. This is the source of truth for the `antorareg` CLI. Change it here, and add a changelog bullet, instead of editing a separate draft.
+Spec version v0.3, recorded 2026-10-26. This is the source of truth for the `antorareg` CLI. Change it here, and add a changelog bullet, instead of editing a separate draft.
 Related: xref:design/trust-and-quality-spec.adoc[Trust and quality spec] (stacks, baskets, tiers) and xref:design/antora4-plugin-commands-spec.adoc[Command routing in antora-solid].
 ====
 
-_Design spec v0.2 for `antorareg`, the standalone CLI for registry.antora-supplemental.org. Draft for iteration. Nothing here is implemented yet._
+_Design spec v0.3 for `antorareg`, the standalone CLI for registry.antora-supplemental.org. A first implementation lives at https://github.com/antora-supplemental/antorareg[antora-supplemental/antorareg]._
 
 toc::[]
 
@@ -122,7 +122,13 @@ Every command accepts `--playbook <path>` (default: `antora-playbook.yml` in the
 |Copy a theme's or extension's source into the repo (for example `ui/<name>/`), mark it `vendored` in the lockfile with the upstream version it came from, and point the playbook at the local path. See <<fetch-vs-vendor>>.
 
 |`verify`
-|Recompute checksums of cached artifacts against the lockfile and check playbook/lockfile drift. Exit 1 on mismatch. Intended for CI.
+|Recompute checksums of cached artifacts against the lockfile, check playbook/lockfile drift, check the `.gitignore` line, and audit committed assets (see <<asset-audit>>). Exit 1 on drift. Asset findings only warn unless `--strict` is given.
+
+|`init`
+|Create `antorareg.lock` and add the cache ignore line to the repo-root `.gitignore` (see <<gitignore>>).
+
+|`migrate [<id> ...]`
+|Turn committed copies of packages into lockfile entries (see <<migrate>>). `--eject`, `--yes`, `--dry-run`.
 |===
 
 === Playbook surfaces it edits
@@ -221,10 +227,44 @@ A vendored package carries `vendored: true`, its local `path`, and `upstream` (t
 There are no marker comments, so ownership comes from the lockfile alone. `antorareg list` and `antorareg verify` compare the playbook with the lockfile and flag:
 
 * *Missing*: a lockfile entry whose playbook entry is gone. Offer to remove it from the lockfile or restore it to the playbook.
-* *Hand-edited*: a playbook entry that no longer matches its lockfile entry (another URL, ref or path). Offer to adopt the change into the lockfile.
+* *Hand-edited*: a playbook entry that no longer matches its lockfile entry (another URL, ref or path). Offer to record the change in the lockfile.
 * *Stale paths*: a lockfile `path` or cache path that no longer exists. Re-fetch or prune.
 
 `verify` exits 1 on any drift so CI catches it. Entries in the playbook that the lockfile never listed are the user's own, and are left alone.
+
+[#asset-audit]
+=== Asset auditing
+
+The lockfile records a `files` map of per-file `sha256` values for every fetched package. `verify` uses it to report:
+
+* *Tracked cache files*: files under the cache that git tracks.
+* *Committed copies*: tracked files byte-identical to a package file.
+* *Modified copies*: tracked files that are edited copies of a package file, reported as `modified copy of <pkg>@<ver>:<path>`. Generic names (`index.js`, `package.json`, `README.md` and so on) only count when the package-relative path matches too.
+* *Cache mismatches*: cached files whose hash differs from the lockfile. They are refetched with a warning.
+
+Files in ejected packages and in `ui.supplemental_files` are exempt and listed as info. Every finding carries advice: run `antorareg eject <id>`, or move the change into `ui.supplemental_files`.
+
+`verify --strict` exits 1 on any finding. The GitHub Action runs strict by default; locally `verify` only warns.
+
+[#gitignore]
+=== The `.gitignore` line
+
+On the first install, and in `init`, `antorareg` makes sure the repo-root `.gitignore` ignores the cache. It appends one line, the cache path relative to the repo root (`.antorareg/cache/` when the playbook sits at the root), keeps the file's existing line endings, and adds no marker comments. `verify` reports a missing line or a tracked cache.
+
+[#migrate]
+=== `antorareg migrate`
+
+For projects that copied package files into the repo by hand. `migrate` prints a plan first:
+
+* *Exact copies* become lockfile entries. The playbook points at the cache, the copy is deleted, and the user runs the printed `git rm --cached` command.
+* *Modified copies* become `ui.supplemental_files` overrides, or, with `--eject`, the package is ejected and the edits land in the ejected copy. Extension edits need `--eject`.
+
+It applies only after an interactive yes or `--yes`. `--dry-run` changes nothing. It never stages or commits.
+
+[#action]
+=== GitHub Action
+
+`antora-supplemental/antorareg@v0` is a composite action. It downloads the prebuilt binary for the runner (or builds from source with `dlang-community/setup-dlang`), caches `.antorareg/cache` with `actions/cache` keyed on the lockfile hash, then runs `antorareg install --frozen` and `antorareg verify`. Inputs: `playbook` (default `antora-playbook.yml`), `version`, `verify` (default `true`), `strict` (default `true`).
 
 [#config]
 == Configuration
@@ -305,5 +345,6 @@ Decided (Ryan): *D*. It compiles natively to small single binaries and cross-com
 [#changelog]
 == Changelog
 
+* v0.3 (2026-10-26): Added asset auditing with per-file hashes and `verify --strict`, the `.gitignore` line on first install and in `init`, `antorareg migrate` for committed copies, `install --frozen`, and the `antora-supplemental/antorareg@v0` GitHub Action. Linked the first implementation.
 * v0.2 (2026-10-26): Recorded Ryan's decisions: D implementation with a text/CST playbook editor and schema-generated registry types; extensions fetched into gitignored `.antorareg/cache` with `antorareg eject` for vendoring themes; no playbook marker comments, with lockfile drift detection in `list` and `verify`; no upstream proposal, routed as a tool in antora-solid.
 * v0.1 (2026-10-26): First draft.
