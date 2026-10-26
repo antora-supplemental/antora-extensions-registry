@@ -2,6 +2,9 @@
 
 == Unreleased
 
+* Monorepo packages (for example antora-ui-chassis) now get per-package releases, Antora compatibility, relations and color schemes. Each package reads its own `package.json` and maps `<package>-v<semver>` tags (such as `color-scheme-v0.5.3`) to its own install specs. The singular `layer` field in a registry index is now honored, so layers show as declared instead of inferred.
+* Package detail pages list "More from this repo" siblings and show repository-level details (stars, repository, package directory). Browse cards for packages from a multi-package repo show a "part of <repo>" badge.
+* Retired the curated compatibility seeds for color-scheme, light-dark-mode and default-paint, which now declare their own `antoraRegistry` blocks.
 * Default UI with light/dark mode (`gitlab.com/AMDphreak/antora-ui-default`, branch `feat/root-theme-transition`) is indexed and takes the home page's Default UI slot in Featured Themes, with its light and dark scheme swatches. The stock Default UI's page shows a generic "Also available with light/dark mode" link (curated `variantOf` on theme entries); the fork's schemes stay on the fork. GitLab-hosted packages now get the same repo-level extras as GitHub ones: `antoraRegistry.antora`, relations and contracts, and color schemes. Curated theme entries can set a forge `host` and their own preview image.
 * Header Themes link: the light-mode rainbow is full strength (no darkening toward the text color); dark mode is unchanged.
 * Preview screenshots are captured with scrollbars hidden and no scrollbar gutter; the Skittles preview was regenerated.

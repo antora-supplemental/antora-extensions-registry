@@ -1,4 +1,5 @@
 import { antoraRepoDefault } from '~/lib/antora-compat';
+import { fetchMonorepoPackageInfo } from '~/lib/repo-releases';
 import { parseColorSchemes, type ColorScheme } from '~/lib/color-schemes';
 import { readRelations } from '~/lib/pkg-compat';
 import { fetchRepoReleaseInfo } from '~/lib/repo-releases';
@@ -168,7 +169,7 @@ function indexToCatalog(
         slots: mod.slots,
         uiFileCount: mod.uiFileCount,
         install: mod.install,
-        ...declaredLayerFields(mod.layers),
+        ...declaredLayerFields(mod.layers ?? mod.layer),
       },
       owner,
       repo,
@@ -615,8 +616,27 @@ export async function buildExtensionCatalog(
             ...(extras.colorSchemes.length ? { colorSchemes: extras.colorSchemes } : {}),
           }))
         : list;
-    const canonicalModules = withExtras(withRepoInfo(applyRepoCanonicalNames(result.modules, ref, owner, repo)));
-    const canonicalRecipes = withExtras(withRepoInfo(applyRepoCanonicalNames(result.recipes, ref, owner, repo)), 'recipes');
+    // Monorepo: every package under a subdirectory carries its own antoraRegistry block and <dir>-v<semver> tags.
+    const subPkgs = [...result.modules, ...result.recipes].filter((e) => e.manifestPath && e.manifestPath.includes('/'));
+    const perPkg = info && subPkgs.length > 1 ? await fetchMonorepoPackageInfo(owner, repo, info.default_branch ?? 'main', subPkgs as Array<{ manifestPath: string; modulePath?: string }>) : null;
+    const withPackageInfo = (list: ExtensionCatalogEntry[]) =>
+      perPkg
+        ? list.map((e) => {
+            const pi = e.manifestPath ? perPkg.get(e.manifestPath) : undefined;
+            if (!pi) return e;
+            const { relations: _repoRel, releases: _repoRels, antora: _repoAntora, colorSchemes: _repoCs, ...rest } = e;
+            return {
+              ...rest,
+              ...(pi.relations ? { relations: pi.relations } : {}),
+              ...(pi.releases.length ? { releases: pi.releases } : {}),
+              ...(pi.antora.length ? { antora: pi.antora } : {}),
+              ...(pi.colorSchemes.length ? { colorSchemes: pi.colorSchemes } : {}),
+              packageCount: subPkgs.length,
+            };
+          })
+        : list;
+    const canonicalModules = withPackageInfo(withExtras(withRepoInfo(applyRepoCanonicalNames(result.modules, ref, owner, repo))));
+    const canonicalRecipes = withPackageInfo(withExtras(withRepoInfo(applyRepoCanonicalNames(result.recipes, ref, owner, repo)), 'recipes'));
 
     let modCount = 0;
     let recCount = 0;

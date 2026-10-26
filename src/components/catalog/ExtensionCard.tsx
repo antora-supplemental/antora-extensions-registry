@@ -68,6 +68,9 @@ export default function ExtensionCard(props: ExtensionCardProps) {
               </Badge>
               <span class="text-slate-500 text-xs font-mono">v{props.entry.version}</span>
               <NewBadge firstListedAt={props.entry.firstListedAt} />
+              <Show when={(props.entry.packageCount ?? 0) > 1}>
+                <Badge variant="muted" title={`One of ${props.entry.packageCount} packages in ${props.entry.repositoryOwner}/${props.entry.repositoryName}`}>part of {props.entry.repositoryName}</Badge>
+              </Show>
               <Show when={(props.forkCount ?? 0) > 0}>
                 <Badge variant="tag" title="Other versions of this package are listed; see the package page">+{props.forkCount} {props.forkCount === 1 ? 'fork' : 'forks'}</Badge>
               </Show>

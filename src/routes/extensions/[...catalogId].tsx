@@ -32,6 +32,15 @@ export default function ExtensionDetailPage() {
   });
   const entry = createMemo(() => all().find((e) => e.catalogId === params.catalogId));
   const [copied, setCopied] = createSignal(false);
+  /** Other packages from the same repository (monorepos list each package separately). */
+  const siblings = createMemo(() => {
+    const e = entry();
+    if (!e) return [];
+    const key = `${e.repositoryHost ?? ''}/${e.repositoryOwner}/${e.repositoryName}`.toLowerCase();
+    return all()
+      .filter((x) => x.catalogId !== e.catalogId && `${x.repositoryHost ?? ''}/${x.repositoryOwner}/${x.repositoryName}`.toLowerCase() === key)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  });
 
   const copy = async (text: string) => {
     try {
@@ -94,6 +103,26 @@ export default function ExtensionDetailPage() {
 
                   <PackageCompat links={e().compat} />
 
+                  <Show when={siblings().length > 0}>
+                    <Card class="p-6 mb-6">
+                      <h2 class="text-lg font-semibold text-white mb-1">More from this repo</h2>
+                      <p class="text-sm text-slate-400 mb-4">
+                        Other packages in <code class="font-mono">{e().repositoryOwner}/{e().repositoryName}</code>. Each has its own version, releases and compatibility.
+                      </p>
+                      <ul class="grid gap-2 sm:grid-cols-2">
+                        <For each={siblings()}>
+                          {(s) => (
+                            <li class="text-sm">
+                              <A href={`/extensions/${s.catalogId}`} class="text-primary-400 hover:text-primary-300 font-medium">{s.name}</A>
+                              <span class="text-slate-500 font-mono text-xs ml-2">v{s.version}</span>
+                              <Show when={s.layers?.length}><span class="text-slate-500 text-xs ml-2">{s.layers!.map(layerLabel).join(', ')}</span></Show>
+                            </li>
+                          )}
+                        </For>
+                      </ul>
+                    </Card>
+                  </Show>
+
                   <Show when={e().colorSchemes?.length}>
                     <Card class="p-6 mb-6">
                       <h2 class="text-lg font-semibold text-white mb-1">Color schemes</h2>
@@ -155,7 +184,10 @@ export default function ExtensionDetailPage() {
                       <dl class="space-y-2 text-sm">
                         <div><dt class="text-slate-500">Author</dt><dd class="text-slate-300">{e().author}</dd></div>
                         <div><dt class="text-slate-500">Updated</dt><dd class="text-slate-300">{new Date(e().lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</dd></div>
-                        <div><dt class="text-slate-500">Stars</dt><dd class="text-slate-300">{e().stars}</dd></div>
+                        <div><dt class="text-slate-500">Stars</dt><dd class="text-slate-300">{e().stars}<Show when={(e().packageCount ?? 0) > 1}> <span class="text-slate-500">(whole repository)</span></Show></dd></div>
+                        <Show when={(e().packageCount ?? 0) > 1}>
+                          <div><dt class="text-slate-500">Repository</dt><dd class="text-slate-300"><a href={e().repository} target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300">{e().repositoryOwner}/{e().repositoryName}</a> <span class="text-slate-500">({e().packageCount} packages; package directory <code class="font-mono">{e().modulePath}</code>)</span></dd></div>
+                        </Show>
                         <div>
                           <dt class="text-slate-500">Layer</dt>
                           <dd class="text-slate-300">

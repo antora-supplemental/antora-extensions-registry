@@ -157,8 +157,16 @@ export async function buildReleases(opts: {
   readTagPackage: (tag: string) => Promise<PkgCompat | null>;
   repoDefault: number[];
   max?: number;
+  /** Monorepo package: only tags `<tagPrefix><semver>` (e.g. `color-scheme-v0.5.3`) count, read as their semver. */
+  tagPrefix?: string;
+  /** Monorepo package directory, appended to install specs as `&path:<dir>`. */
+  installPath?: string;
 }): Promise<ReleaseInfo[]> {
   const max = opts.max ?? 40;
+  const pre = opts.tagPrefix ?? '';
+  const parseTag = (t: string) => (t.startsWith(pre) ? parseTagBare(t.slice(pre.length)) : null);
+  const antoraFromBuildMetadata = (t: string) => antoraFromBuildMetadataBare(t.startsWith(pre) ? t.slice(pre.length) : t);
+  const installBase = opts.installPath ? { base: opts.installBase, path: opts.installPath } : opts.installBase;
   const aliasMajor = new Map<string, number>();
   for (const t of opts.tags) {
     const m = antoraFromBuildMetadata(t);
@@ -186,19 +194,19 @@ export async function buildReleases(opts: {
     const alias = aliasMajor.get(p.version) ?? null;
     const needPkg = antoraFromBuildMetadata(r.tag_name) === null && alias === null;
     const pkg = needPkg && pkgReads++ < 15 ? await opts.readTagPackage(r.tag_name) : null;
-    const c = resolveCompat(r.tag_name, pkg, opts.repoDefault, alias);
-    out.push(toInfo(r, p, c, opts.installBase));
+    const c = resolveCompat(r.tag_name.slice(pre.length), pkg, opts.repoDefault, alias);
+    out.push(toInfo(r, p, c, installBase));
   }
   for (const { r, p } of parsed.filter((x) => x.p.rolling)) {
     const prefix = `${p.version}.`;
     const target = out.find((x) => !x.rolling && !x.prerelease && x.version.startsWith(prefix) && !x.version.includes('-'));
     const c = target ? { antora: target.antora, source: target.antoraSource } : resolveCompat(r.tag_name, null, opts.repoDefault);
-    out.push({ ...toInfo(r, p, c, opts.installBase), prerelease: false, ...(target ? { label: `tracks ${target.version}` } : {}) });
+    out.push({ ...toInfo(r, p, c, installBase), prerelease: false, ...(target ? { label: `tracks ${target.version}` } : {}) });
   }
   return out;
 }
 
-function toInfo(r: RawRelease, p: { version: string; rolling: boolean }, c: { antora: number[]; source?: AntoraCompatSource }, installBase: string): ReleaseInfo {
+function toInfo(r: RawRelease, p: { version: string; rolling: boolean }, c: { antora: number[]; source?: AntoraCompatSource }, install: string | { base: string; path: string }): ReleaseInfo {
   const assets = (r.assets ?? [])
     .map((a) => ({ name: a.name, url: a.browser_download_url }))
     .sort((a, b) => (a.name === 'ui-bundle.zip' ? -1 : b.name === 'ui-bundle.zip' ? 1 : a.name.localeCompare(b.name)));
@@ -212,7 +220,7 @@ function toInfo(r: RawRelease, p: { version: string; rolling: boolean }, c: { an
     antora: c.antora,
     ...(c.source ? { antoraSource: c.source } : {}),
     ...(c.antora.length === 1 && !p.rolling ? { label: `${p.version}+antora.${c.antora[0]}` } : {}),
-    installSpec: `${installBase}#${r.tag_name}`,
+    installSpec: typeof install === 'string' ? `${install}#${r.tag_name}` : `${install.base}#${r.tag_name}&path:${install.path}`,
     assets,
   };
 }
@@ -227,7 +235,7 @@ export function groupByAntora(releases: ReleaseInfo[]): Array<{ major: number | 
   return [...groups.entries()]
     .sort(([a], [b]) => (b ?? -1) - (a ?? -1))
     .map(([major, list]) => {
-      const sorted = [...list].sort((a, b) => compareKeys(parseTag(b.tag)!.key, parseTag(a.tag)!.key));
+      const sorted = [...list].sort((a, b) => compareKeys(parseTag(b.version)!.key, parseTag(a.version)!.key));
       return { major, latest: sorted.find((x) => !x.rolling && !x.prerelease) ?? sorted[0], releases: sorted };
     });
 }
@@ -238,3 +246,6 @@ export function antoraMajorsOf(e: { releases?: ReleaseInfo[]; antora?: number[] 
   for (const r of e.releases ?? []) for (const m of r.antora) s.add(m);
   return [...s].sort((a, b) => a - b);
 }
+
+const parseTagBare = (t: string) => parseTag(t);
+const antoraFromBuildMetadataBare = (t: string) => antoraFromBuildMetadata(t);

@@ -64,3 +64,18 @@ html.dark-theme { --x-canvas: #000000; }`;
   assert.deepEqual(s[0].swatches, ['#ffffff', '#ff0000', '#0000ff', '#111111']);
   assert.deepEqual(s[1].swatches, ['#110000', '#eeeeee']);
 });
+
+test('monorepo package tags <dir>-v<semver> map to that package only', async () => {
+  const r = await buildReleases({
+    installBase: 'github:o/r',
+    releases: [],
+    tags: ['color-scheme-v0.5.3', 'color-scheme-v0.4.0', 'light-dark-mode-v0.1.2', 'chassis-v0.2.0'],
+    readTagPackage: async () => null,
+    repoDefault: [3],
+    tagPrefix: 'color-scheme-v',
+    installPath: 'packages/color-scheme',
+  });
+  assert.deepEqual(r.map((x) => x.version), ['0.5.3', '0.4.0']);
+  assert.equal(r[0].tag, 'color-scheme-v0.5.3');
+  assert.equal(r[0].installSpec, 'github:o/r#color-scheme-v0.5.3&path:packages/color-scheme');
+});

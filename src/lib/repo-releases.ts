@@ -72,3 +72,49 @@ export async function fetchRepoReleaseInfo(owner: string, repo: string, branch: 
   const relations = readRelations(pkg?.antoraRegistry ?? pkg?.['antora-registry']);
   return { releases, antora: repoDefault, colorSchemes, ...(relations ? { relations } : {}) };
 }
+
+export interface PackageInfo { relations?: DeclaredRelations; antora: number[]; releases: ReleaseInfo[]; colorSchemes: ColorScheme[] }
+
+/**
+ * Monorepo packages (manifestPath under a subdirectory): each package's own package.json antoraRegistry block,
+ * and releases from its `<dir>-v<semver>` tags. Releases and tags are read once for the repo.
+ */
+export async function fetchMonorepoPackageInfo(
+  owner: string,
+  repo: string,
+  branch: string,
+  packages: Array<{ manifestPath: string; modulePath?: string }>,
+): Promise<Map<string, PackageInfo>> {
+  const out = new Map<string, PackageInfo>();
+  const [rels, tags] = await Promise.all([
+    getJson<RawRelease[]>(`${API}/repos/${owner}/${repo}/releases?per_page=100`),
+    getJson<Array<{ name: string }>>(`${API}/repos/${owner}/${repo}/tags?per_page=100`),
+  ]);
+  for (const p of packages) {
+    const dir = p.modulePath ?? p.manifestPath.replace(/\/?package\.json$/, '');
+    const pkg = await rawJson(owner, repo, branch, p.manifestPath);
+    if (!pkg) continue;
+    const name = dir.split('/').pop()!;
+    const repoDefault = antoraRepoDefault(pkg);
+    const releases = await buildReleases({
+      installBase: `github:${owner}/${repo}`,
+      releases: rels ?? [],
+      tags: (tags ?? []).map((t) => t.name),
+      readTagPackage: (tag) => rawJson(owner, repo, tag, p.manifestPath),
+      repoDefault,
+      tagPrefix: `${name}-v`,
+      installPath: dir,
+      max: 12,
+    });
+    const decl = pkg?.antoraRegistry?.colorSchemes;
+    const paths: string[] = (Array.isArray(decl) ? decl : decl ? [decl] : []).filter((x: unknown): x is string => typeof x === 'string').slice(0, 3);
+    const colorSchemes: ColorScheme[] = [];
+    for (const cp of paths) {
+      const css = await rawText(owner, repo, branch, `${dir}/${cp.replace(/^\.?\//, '')}`);
+      if (css) colorSchemes.push(...parseColorSchemes(css));
+    }
+    const relations = readRelations(pkg?.antoraRegistry ?? pkg?.['antora-registry']);
+    out.set(p.manifestPath, { antora: repoDefault, releases, colorSchemes, ...(relations ? { relations } : {}) });
+  }
+  return out;
+}

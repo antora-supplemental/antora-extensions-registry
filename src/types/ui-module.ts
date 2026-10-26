@@ -68,6 +68,8 @@ export interface ExtensionCatalogEntry {
   githubTopics?: string[];
   /** Layers from the antora-ui-chassis model (engine, chassis, body-kit, paint, bolt-on). */
   layers?: LayerId[];
+  /** Packages listed from the same repository when it is a monorepo (more than one package directory). */
+  packageCount?: number;
   /** Where `layers` came from: the repo declared them, the sync guessed, or an admin set them. */
   layerSource?: MetadataSource;
   /** Set when the entry is a bundle (compose pack) of other extensions. */
@@ -184,6 +186,8 @@ export interface RegistryIndex {
     install?: UiModuleInstall;
     /** Declared layers (see lib/layers.ts). */
     layers?: string[];
+    /** Single declared layer (registry-index.json `layer`). */
+    layer?: string;
   }>;
   recipes: Array<{
     id: string;
