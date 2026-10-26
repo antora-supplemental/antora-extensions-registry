@@ -34,3 +34,11 @@ test('cards carry no Report button (it lives on the detail pages only)', () => {
     assert.doesNotMatch(src, /ReportButton/, f);
   }
 });
+
+import { sortSchemes } from '../src/lib/color-schemes';
+import { orderModes } from '../src/components/catalog/ColorModeIcons';
+test('schemes and mode circles render light first, then dark, then others', () => {
+  const s = sortSchemes([{ id: 'd', mode: 'dark' }, { id: 'x', mode: 'special' }, { id: 'l', mode: 'light' }, { id: 'l2', mode: 'light' }]);
+  assert.deepEqual(s.map((x) => x.id), ['l', 'l2', 'd', 'x']);
+  assert.deepEqual(orderModes(['dark', 'light']), ['light', 'dark']);
+});

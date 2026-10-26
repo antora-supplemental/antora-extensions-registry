@@ -58,3 +58,11 @@ export function parseColorSchemes(css: string): ColorScheme[] {
     return { id, label: d.label ?? id, mode: special ? 'special' : dark ? 'dark' : 'light', swatches: swatchesOf(block) };
   });
 }
+
+const SLOT_RANK: Record<string, number> = { light: 0, both: 1, dark: 2, special: 3, none: 3 };
+
+/** Deterministic display order: light, both, dark, none/special, then declared order (stable). */
+export function sortSchemes<T extends { mode: string }>(schemes: T[]): T[] {
+  return schemes.map((s, i) => [s, i] as const)
+    .sort((a, b) => (SLOT_RANK[a[0].mode] ?? 3) - (SLOT_RANK[b[0].mode] ?? 3) || a[1] - b[1]).map(([s]) => s);
+}

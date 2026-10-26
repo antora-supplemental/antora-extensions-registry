@@ -29,7 +29,7 @@ export default function ThemeCard(props: ThemeCardProps) {
     switch (props.theme.appearance) {
       case 'light': return ['light'];
       case 'dark': return ['dark'];
-      case 'both': return ['dark', 'light'];
+      case 'both': return ['light', 'dark'];
       default: return [];
     }
   };

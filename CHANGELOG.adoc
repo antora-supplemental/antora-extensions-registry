@@ -2,6 +2,7 @@
 
 == Unreleased
 
+* Scheme swatches and light/dark circles now always render in label order (light, both, dark, other, then declared order) via one shared sort.
 * Antora version compatibility per release. The sync reads each repository's releases and tags and resolves the Antora line of every release: `+antora.N` (or `+antora-solid`) build metadata on the tag or an alias tag, then `engines.antora` at that tag, then core `@antora/*` peer dependencies, then the repository's `antoraRegistry.antora`; otherwise "not declared". Rolling tags (`v4`, `v4.2`) follow the newest release they cover. Package pages show a "Releases by Antora version" table with the latest release per line, install specs and bundle download links; cards show "Antora N" badges and the extensions page filters by Antora version. New `catalog_release` table (applied by `drizzle-kit push`). Documented on Registry metadata.
 * Color schemes: a paint that sets `antoraRegistry.colorSchemes` gets one swatch chip per scheme from its `@color-schemes` comment (canvas, accent, link and text colors), on cards and, with labels, on the package page.
 * Skittles (`antora-supplemental/skittles-theme`) is listed: in the theme gallery and as a package with its 11 color schemes, previews and Antora 3 compatibility.

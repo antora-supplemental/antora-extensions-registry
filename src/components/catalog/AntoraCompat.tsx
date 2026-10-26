@@ -1,6 +1,6 @@
 import { For, Show } from 'solid-js';
 import { antoraLineLabel, antoraMajorsOf, groupByAntora, type ReleaseInfo } from '~/lib/antora-compat';
-import type { ColorScheme } from '~/lib/color-schemes';
+import { sortSchemes, type ColorScheme } from '~/lib/color-schemes';
 
 /** "Antora 3" / "Antora 4" badges for the lines an entry's releases (or repo default) target. */
 export function AntoraBadges(props: { entry: { releases?: ReleaseInfo[]; antora?: number[] }; class?: string }) {
@@ -21,7 +21,8 @@ export function AntoraBadges(props: { entry: { releases?: ReleaseInfo[]; antora?
 
 /** One chip per declared color scheme, with its swatch colors. */
 export function SchemeSwatches(props: { schemes?: ColorScheme[]; max?: number; showLabels?: boolean }) {
-  const list = () => (props.schemes ?? []).slice(0, props.max ?? 99);
+  const sorted = () => sortSchemes(props.schemes ?? []);
+  const list = () => sorted().slice(0, props.max ?? 99);
   return (
     <Show when={list().length}>
       <ul class="flex flex-wrap gap-1.5" aria-label="Color schemes">

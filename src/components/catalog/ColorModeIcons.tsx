@@ -22,12 +22,19 @@ export function splitModeTags(tags: string[]): { modes: ColorMode[]; rest: strin
     if (m) modes.add(m);
     else rest.push(t);
   }
-  return { modes: (['dark', 'light'] as const).filter((m) => modes.has(m)), rest };
+  return { modes: (['light', 'dark'] as const).filter((m) => modes.has(m)), rest };
+}
+
+/** Label order: light first, then dark. Stable for anything else. */
+export function orderModes(modes: ColorMode[]): ColorMode[] {
+  const rank: Record<string, number> = { light: 0, dark: 2 };
+  return [...new Set(modes)].map((m, i) => [m, i] as const)
+    .sort((a, b) => (rank[a[0]] ?? 3) - (rank[b[0]] ?? 3) || a[1] - b[1]).map(([m]) => m);
 }
 
 export function ColorModeIcons(props: { modes: ColorMode[]; palettes?: Partial<Record<ColorMode, ModePalette>> }) {
   return (
-    <For each={props.modes}>
+    <For each={orderModes(props.modes)}>
       {(mode) => {
         const p = { ...DEFAULTS[mode], ...(props.palettes?.[mode] ?? {}) };
         const label = mode === 'dark' ? 'Dark theme' : 'Light theme';
