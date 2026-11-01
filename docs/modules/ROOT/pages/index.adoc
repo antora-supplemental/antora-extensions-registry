@@ -19,7 +19,8 @@ See xref:contributing.adoc[Contributing your Extension] for metadata files (`ant
 
 == For site operators
 
-Repository setup, authentication, and Netlify deployment are documented in the https://github.com/antora-supplemental/antora-extensions-registry/blob/main/README.adoc[project README], not here.
+* xref:continuous-integration.adoc[CI and scheduled jobs] — GitHub Actions deploy, catalog sync, nightly home bake, encoding guard
+* https://github.com/antora-supplemental/antora-extensions-registry/blob/main/README.adoc[Project README] — local setup, authentication, Turso, and Netlify secrets
 
 == Features
 

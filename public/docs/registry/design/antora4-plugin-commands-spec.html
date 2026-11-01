@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Command Routing in antora-solid :: Antora Extensions Registry</title>
+    <link rel="canonical" href="https://antora-extensions.org/registry/design/antora4-plugin-commands-spec.html">
+    <meta name="description" content="Design spec v0.2 for how antora-solid's own antora CLI routes subcommands to tools and extensions natively, such as antora reg install. Covers discovery, registration, namespacing, help and completion, lifecycle and context, trust, and antorareg as a routed tool.">
+    <meta name="generator" content="Antora 3.1.14">
+    <link rel="stylesheet" href="../../_/css/site.css">
+<link rel="stylesheet" href="../../_/css/site-extra.css">
+<script>
+(function () {
+  const MODE = 'antora-theme-mode'
+  const LEGACY = 'antora-theme'
+  function mode() {
+    const m = localStorage.getItem(MODE)
+    if (m === 'system' || m === 'dark' || m === 'light') return m
+    const o = localStorage.getItem(LEGACY)
+    if (o === 'dark' || o === 'light') return o
+    return 'system'
+  }
+  function isDark() {
+    const m = mode()
+    if (m === 'dark') return true
+    if (m === 'light') return false
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  if (isDark()) document.documentElement.classList.add('dark-theme')
+})()
+</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://antora-extensions.org">Antora Extensions Registry</a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field">
+          <input id="search-input" type="text" placeholder="Search the docs">
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="registry" data-version="">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Antora Extensions Registry</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Welcome</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../install-guide.html">Installing from the registry</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../registry-metadata.html">Registry metadata (layers, bundles, previews)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../filters.html">Registry filters</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../continuous-integration.html">CI and scheduled jobs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Design</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="trust-and-quality-spec.html">Trust and quality spec</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="antorareg-cli-spec.html">antorareg CLI spec</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="antora4-plugin-commands-spec.html">antora-solid command routing spec</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Antora Extensions Registry</span>
+    <span class="version"></span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Antora Extensions Registry</a></div>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Antora Extensions Registry</a></li>
+    <li>Design</li>
+    <li><a href="antora4-plugin-commands-spec.html">antora-solid command routing spec</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///workspace/docs/modules/ROOT/pages/design/antora4-plugin-commands-spec.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Command Routing in antora-solid</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<div class="title">Source of truth</div>
+<div class="paragraph">
+<p>Spec version v0.2, recorded 2026-10-26. This is the source of truth for command routing in antora-solid&#8217;s <code>antora</code> CLI. Change it here, and add a changelog bullet.
+Related: <a href="antorareg-cli-spec.html" class="xref page">antorareg CLI spec</a>. Antora 4 architecture: the antora-solidstart repo and the hub proposal <code>proposals/antora-next-shell.adoc</code> in antora-supplemental/docs.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><em>Design spec v0.2. Antora 3 has no way for an extension to add a CLI subcommand. antora-solid&#8217;s own <code>antora</code> CLI routes subcommands to tools and extensions natively. This is antora-solid&#8217;s design, not a proposal for upstream Antora. <code>antorareg</code> stays purpose-built for current Antora 3 and is one of the routed tools.</em></p>
+</div>
+<div id="toc" class="toc">
+<div id="toctitle" class="title">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#context">Context</a></li>
+<li><a href="#principles">Principles and decisions</a></li>
+<li><a href="#prior-art">How other CLIs do it</a></li>
+<li><a href="#discovery">Discovery</a></li>
+<li><a href="#api">Registration API</a>
+<ul class="sectlevel2">
+<li><a href="#_static_declaration">Static declaration</a></li>
+<li><a href="#_runtime_module">Runtime module</a></li>
+</ul>
+</li>
+<li><a href="#namespacing">Namespacing and collisions</a></li>
+<li><a href="#help">Help and completion</a></li>
+<li><a href="#lifecycle">Lifecycle and context</a></li>
+<li><a href="#trust">Security and trust model</a></li>
+<li><a href="#antorareg">antorareg as a routed tool</a></li>
+<li><a href="#example">Minimal example extension</a></li>
+<li><a href="#open-questions">Open questions</a></li>
+<li><a href="#plan">Phased plan</a></li>
+<li><a href="#changelog">Changelog</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="context"><a class="anchor" href="#context"></a>Context</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Antora 4 (antora-solid) as recorded in the antora-solidstart notes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A <strong>Node orchestrator</strong> (the build-time compiler) reads git sources and the playbook and emits a content manifest.</p>
+</li>
+<li>
+<p>A <strong>SolidStart reader shell</strong> serves the manifest.</p>
+</li>
+<li>
+<p><strong>asciidoctor-d</strong> converts AsciiDoc over a CLI or IPC.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The orchestrator owns the <code>antora</code> CLI, so command registration belongs there. Extensions on the Antora 4 line are a parallel SemVer line (<code>+antora.4</code> build metadata, or a <code>/next</code> entry point) gated by the playbook <code>runtime</code>.</p>
+</div>
+<div class="paragraph">
+<p>Antora 3 today: <code>antora</code> has <code>generate</code> only. Extensions register through <code>register(context)</code> and listen to generator events. There&#8217;s no hook into the commander program, so tools like <code>antorareg</code> are standalone binaries. antora-solid doesn&#8217;t change that for Antora 3; it routes to those same binaries.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="principles"><a class="anchor" href="#principles"></a>Principles and decisions</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Core call</div>
+<div class="paragraph">
+<p>The <code>antora</code> CLI is a router. Commands are declared statically and loaded (or executed) lazily. Antora can list, namespace and complete every plugin command without running any plugin code. Code runs only when the user invokes that command.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Declare, then load</strong>: Each package&#8217;s manifest lists its commands. The entry module is imported only on invocation.</p>
+</li>
+<li>
+<p><strong>Namespaced by default</strong>: Plugin commands live under a namespace (<code>antora reg &#8230;&#8203;</code>). Built-in commands always win.</p>
+</li>
+<li>
+<p><strong>Small context, no build</strong>: A command gets the parsed playbook, a logger, paths and a cache, not a generator run. It may ask for a build explicitly.</p>
+</li>
+<li>
+<p><strong>Same trust as extensions</strong>: A command is code the user chose to install. There&#8217;s no sandbox claim we can&#8217;t keep, but there are clear consent and visibility rules.</p>
+</li>
+</ul>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Decision</th>
+<th class="tableblock halign-left valign-top">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Static declaration in <code>package.json</code> <code>antora.commands</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Proposed</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Discovery from the playbook plus project-local installed packages</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Proposed</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Namespace required, e.g. <code>reg</code>; built-ins reserved</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Proposed</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No full build in the command context; <code>context.build()</code> on request</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Proposed</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antorareg</code> is a routed tool: <code>antora reg &#8230;&#8203;</code> runs the <code>antorareg</code> binary through an <code>exec</code> entry</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided (Ryan)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">antora-solid&#8217;s own design; not proposed upstream</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided (Ryan)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="prior-art"><a class="anchor" href="#prior-art"></a>How other CLIs do it</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 14.2857%;">
+<col style="width: 28.5714%;">
+<col style="width: 28.5714%;">
+<col style="width: 28.5715%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Tool</th>
+<th class="tableblock halign-left valign-top">Discovery</th>
+<th class="tableblock halign-left valign-top">Registration</th>
+<th class="tableblock halign-left valign-top">Takeaway</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">git</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Any <code>git-&lt;name&gt;</code> executable on <code>PATH</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None. The binary is the command. <code>git help &lt;name&gt;</code> opens its man page.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Zero coupling and language-agnostic, but no shared context, no completion metadata, and <code>PATH</code> is a trust boundary nobody thinks about.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cargo</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>cargo-&lt;name&gt;</code> on <code>PATH</code> (usually from <code>cargo install</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None. Cargo runs it with <code>&lt;name&gt;</code> as the first argument.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The same as git, plus a convention for passing the subcommand name. Works well because <code>cargo install</code> is the one way to get them.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">npm / yarn</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">npm: none beyond <code>npx</code> and scripts. Yarn Berry: plugins listed in <code>.yarnrc.yml</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yarn: a plugin module exports <code>commands</code> (clipanion classes) and <code>hooks</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Project-scoped, lockfile-pinned plugin lists are reproducible. The downside is that Yarn loads all plugins eagerly.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">oclif</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>oclif.plugins</code> in <code>package.json</code> plus user plugins installed with <code>plugins:install</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A manifest (<code>oclif.manifest.json</code>) lists commands, flags and descriptions. Command classes load lazily.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The best fit: a static manifest drives help and completion without loading code. Namespaced topics. Hooks (<code>init</code>, <code>prerun</code>).</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>We take oclif&#8217;s manifest and lazy loading, Yarn&#8217;s project-scoped list, and git/cargo&#8217;s fallback for a non-JS command (an <code>exec</code> entry).</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="discovery"><a class="anchor" href="#discovery"></a>Discovery</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Sources, in order:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Built-ins</strong> (<code>generate</code>, <code>serve</code>, <code>help</code>, <code>version</code>&#8230;&#8203;). Reserved.</p>
+</li>
+<li>
+<p><strong>Playbook</strong>: <code>antora.extensions[]</code> entries whose package declares <code>antora.commands</code>. Commands are available only when a playbook is found. This is the default, and it matches how extensions are enabled today.</p>
+</li>
+<li>
+<p><strong>Project-installed packages</strong>: packages in the project&#8217;s <code>node_modules</code> or the <code>antorareg</code> vendor dir (<code>.antorareg/</code>) that declare commands and are listed in <code>antora.commands.enable</code> in the playbook. This covers tools you want before they&#8217;re in the playbook, such as <code>antora reg install</code> on a fresh project.</p>
+</li>
+<li>
+<p><strong>User-global</strong> (optional, off by default): <code>~/.config/antora/commands.yml</code> listing packages by path. Needed so <code>antora reg init</code> works with no playbook.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Antora builds a command index from the manifests and caches it keyed by the lockfile or <code>package.json</code> hashes, so startup cost doesn&#8217;t grow with plugin count.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="api"><a class="anchor" href="#api"></a>Registration API</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_static_declaration"><a class="anchor" href="#_static_declaration"></a>Static declaration</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+  "name": "@antora-supplemental/antorareg",
+  "antora": {
+    "runtime": "&gt;=4.0.0",
+    "commands": {
+      "namespace": "reg",
+      "entry": "./dist/commands.js",
+      "list": [
+        { "name": "install", "summary": "Add a registry package to the playbook",
+          "args": [{ "name": "id", "variadic": true }],
+          "options": [{ "flags": "--source &lt;kind&gt;", "choices": ["git", "asset", "npm"] },
+                      { "flags": "--dry-run" }] },
+        { "name": "list", "summary": "Show registry packages in this playbook" }
+      ]
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_runtime_module"><a class="anchor" href="#_runtime_module"></a>Runtime module</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-js hljs" data-lang="js">// dist/commands.js
+export default function registerCommands (registry) {
+  registry.command('install', async (args, options, context) =&gt; { /* ... */ })
+  registry.command('list', async (_args, options, context) =&gt; { /* ... */ })
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Antora checks at load time that the runtime registration matches the static manifest. A mismatch is a load error naming the package, which stops drift between help text and behaviour.</p>
+</div>
+<div class="paragraph">
+<p>An <code>exec</code> form supports commands written in other languages, git style:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{ "name": "lint", "exec": "./bin/asciidoc-lint", "summary": "Lint sources" }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Antora runs it with the arguments and passes context through <code>ANTORA_PLAYBOOK</code>, <code>ANTORA_CACHE_DIR</code>, <code>ANTORA_LOG_FORMAT</code>, plus a JSON context file at <code>ANTORA_CONTEXT_FILE</code>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="namespacing"><a class="anchor" href="#namespacing"></a>Namespacing and collisions</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Every plugin needs a <code>namespace</code> (<code>[a-z][a-z0-9-]*</code>). Commands are invoked as <code>antora &lt;namespace&gt; &lt;command&gt;</code>.</p>
+</li>
+<li>
+<p>Built-in names and a reserved list (<code>generate</code>, <code>serve</code>, <code>help</code>, <code>version</code>, <code>init</code>, <code>config</code>, <code>cache</code>, <code>plugin</code>, <code>ext</code>) can&#8217;t be namespaces.</p>
+</li>
+<li>
+<p>If two packages claim the same namespace, both are disabled for that namespace and Antora prints both package IDs and how to fix it: <code>antora.commands.alias: { reg2: &lt;package&gt; }</code> in the playbook.</p>
+</li>
+<li>
+<p>A plugin may ask for a top-level alias (for example <code>antora install</code> for <code>reg install</code>). Aliases apply only when the user opts in through <code>antora.commands.alias</code> in the playbook. They&#8217;re never automatic.</p>
+</li>
+<li>
+<p>The registry checks namespaces at publish time and warns about clashes with Listed packages.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="help"><a class="anchor" href="#help"></a>Help and completion</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><code>antora help</code> lists plugin namespaces in a separate "Extension commands" section with the source package and version.</p>
+</li>
+<li>
+<p><code>antora help reg install</code> and <code>antora reg install --help</code> render from the static manifest. No plugin code runs.</p>
+</li>
+<li>
+<p><code>antora completion bash|zsh|fish|pwsh</code> emits a script that calls <code>antora __complete &lt;words&gt;</code>. That answers from the cached command index. Plugins can add a <code>complete</code> function for dynamic values (for example package IDs from the registry), called only for that plugin&#8217;s words, with a 500 ms timeout.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="lifecycle"><a class="anchor" href="#lifecycle"></a>Lifecycle and context</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Parse argv and resolve the command from the index.</p>
+</li>
+<li>
+<p>Load the playbook (<code>--playbook</code>, or discover it). Commands that declare <code>"playbook": "optional"</code> run without one.</p>
+</li>
+<li>
+<p>Import the entry module, call <code>registerCommands</code>, and validate against the manifest.</p>
+</li>
+<li>
+<p>Call the handler with <code>(args, options, context)</code>.</p>
+</li>
+<li>
+<p>Exit with the handler&#8217;s return code. Errors are formatted by Antora&#8217;s logger.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The <code>context</code> object:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Member</th>
+<th class="tableblock halign-left valign-top">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>playbook</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The parsed, frozen playbook, plus <code>playbook.file</code> (path) and <code>playbook.document()</code> (a comment-preserving YAML document for edits, written back by Antora with a diff and atomic write)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>logger</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Antora&#8217;s pino logger, scoped to the plugin, honouring <code>--log-level</code> and <code>--log-format</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>paths</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>cwd</code>, <code>cacheDir</code> (per plugin), <code>projectDir</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>version</code>, <code>runtime</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>build(opts)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">An explicit, opt-in generator run (or a partial one, such as <code>{ stopAfter: 'contentClassified' }</code>). Never run implicitly.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>prompt</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TTY-aware confirmation; returns the default under <code>--yes</code> or with no TTY</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>signal</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">An <code>AbortSignal</code> wired to Ctrl+C</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Plugins also get two hooks: <code>commandsRegistered</code> (to see the full index, for meta-tools) and <code>beforeCommand</code>/<code>afterCommand</code> (for telemetry-free timing and cleanup). Normal build extensions don&#8217;t see command runs.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="trust"><a class="anchor" href="#trust"></a>Security and trust model</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Code you chose</strong>: Plugin commands carry the same trust as extensions in the playbook. Antora doesn&#8217;t claim to sandbox them.</p>
+</li>
+<li>
+<p><strong>No surprise sources</strong>: Commands come only from the playbook, an explicit enable list, or the opt-in user config. There&#8217;s no scanning of <code>PATH</code> or global <code>node_modules</code>, so a stray package can&#8217;t add <code>antora deploy</code>.</p>
+</li>
+<li>
+<p><strong>First-run consent</strong>: The first time a namespace appears (or its package changes version), an interactive run asks for confirmation and lists the package, version and source. The answer is stored per project. <code>--yes</code> and <code>CI=true</code> skip the prompt, and in CI the lockfile is the consent.</p>
+</li>
+<li>
+<p><strong>Visibility</strong>: <code>antora plugin list</code> shows every namespace, package, version, source and checksum.</p>
+</li>
+<li>
+<p><strong>Registry signals</strong>: When the package is in the registry, Antora (or the <code>reg</code> plugin) can show tier and scan status. A security-blocked version prints a warning and refuses to run unless <code>--allow-blocked</code>.</p>
+</li>
+<li>
+<p><strong>Lazy loading as defence</strong>: Because help and completion never import code, listing commands is always safe.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="antorareg"><a class="anchor" href="#antorareg"></a>antorareg as a routed tool</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>antorareg</code> is a D binary built for Antora 3. antora-solid doesn&#8217;t embed or port it; its <code>antora</code> CLI routes the <code>reg</code> namespace to the binary through an <code>exec</code> entry:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"></th>
+<th class="tableblock halign-left valign-top">Antora 3</th>
+<th class="tableblock halign-left valign-top">antora-solid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Invocation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antorareg install &#8230;&#8203;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora reg install &#8230;&#8203;</code>, routed to <code>antorareg install &#8230;&#8203;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Distribution</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Standalone binary (no Node)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The same binary, registered as a routed tool in the playbook, project or user-global config</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Playbook edits</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Its own text/CST editor</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The same; antora-solid passes the playbook path through <code>ANTORA_PLAYBOOK</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Logger and output</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Its own, following the CLI Output standard</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The same, with <code>ANTORA_LOG_FORMAT</code> honoured</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bootstrapping</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Works with no playbook (<code>antorareg init</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Registered through the user-global config so <code>antora reg init</code> works with no playbook</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The static manifest for the <code>reg</code> namespace (command names, summaries, options) ships with <code>antorareg</code>, so help and completion work without running it.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="example"><a class="anchor" href="#example"></a>Minimal example extension</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">// package.json
+{
+  "name": "antora-hello",
+  "type": "module",
+  "antora": {
+    "runtime": "&gt;=4.0.0",
+    "commands": {
+      "namespace": "hello",
+      "entry": "./commands.js",
+      "list": [{ "name": "components", "summary": "List components named in the playbook" }]
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-js hljs" data-lang="js">// commands.js
+export default function registerCommands (registry) {
+  registry.command('components', async (_args, options, { playbook, logger }) =&gt; {
+    const urls = playbook.content.sources.map((s) =&gt; s.url)
+    if (options.json) process.stdout.write(JSON.stringify(urls) + '\n')
+    else urls.forEach((u) =&gt; logger.info(u))
+    return 0
+  })
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml"># antora-playbook.yml
+antora:
+  extensions:
+    - require: antora-hello</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">$ antora help
+...
+Extension commands:
+  hello components   List components named in the playbook   (antora-hello 0.1.0)
+$ antora hello components</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="open-questions"><a class="anchor" href="#open-questions"></a>Open questions</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Manifest location</strong>: Use <code>package.json</code> <code>antora.commands</code>, or a separate <code>antora-commands.json</code> generated at build time (oclif style) for non-npm git packages?</p>
+</li>
+<li>
+<p><strong>Playbook writes</strong>: Should Antora own write-back (<code>playbook.document()</code> with a diff) or leave it to plugins?</p>
+</li>
+<li>
+<p><strong>Consent store</strong>: Where should consent answers live, per project (<code>.antora/consent.json</code>) or per user?</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="plan"><a class="anchor" href="#plan"></a>Phased plan</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Phase 0</strong>: Prototype in the antora-solidstart orchestrator: a static manifest, lazy load, namespaces, and help.</p>
+</li>
+<li>
+<p><strong>Phase 1</strong>: <code>exec</code> routing, context (<code>playbook</code>, <code>logger</code>, <code>paths</code>, <code>prompt</code>), consent, <code>antora plugin list</code>, and the first routed tool, <code>antora reg</code> to <code>antorareg</code>.</p>
+</li>
+<li>
+<p><strong>Phase 2</strong>: Completion (<code>__complete</code>), <code>context.build()</code>, and registry trust signals.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="changelog"><a class="anchor" href="#changelog"></a>Changelog</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>v0.2 (2026-10-26): Reframed as antora-solid&#8217;s own command routing, not an upstream proposal. <code>antorareg</code> is a routed tool (<code>exec</code>), not a JS plugin. Removed the upstream phase and the resolved open questions (upstream, no-playbook discovery, exec support).</p>
+</li>
+<li>
+<p>v0.1 (2026-10-26): First draft.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script src="../../_/js/site-dark-mode.js"></script>
+  </body>
+</html>
