@@ -1,0 +1,81 @@
+= Continuous integration and scheduled jobs
+:page-usage-context: operator
+
+This repository uses GitHub Actions for deploys, catalog maintenance, encoding checks, and a daily home-page bake. Workflow files live under `.github/workflows/`.
+
+== Deploy to Netlify (`netlify-deploy.yml`)
+
+*Triggers:* push to `main`, pull requests targeting `main`, and `workflow_dispatch`.
+
+On every run the job checks out the repo, installs dependencies with pnpm 9 on Node.js 22, and builds a catalog snapshot (`pnpm catalog:snapshot`) using `GITHUB_TOKEN`.
+
+On pushes to `main` (not on PRs from forks), it also runs `drizzle-kit push` against Turso/LibSQL using `DB_URL` and `DB_AUTH_TOKEN`, then builds the SolidStart site and deploys to Netlify with `netlify-cli`.
+
+Required repository secrets for production deploy:
+
+* `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`
+* `BETTER_AUTH_SECRET`, `DB_URL`, `DB_AUTH_TOKEN`
+
+Optional variable: `BETTER_AUTH_URL` (defaults to `https://registry.antora-supplemental.org`).
+
+Pull requests from the same repository build but only upload a Netlify preview when secrets are present; fork PRs skip deploy upload.
+
+Pinned actions (as of 2026-11-01): `actions/checkout@v7`, `pnpm/action-setup@v6`, `actions/setup-node@v7`.
+
+== Sync catalog to database (`catalog-sync.yml`)
+
+*Triggers:* daily at 09:00 UTC, `workflow_dispatch`, and `repository_dispatch` types `catalog-sync` and `link-cache-invalidate`.
+
+After checkout and install, the job applies the Drizzle schema (`drizzle-kit push --force`) and runs `pnpm catalog:sync`, which fetches GitHub/GitLab topics, enriches entries, writes Turso tables, and optionally purges Netlify browse cache tags when Netlify secrets are set.
+
+Required secrets: `DB_URL`, `DB_AUTH_TOKEN`. `GITHUB_TOKEN` is provided by Actions. Optional: `GITLAB_TOKEN`, `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`.
+
+The home page is *not* refreshed by this job; see nightly bake below.
+
+Pinned actions match the deploy workflow (`checkout@v7`, `pnpm/action-setup@v6`, `setup-node@v7`). Dependabot PR #1 (2026-11-01) aligned catalog sync with deploy; details: link:https://github.com/antora-supplemental/antora-extensions-registry/blob/main/changelog-details/history/2026-11-01-catalog-sync-github-actions-bump.adoc[changelog entry^].
+
+== Nightly home page bake (`nightly-bake.yml`)
+
+*Triggers:* daily at 10:00 UTC (one hour after catalog sync) and `workflow_dispatch`.
+
+This workflow does not build in GitHub. It calls the Netlify builds API to trigger a production deploy, waits for completion, then requests `https://registry.antora-supplemental.org/` so Featured / Featured Themes cards are baked from the database and cached until the next bake.
+
+Requires `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID`.
+
+== Encoding guard (`encoding-guard.yml`)
+
+*Triggers:* push to `main` and all pull requests.
+
+Reuses the shared workflow from `dev-centr/agent-rules` to fail CI when tracked text files contain double-encoded UTF-8 (mojibake). See `.encoding-allow` and inline `mojibake-guard: allow` markers for intentional exceptions.
+
+== Local parity
+
+Developers run the same catalog commands locally:
+
+[source,shell]
+----
+pnpm catalog:snapshot   # build-time JSON snapshot (deploy workflow)
+pnpm catalog:sync       # full DB sync (catalog-sync workflow)
+pnpm docs:build         # Antora component to public/docs/
+----
+
+Local docs search uses `@antora/lunr-extension` via `antora-playbook.yml` in this repo.
+
+== Troubleshooting
+
+[cols="1,3"]
+|===
+| Symptom | Likely cause
+
+| Deploy workflow succeeds but site unchanged
+| Missing Netlify secrets (workflow may skip upload) or deploy only runs on `main` pushes
+
+| Catalog sync fails on schema step
+| Invalid or expired `DB_AUTH_TOKEN`, or `DB_URL` not pointing at the Turso database
+
+| Browse pages stale after sync
+| Netlify purge secrets not set; home page stale until nightly bake or manual Netlify deploy
+
+| PR fails encoding guard
+| Save files as UTF-8; fix mojibake sequences or add an allowed path per repo policy
+|===

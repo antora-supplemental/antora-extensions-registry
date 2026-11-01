@@ -101,11 +101,20 @@
     <a class="nav-link" href="filters.html">Registry filters</a>
   </li>
   <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="continuous-integration.html">CI and scheduled jobs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
     <span class="nav-text">Design</span>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="design/trust-and-quality-spec.html">Trust and quality spec</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="design/antorareg-cli-spec.html">antorareg CLI spec</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="design/antora4-plugin-commands-spec.html">antora-solid command routing spec</a>
   </li>
 </ul>
   </li>
@@ -138,7 +147,7 @@
     <li><a href="registry-metadata.html">Registry metadata (layers, bundles, previews)</a></li>
   </ul>
 </nav>
-<div class="edit-this-page"><a href="file:///Z:/code/github.com/antora-supplemental/antora-extensions-registry/docs/modules/ROOT/pages/registry-metadata.adoc">Edit this Page</a></div>
+<div class="edit-this-page"><a href="file:///workspace/docs/modules/ROOT/pages/registry-metadata.adoc">Edit this Page</a></div>
 </div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
@@ -468,6 +477,90 @@ html.dark-theme[data-scheme="orangedark"] { ... }</code></pre>
 <div class="paragraph">
 <p>Swatch colors come from the scheme&#8217;s own block: <code>light</code> is <code>:root</code>, <code>dark</code> is <code>html.dark-theme</code>, and any other id is <code>html[data-scheme="id"]</code> or <code>html.dark-theme[data-scheme="id"]</code>.
 The registry takes up to four hex custom properties from it: canvas or background, the dominant or accent color, the link color, and the text color.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_documentation_link"><a class="anchor" href="#_documentation_link"></a>Documentation link</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Extension pages show a <strong>Docs</strong> button next to <strong>Repository</strong>. The registry picks the first of:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>antoraRegistry.docs</code> (an <code>https://</code> URL),</p>
+</li>
+<li>
+<p>package.json <code>homepage</code>, unless it points at the repository itself (for example <code>&#8230;&#8203;/repo#readme</code>),</p>
+</li>
+<li>
+<p>the repository&#8217;s About URL (GitHub or GitLab homepage),</p>
+</li>
+<li>
+<p>a known Antora docs site for the repository.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>In a monorepo each package&#8217;s own <code>package.json</code> is used.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{ "antoraRegistry": { "docs": "https://example.org/my-extension/" } }</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_canonical_entries_and_variants"><a class="anchor" href="#_canonical_entries_and_variants"></a>Canonical entries and variants</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>One thing, one listing. When several packages are ways of using the same feature (a module, a one-require extension, a recipe), pick one <strong>canonical</strong> entry and nest the others under it. When a package is replaced, point it at its replacement.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>variantOf</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>host/owner/repo/package</code> (or the catalog id) of the canonical entry, for example <code>github.com/antora-supplemental/antora-ui-chassis/light-dark-mode</code>. The entry is left out of search, browse, Featured and the gallery, keeps its own URL, and its page shows "Part of &lt;canonical title&gt;". The canonical page lists it under <strong>Ways to use it</strong>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>variantLabel</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Optional. One line for the <strong>Ways to use it</strong> list (else the package <code>description</code>).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>supersededBy</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Id of the entry that replaces this one. The entry is hidden from listings and search, makes no title claim (so it is never a title clash), and its page shows "Replaced by &lt;title&gt;" with a link. Use it for deprecated or compatibility repos, not for alternatives that are still maintained.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>A search that matches a variant&#8217;s title, package name or keywords returns the canonical entry, with a note naming the matching variant. Chains resolve to the final entry; an unknown or circular target is ignored and the entry stays listed.</p>
+</div>
+<div class="paragraph">
+<p>In a monorepo, set the fields in each package&#8217;s own <code>package.json</code>. A repository whose entries need different values, or one you do not own, is grouped by the registry&#8217;s curated list (<code>src/data/catalog-groups.ts</code>); declared values win over curated ones.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+  "name": "antora-dark-mode",
+  "antoraRegistry": {
+    "title": "Antora Dark Mode",
+    "variantOf": "github.com/antora-supplemental/antora-ui-chassis/light-dark-mode",
+    "variantLabel": "One require for the Default UI: toggle, palette and paint in a single Antora extension"
+  }
+}</code></pre>
+</div>
 </div>
 </div>
 </div>

@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>antorareg: Standalone Registry CLI :: Antora Extensions Registry</title>
+    <link rel="canonical" href="https://antora-extensions.org/registry/design/antorareg-cli-spec.html">
+    <meta name="description" content="Design spec v0.3 for antorareg, the standalone command-line client for the Antora Extensions Registry. Installs, updates and removes UI bundles, extensions and supplemental files by editing antora-playbook.yml in place, with compat checks, a lockfile and git-first package identity.">
+    <meta name="generator" content="Antora 3.1.14">
+    <link rel="stylesheet" href="../../_/css/site.css">
+<link rel="stylesheet" href="../../_/css/site-extra.css">
+<script>
+(function () {
+  const MODE = 'antora-theme-mode'
+  const LEGACY = 'antora-theme'
+  function mode() {
+    const m = localStorage.getItem(MODE)
+    if (m === 'system' || m === 'dark' || m === 'light') return m
+    const o = localStorage.getItem(LEGACY)
+    if (o === 'dark' || o === 'light') return o
+    return 'system'
+  }
+  function isDark() {
+    const m = mode()
+    if (m === 'dark') return true
+    if (m === 'light') return false
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  if (isDark()) document.documentElement.classList.add('dark-theme')
+})()
+</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://antora-extensions.org">Antora Extensions Registry</a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field">
+          <input id="search-input" type="text" placeholder="Search the docs">
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="registry" data-version="">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Antora Extensions Registry</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Welcome</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../install-guide.html">Installing from the registry</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../registry-metadata.html">Registry metadata (layers, bundles, previews)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../filters.html">Registry filters</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../continuous-integration.html">CI and scheduled jobs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Design</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="trust-and-quality-spec.html">Trust and quality spec</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="antorareg-cli-spec.html">antorareg CLI spec</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="antora4-plugin-commands-spec.html">antora-solid command routing spec</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Antora Extensions Registry</span>
+    <span class="version"></span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Antora Extensions Registry</a></div>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Antora Extensions Registry</a></li>
+    <li>Design</li>
+    <li><a href="antorareg-cli-spec.html">antorareg CLI spec</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///workspace/docs/modules/ROOT/pages/design/antorareg-cli-spec.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">antorareg: Standalone Registry CLI</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<div class="title">Source of truth</div>
+<div class="paragraph">
+<p>Spec version v0.3, recorded 2026-10-26. This is the source of truth for the <code>antorareg</code> CLI. Change it here, and add a changelog bullet, instead of editing a separate draft.
+Related: <a href="trust-and-quality-spec.html" class="xref page">Trust and quality spec</a> (stacks, baskets, tiers) and <a href="antora4-plugin-commands-spec.html" class="xref page">Command routing in antora-solid</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><em>Design spec v0.3 for <code>antorareg</code>, the standalone CLI for registry.antora-supplemental.org. A first implementation lives at <a href="https://github.com/antora-supplemental/antorareg">antora-supplemental/antorareg</a>.</em></p>
+</div>
+<div id="toc" class="toc">
+<div id="toctitle" class="title">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#principles">Principles and decisions</a></li>
+<li><a href="#identity">Package identity and sources</a>
+<ul class="sectlevel2">
+<li><a href="#_version_sources_in_resolution_order">Version sources, in resolution order</a></li>
+<li><a href="#_antora_targeted_versions">Antora-targeted versions</a></li>
+</ul>
+</li>
+<li><a href="#commands">Commands</a>
+<ul class="sectlevel2">
+<li><a href="#_playbook_surfaces_it_edits">Playbook surfaces it edits</a></li>
+<li><a href="#fetch-vs-vendor">Fetching versus vendoring</a></li>
+</ul>
+</li>
+<li><a href="#yaml">Editing the playbook without damage</a></li>
+<li><a href="#compat">Compatibility checks</a></li>
+<li><a href="#lockfile">Lockfile</a>
+<ul class="sectlevel2">
+<li><a href="#drift">Drift between the playbook and the lockfile</a></li>
+<li><a href="#asset-audit">Asset auditing</a></li>
+<li><a href="#gitignore">The <code>.gitignore</code> line</a></li>
+<li><a href="#migrate"><code>antorareg migrate</code></a></li>
+<li><a href="#action">GitHub Action</a></li>
+</ul>
+</li>
+<li><a href="#config">Configuration</a></li>
+<li><a href="#cache">Offline and cache behaviour</a></li>
+<li><a href="#security">Security</a></li>
+<li><a href="#distribution">Distribution</a></li>
+<li><a href="#language">Implementation language</a></li>
+<li><a href="#open-questions">Open questions</a></li>
+<li><a href="#plan">Phased plan</a></li>
+<li><a href="#changelog">Changelog</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="principles"><a class="anchor" href="#principles"></a>Principles and decisions</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Core call</div>
+<div class="paragraph">
+<p><code>antorareg</code> is a standalone tool. It is not a wrapper around the <code>antora</code> CLI and never shells out to it for build work. It does one job: manage what a playbook pulls in, checked against the registry.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Registry, not store</strong>: The name matches the registry branding. We register and index packages. We don&#8217;t host them.</p>
+</li>
+<li>
+<p><strong>No wrapper CLI</strong>: <code>antorareg</code> doesn&#8217;t proxy <code>antora generate</code> or re-export its flags. Users keep running <code>antora</code> (or <code>npx antora</code>) themselves.</p>
+</li>
+<li>
+<p><strong>Git first, npm optional</strong>: Package identity is <code>host/owner/repo/package</code>, never an npm name. Many Antora users avoid npm, and the tool must work for them.</p>
+</li>
+<li>
+<p><strong>The playbook is the user&#8217;s file</strong>: Edits keep comments, key order, quoting and blank lines. A diff after <code>install</code> shows only the lines that changed.</p>
+</li>
+<li>
+<p><strong>Reproducible by default</strong>: Every resolved package is pinned in a lockfile with a commit SHA or asset checksum.</p>
+</li>
+<li>
+<p><strong>Built for Antora 3</strong>: <code>antorareg</code> is purpose-built for the current Antora 3 line. It is not proposed upstream. On antora-solid, the <code>antora</code> CLI routes <code>antora reg</code> to it as a tool.</p>
+</li>
+</ul>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Decision</th>
+<th class="tableblock halign-left valign-top">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name <code>antorareg</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided (Ryan)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Standalone tool, not an <code>antora</code> wrapper</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided (Ryan)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Identity <code>host/owner/repo/package</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Git tags and release assets are first class; npm is optional</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Single binary distribution, no <code>npx</code> needed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Implementation language D (LDC), native single binary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided (Ryan), see <a href="#language">Implementation language</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Playbook edited as text by a minimal line/CST editor that preserves comments and formatting</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided, see <a href="#yaml">Editing the playbook without damage</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Registry API types generated from the OpenAPI/JSON schema</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Lockfile <code>antorareg.lock</code> (YAML) next to the playbook; it alone records what the tool installed, with no playbook marker comments</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided (Ryan), see <a href="#drift">Drift between the playbook and the lockfile</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Extensions fetched from the lockfile into a gitignored cache; themes can be ejected (vendored) on request</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided (Ryan), see <a href="#fetch-vs-vendor">Fetching versus vendoring</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Not proposed upstream; on antora-solid the <code>antora</code> CLI routes <code>antora reg</code> to <code>antorareg</code> as a tool</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Decided (Ryan), see the plugin spec</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="identity"><a class="anchor" href="#identity"></a>Package identity and sources</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A package ID has four segments:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&lt;host&gt;/&lt;owner&gt;/&lt;repo&gt;/&lt;package&gt;
+github.com/antora-supplemental/antora-dark-mode/antora-dark-mode
+gitlab.com/acme/docs-tools/lunr-extension</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>For a single-package repo, <code>&lt;package&gt;</code> equals <code>&lt;repo&gt;</code>. The CLI accepts the three-segment short form and expands it.</p>
+</li>
+<li>
+<p>A bare name such as <code>dark-mode</code> is a <strong>search</strong>, not an ID. It resolves only if the registry returns exactly one canonical entry (after <code>variantOf</code>/<code>supersededBy</code> folding). Otherwise the CLI lists candidates and exits with code 2.</p>
+</li>
+<li>
+<p>The npm name is a registry <strong>attribute</strong> of a package and is never its identity.</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_version_sources_in_resolution_order"><a class="anchor" href="#_version_sources_in_resolution_order"></a>Version sources, in resolution order</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Source</th>
+<th class="tableblock halign-left valign-top">Tag or locator</th>
+<th class="tableblock halign-left valign-top">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Release asset</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GitHub/GitLab/Gitea release on tag <code>&lt;package&gt;-v&lt;semver&gt;</code> (monorepo) or <code>v&lt;semver&gt;</code> (single repo); asset named in registry metadata, e.g. <code>ui-bundle.zip</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Preferred for UI bundles. Checksum taken from the release API digest when the forge provides one, else computed and locked.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Git tag</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;package&gt;-v&lt;semver&gt;</code> or <code>v&lt;semver&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Extensions referenced as git sources. Pinned to the tag&#8217;s commit SHA in the lockfile.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">npm (optional)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The package&#8217;s <code>npm</code> attribute from the registry</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Used only with <code>--source npm</code> or <code>source: npm</code> in config. Never required.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_antora_targeted_versions"><a class="anchor" href="#_antora_targeted_versions"></a>Antora-targeted versions</h3>
+<div class="paragraph">
+<p>Releases may carry build metadata naming the Antora line they target, e.g. <code>4.2.0+antora.3</code> and <code>5.0.0+antora.4</code>. SemVer ignores build metadata for precedence, so the CLI treats it as a <strong>filter</strong>: when the playbook&#8217;s Antora major is 3, only <code>+antora.3</code> releases (or releases with no <code>+antora</code> tag that the registry marks compatible) are candidates. <code>antorareg info</code> shows both lines side by side.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="commands"><a class="anchor" href="#commands"></a>Commands</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Every command accepts <code>--playbook &lt;path&gt;</code> (default: <code>antora-playbook.yml</code> in the current directory, then walk up), <code>--json</code>, <code>--verbose</code>, <code>--dry-run</code> and <code>--offline</code>. Output and exit codes follow the OpenShellOrg CLI Output standard.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Command</th>
+<th class="tableblock halign-left valign-top">Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>install &lt;id&gt;[@&lt;range&gt;] &#8230;&#8203;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Resolve, run compat checks, edit the playbook, write the lockfile, and fetch into the cache. <code>--source git|asset|npm</code>. <code>--save-exact</code> pins the range to the resolved version.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>update [&lt;id&gt; &#8230;&#8203;]</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Move to the newest version within the recorded range (or <code>--latest</code> across majors, with a compat re-check). No IDs means all. Vendored (ejected) packages are never overwritten: <code>update</code> reports the upstream changes available and offers a diff or 3-way merge help instead.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>list</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Show what the playbook uses, the locked version, the newest available, tier (Workshop/Listed), vendored status and any flags or security blocks from the registry. Reports drift between the playbook and the lockfile (see <a href="#drift">Drift between the playbook and the lockfile</a>).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>remove &lt;id&gt; &#8230;&#8203;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Remove the playbook entry and any <code>supplemental_files</code> it added, then prune the lockfile.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>search &lt;query&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Query the registry API. Default results follow registry visibility (graduated or grandfathered); <code>--all</code> includes Indexed and Workshop items.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>info &lt;id&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Metadata, versions per Antora line, provides/requires/conflicts, docs link, changelog link and latest scan result.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>stack &lt;basket-share-url&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Fetch a basket (stack) from its share URL, show the plan as a diff, then apply it as one transaction: all or nothing.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>eject &lt;id&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Copy a theme&#8217;s or extension&#8217;s source into the repo (for example <code>ui/&lt;name&gt;/</code>), mark it <code>vendored</code> in the lockfile with the upstream version it came from, and point the playbook at the local path. See <a href="#fetch-vs-vendor">Fetching versus vendoring</a>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>verify</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Recompute checksums of cached artifacts against the lockfile, check playbook/lockfile drift, check the <code>.gitignore</code> line, and audit committed assets (see <a href="#asset-audit">Asset auditing</a>). Exit 1 on drift. Asset findings only warn unless <code>--strict</code> is given.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>init</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Create <code>antorareg.lock</code> and add the cache ignore line to the repo-root <code>.gitignore</code> (see <a href="#gitignore">The <code>.gitignore</code> line</a>).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>migrate [&lt;id&gt; &#8230;&#8203;]</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Turn committed copies of packages into lockfile entries (see <a href="#migrate"><code>antorareg migrate</code></a>). <code>--eject</code>, <code>--yes</code>, <code>--dry-run</code>.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="sect2">
+<h3 id="_playbook_surfaces_it_edits"><a class="anchor" href="#_playbook_surfaces_it_edits"></a>Playbook surfaces it edits</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Kind</th>
+<th class="tableblock halign-left valign-top">Playbook key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UI bundle</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ui.bundle.url</code> (and <code>ui.bundle.snapshot</code> when the source is a moving ref)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Antora extension</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>antora.extensions[]</code> entry, as a string or a <code>require:</code> map when it has config</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Supplemental UI</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ui.supplemental_files</code> (a path or a list of <code>path</code>/<code>contents</code> entries)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Only one UI bundle can be active. Installing a second one is a conflict unless <code>--replace</code> is given. Layers (supplemental UI that sits on a bundle) are checked against the active bundle&#8217;s <code>provides</code> contracts.</p>
+</div>
+<div class="paragraph">
+<p>The CLI adds no marker comments to the playbook. The lockfile alone records what it installed (see <a href="#drift">Drift between the playbook and the lockfile</a>):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">antora:
+  extensions:
+    - require: '@antora/lunr-extension'   # hand-written, left alone
+    - require: ./.antorareg/cache/github.com/antora-supplemental/page-context/page-context/index.js</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Git-sourced extensions are fetched into <code>.antorareg/cache/&lt;id&gt;/</code> (gitignored, rebuilt from the lockfile in CI) so <code>require:</code> points at a local path and Antora never needs npm.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="fetch-vs-vendor"><a class="anchor" href="#fetch-vs-vendor"></a>Fetching versus vendoring</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Default, fetched</strong>: Extensions, UI bundles and themes are fetched from the lockfile into <code>.antorareg/cache/</code>, which is gitignored and never committed. CI rebuilds it from the lockfile.</p>
+</li>
+<li>
+<p><strong>Overrides go elsewhere</strong>: Theme overrides go in the playbook&#8217;s <code>ui.supplemental_files</code> folder (Antora&#8217;s standard override mechanism, default <code>supplemental-ui/</code>). On first theme install the CLI scaffolds that folder and prints its path. The cache never sits inside, or shares a path with, the overrides folder, so users never edit a file the next fetch would replace.</p>
+</li>
+<li>
+<p><strong>Eject, for modders</strong>: Many people find it more natural to edit what is in front of them than to write override files. <code>antorareg eject &lt;id&gt;</code> copies the package&#8217;s source into the repo (for example <code>ui/&lt;name&gt;/</code>), records it in the lockfile as <code>vendored: true</code> with <code>upstream:</code> set to the version it came from, and switches the playbook to the local path. From then on the copy is the user&#8217;s code.</p>
+</li>
+<li>
+<p><strong>Updates after eject</strong>: <code>antorareg update</code> doesn&#8217;t overwrite a vendored package. It reports that upstream has a newer version and offers a diff between <code>upstream</code> and the new version, or 3-way merge help against the local copy. Accepting a merge moves <code>upstream</code> forward.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="yaml"><a class="anchor" href="#yaml"></a>Editing the playbook without damage</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The playbook is edited as text. D&#8217;s <code>dyaml</code> drops comments, so it is used only to read and validate the playbook, never to write it. Writes go through a minimal line-based CST editor that understands just the few keys the tool touches: <code>ui.bundle.url</code> (and <code>snapshot</code>), <code>antora.extensions</code>, and <code>ui.supplemental_files</code>. Every other byte is copied through unchanged.</p>
+</div>
+<div class="paragraph">
+<p>Rules:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Parse. If the file has errors, stop and report; never rewrite a broken file.</p>
+</li>
+<li>
+<p>Change only the target nodes. Insert new list items with the indentation and quote style of their siblings.</p>
+</li>
+<li>
+<p>Write UTF-8 without a BOM, keep the file&#8217;s existing line endings, and write atomically (temp file then rename).</p>
+</li>
+<li>
+<p>Show the unified diff in <code>--dry-run</code> and in <code>stack</code> before applying.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>If the editor meets a structure it can&#8217;t edit safely (flow-style lists, anchors or aliases on a target key, multi-document files), it stops and prints the exact change for the user to make by hand.</p>
+</div>
+<div class="paragraph">
+<p>Alternatives considered: TypeScript with eemeli/yaml (best round-tripping, shared registry types, but large compiled binaries), Go <code>goccy/go-yaml</code>, Rust <code>yaml-edit</code>/<code>saphyr</code>, and <code>dyaml</code> round-tripping (loses comments).</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="compat"><a class="anchor" href="#compat"></a>Compatibility checks</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before any change, the CLI sends the planned set (current playbook plus the change) to the registry compat endpoint, for example <code>POST /api/v1/compat</code>. The registry answers with:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>worksWith</code>: known-good pairings. Each carries a confidence of <strong>guaranteed</strong> (declared by both sides or tested in CI) or <strong>likely</strong> (inferred from contracts or installs).</p>
+</li>
+<li>
+<p><code>requires</code>: missing dependencies, such as a layer that needs a bundle providing <code>nav-tree@1</code>.</p>
+</li>
+<li>
+<p><code>conflicts</code>: hard conflicts, such as two UI bundles or two search extensions with the same hook.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Behaviour: conflicts and unmet requirements block (exit 3) unless <code>--force</code>. Likely-only pairings print a notice. Offline, the CLI uses the cached compat data and labels the result <code>unverified</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="lockfile"><a class="anchor" href="#lockfile"></a>Lockfile</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>antorareg.lock</code> sits next to the playbook. It is YAML so it diffs well and needs no extra parser.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">lockfileVersion: 1
+playbook: antora-playbook.yml
+antora: 3
+packages:
+  github.com/antora-supplemental/antora-dark-mode/antora-dark-mode:
+    version: 1.2.0
+    range: ^1.2.0
+    source: asset
+    url: https://github.com/antora-supplemental/antora-dark-mode/releases/download/v1.2.0/ui-bundle.zip
+    sha256: 9f2c...
+    surface: ui.bundle
+  github.com/antora-supplemental/page-context/page-context:
+    version: 1.3.0+antora.3
+    source: git
+    ref: page-context-v1.3.0
+    commit: 4b1e0d7c...
+    surface: antora.extensions</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A vendored package carries <code>vendored: true</code>, its local <code>path</code>, and <code>upstream</code> (the version and commit it was ejected from).</p>
+</div>
+<div class="paragraph">
+<p><code>antorareg install</code> with no arguments restores exactly what the lockfile says (like <code>npm ci</code>). Commit the lockfile. It may be edited by hand or by the tool; the format is the same either way.</p>
+</div>
+<div class="sect2">
+<h3 id="drift"><a class="anchor" href="#drift"></a>Drift between the playbook and the lockfile</h3>
+<div class="paragraph">
+<p>There are no marker comments, so ownership comes from the lockfile alone. <code>antorareg list</code> and <code>antorareg verify</code> compare the playbook with the lockfile and flag:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Missing</strong>: a lockfile entry whose playbook entry is gone. Offer to remove it from the lockfile or restore it to the playbook.</p>
+</li>
+<li>
+<p><strong>Hand-edited</strong>: a playbook entry that no longer matches its lockfile entry (another URL, ref or path). Offer to record the change in the lockfile.</p>
+</li>
+<li>
+<p><strong>Stale paths</strong>: a lockfile <code>path</code> or cache path that no longer exists. Re-fetch or prune.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>verify</code> exits 1 on any drift so CI catches it. Entries in the playbook that the lockfile never listed are the user&#8217;s own, and are left alone.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="asset-audit"><a class="anchor" href="#asset-audit"></a>Asset auditing</h3>
+<div class="paragraph">
+<p>The lockfile records a <code>files</code> map of per-file <code>sha256</code> values for every fetched package. <code>verify</code> uses it to report:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Tracked cache files</strong>: files under the cache that git tracks.</p>
+</li>
+<li>
+<p><strong>Committed copies</strong>: tracked files byte-identical to a package file.</p>
+</li>
+<li>
+<p><strong>Modified copies</strong>: tracked files that are edited copies of a package file, reported as <code>modified copy of &lt;pkg&gt;@&lt;ver&gt;:&lt;path&gt;</code>. Generic names (<code>index.js</code>, <code>package.json</code>, <code>README.md</code> and so on) only count when the package-relative path matches too.</p>
+</li>
+<li>
+<p><strong>Cache mismatches</strong>: cached files whose hash differs from the lockfile. They are refetched with a warning.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Files in ejected packages and in <code>ui.supplemental_files</code> are exempt and listed as info. Every finding carries advice: run <code>antorareg eject &lt;id&gt;</code>, or move the change into <code>ui.supplemental_files</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>verify --strict</code> exits 1 on any finding. The GitHub Action runs strict by default; locally <code>verify</code> only warns.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="gitignore"><a class="anchor" href="#gitignore"></a>The <code>.gitignore</code> line</h3>
+<div class="paragraph">
+<p>On the first install, and in <code>init</code>, <code>antorareg</code> makes sure the repo-root <code>.gitignore</code> ignores the cache. It appends one line, the cache path relative to the repo root (<code>.antorareg/cache/</code> when the playbook sits at the root), keeps the file&#8217;s existing line endings, and adds no marker comments. <code>verify</code> reports a missing line or a tracked cache.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="migrate"><a class="anchor" href="#migrate"></a><code>antorareg migrate</code></h3>
+<div class="paragraph">
+<p>For projects that copied package files into the repo by hand. <code>migrate</code> prints a plan first:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Exact copies</strong> become lockfile entries. The playbook points at the cache, the copy is deleted, and the user runs the printed <code>git rm --cached</code> command.</p>
+</li>
+<li>
+<p><strong>Modified copies</strong> become <code>ui.supplemental_files</code> overrides, or, with <code>--eject</code>, the package is ejected and the edits land in the ejected copy. Extension edits need <code>--eject</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>It applies only after an interactive yes or <code>--yes</code>. <code>--dry-run</code> changes nothing. It never stages or commits.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="action"><a class="anchor" href="#action"></a>GitHub Action</h3>
+<div class="paragraph">
+<p><code>antora-supplemental/antorareg@v0</code> is a composite action. It downloads the prebuilt binary for the runner (or builds from source with <code>dlang-community/setup-dlang</code>), caches <code>.antorareg/cache</code> with <code>actions/cache</code> keyed on the lockfile hash, then runs <code>antorareg install --frozen</code> and <code>antorareg verify</code>. Inputs: <code>playbook</code> (default <code>antora-playbook.yml</code>), <code>version</code>, <code>verify</code> (default <code>true</code>), <code>strict</code> (default <code>true</code>).</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="config"><a class="anchor" href="#config"></a>Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Lookup order, last wins: built-in defaults, the user config (<code>$XDG_CONFIG_HOME/antorareg/config.yml</code> or <code>%APPDATA%\antorareg\config.yml</code>), the project file <code>.antorareg.yml</code>, environment variables (<code>ANTORAREG_*</code>), then flags.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">registry: https://registry.antora-supplemental.org
+source: git            # git | asset | npm
+cacheDir: .antorareg/cache   # project fetch cache, gitignored
+vendorDir: ui                # default parent for antorareg eject
+globalCacheDir: ~      # default per platform
+allowTiers: [listed]   # add workshop or indexed to widen
+hosts:
+  gitlab.example.com:
+    tokenEnv: GITLAB_TOKEN</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Forge tokens are read from environment variables named in config (or from <code>gh</code>/<code>glab</code> auth when present). They are never written to config or the lockfile.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="cache"><a class="anchor" href="#cache"></a>Offline and cache behaviour</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>The cache is content-addressed by SHA-256 under the platform cache dir (<code>~/.cache/antorareg</code>, <code>%LOCALAPPDATA%\antorareg\Cache</code>, <code>~/Library/Caches/antorareg</code>).</p>
+</li>
+<li>
+<p>Registry metadata is cached with ETags and a 24-hour soft TTL. <code>--offline</code> never touches the network. It succeeds when the lockfile and cache cover the request, and otherwise fails naming what is missing.</p>
+</li>
+<li>
+<p>Git sources use shallow fetches of the exact tag, then store an archive of the tree, not a full clone.</p>
+</li>
+<li>
+<p><code>antorareg cache clean</code> and <code>cache path</code> manage it.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="security"><a class="anchor" href="#security"></a>Security</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Pinned refs</strong>: Tags are resolved to commit SHAs at install. A tag that later moves to a different commit is an error on <code>install</code> from the lockfile, not a silent update.</p>
+</li>
+<li>
+<p><strong>Checksums</strong>: Every asset and vendored tree is SHA-256 checked on fetch and by <code>verify</code>. Registry metadata may also carry the expected digest; a mismatch with the forge blocks the install.</p>
+</li>
+<li>
+<p><strong>Registry trust signals</strong>: Security-blocked versions refuse to install. Flagged or Workshop items need <code>--allow-tier</code>. Results show the latest scan verdict.</p>
+</li>
+<li>
+<p><strong>No install scripts</strong>: The CLI never runs package lifecycle scripts. With the npm source it fetches tarballs directly and does not run <code>npm install</code>.</p>
+</li>
+<li>
+<p><strong>Signatures (later)</strong>: Verify Sigstore or GitHub artifact attestations when present. Show <code>attested</code> in <code>info</code>.</p>
+</li>
+<li>
+<p><strong>Transport</strong>: HTTPS only. Custom hosts need to be listed in config.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="distribution"><a class="anchor" href="#distribution"></a>Distribution</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Goal: one download, no Node or <code>npx</code> needed.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Build</strong>: D compiled with LDC to a small static single binary, cross-compiled per target.</p>
+</li>
+<li>
+<p><strong>DUB</strong>: Also published to the DUB registry (<code>publish-to-dub</code> skill) so D users can <code>dub run antorareg</code>.</p>
+</li>
+<li>
+<p><strong>Targets</strong>: release binaries per the agent-rules <code>release-targets</code> skill, the <code>common</code> release target pattern from agent-rules (<code>release-targets/patterns.sdl</code>, current year 2026): <code>windows-x64</code>, <code>windows-arm64</code>, <code>linux-x64</code>, <code>linux-arm64</code>, <code>macos-arm64</code>. FreeBSD only if LDC supports it; mark it untested if it&#8217;s cross-compiled only.</p>
+</li>
+<li>
+<p><strong>Channels</strong>: GitHub Releases with checksums and attestations, DUB, winget, Homebrew tap, Scoop, plus a <code>curl \| sh</code> and <code>irm \| iex</code> installer that verifies the checksum.</p>
+</li>
+<li>
+<p><strong>Product essentials</strong> (ship-app skill): <code>--version</code> with a build ID, <code>help</code>, <code>antorareg debug-dump</code> (redacted), <code>antorareg self-update</code> (replace the binary only after the process exits; on Windows, use a rename-then-replace step), and CI release through <code>polyglot-ci</code>.</p>
+</li>
+<li>
+<p><strong>Versioning</strong>: SemVer tags per the <code>tag-release</code> skill.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="language"><a class="anchor" href="#language"></a>Implementation language</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Decided (Ryan): <strong>D</strong>. It compiles natively to small single binaries and cross-compiles with LDC, comparable to Go. TypeScript&#8217;s only advantages were sharing the registry&#8217;s types and a comment-preserving YAML library. Both are covered:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Playbook edits</strong>: a minimal text/CST editor for the few keys touched, see <a href="#yaml">Editing the playbook without damage</a>.</p>
+</li>
+<li>
+<p><strong>Registry types</strong>: generated from the registry&#8217;s OpenAPI/JSON schema at build time, so the CLI and the registry can&#8217;t drift.</p>
+</li>
+<li>
+<p><strong>Distribution</strong>: DUB plus release binaries, see <a href="#distribution">Distribution</a>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="open-questions"><a class="anchor" href="#open-questions"></a>Open questions</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Extensions with npm dependencies</strong>: An extension pulled from git may have its own <code>dependencies</code>. Bundle them at release (the registry asks for a single-file <code>dist</code>), or resolve them in the CLI?</p>
+</li>
+<li>
+<p><strong>Compat endpoint</strong>: Is the registry API contract (<code>/api/v1/compat</code>, guaranteed vs likely) ready to freeze as v1?</p>
+</li>
+<li>
+<p><strong>Stack conflicts</strong>: When a basket conflicts with an installed UI bundle, should <code>stack</code> replace it by default or stop?</p>
+</li>
+<li>
+<p><strong>Playbook includes</strong>: How should it handle multiple playbooks (for example <code>antora-playbook.local.yml</code>)? Use <code>--playbook</code> only, or a workspace file?</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="plan"><a class="anchor" href="#plan"></a>Phased plan</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Phase 0, read-only</strong>: <code>search</code>, <code>info</code>, <code>list</code> against the registry API. Types generated from the OpenAPI schema. LDC binary pipeline, DUB package and release CI.</p>
+</li>
+<li>
+<p><strong>Phase 1, edits</strong>: <code>install</code>, <code>remove</code> and <code>update</code> for UI bundles and extensions from release assets and git tags. Text/CST editing, lockfile, <code>.antorareg/cache</code>, checksums, drift detection.</p>
+</li>
+<li>
+<p><strong>Phase 2, stacks and themes</strong>: <code>stack &lt;url&gt;</code> as a transaction with a diff preview. Compat endpoint integration. <code>supplemental_files</code> scaffolding, <code>eject</code>, and upstream-change reports for vendored packages.</p>
+</li>
+<li>
+<p><strong>Phase 3, hardening</strong>: <code>--offline</code>, <code>verify</code>, attestations, an optional npm source, winget/Homebrew/Scoop.</p>
+</li>
+<li>
+<p><strong>Phase 4, antora-solid</strong>: Register <code>antorareg</code> as a routed tool so antora-solid&#8217;s <code>antora reg &#8230;&#8203;</code> runs it (see <a href="antora4-plugin-commands-spec.html" class="xref page">Command routing in antora-solid</a>). The standalone binary is the same in both cases.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="changelog"><a class="anchor" href="#changelog"></a>Changelog</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>v0.3 (2026-10-26): Added asset auditing with per-file hashes and <code>verify --strict</code>, the <code>.gitignore</code> line on first install and in <code>init</code>, <code>antorareg migrate</code> for committed copies, <code>install --frozen</code>, and the <code>antora-supplemental/antorareg@v0</code> GitHub Action. Linked the first implementation.</p>
+</li>
+<li>
+<p>v0.2 (2026-10-26): Recorded Ryan&#8217;s decisions: D implementation with a text/CST playbook editor and schema-generated registry types; extensions fetched into gitignored <code>.antorareg/cache</code> with <code>antorareg eject</code> for vendoring themes; no playbook marker comments, with lockfile drift detection in <code>list</code> and <code>verify</code>; no upstream proposal, routed as a tool in antora-solid.</p>
+</li>
+<li>
+<p>v0.1 (2026-10-26): First draft.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script src="../../_/js/site-dark-mode.js"></script>
+  </body>
+</html>

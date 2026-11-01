@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Continuous integration and scheduled jobs :: Antora Extensions Registry</title>
+    <link rel="canonical" href="https://antora-extensions.org/registry/continuous-integration.html">
+    <meta name="generator" content="Antora 3.1.14">
+    <link rel="stylesheet" href="../_/css/site.css">
+<link rel="stylesheet" href="../_/css/site-extra.css">
+<script>
+(function () {
+  const MODE = 'antora-theme-mode'
+  const LEGACY = 'antora-theme'
+  function mode() {
+    const m = localStorage.getItem(MODE)
+    if (m === 'system' || m === 'dark' || m === 'light') return m
+    const o = localStorage.getItem(LEGACY)
+    if (o === 'dark' || o === 'light') return o
+    return 'system'
+  }
+  function isDark() {
+    const m = mode()
+    if (m === 'dark') return true
+    if (m === 'light') return false
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  if (isDark()) document.documentElement.classList.add('dark-theme')
+})()
+</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://antora-extensions.org">Antora Extensions Registry</a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field">
+          <input id="search-input" type="text" placeholder="Search the docs">
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="registry" data-version="">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">Antora Extensions Registry</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Welcome</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="install-guide.html">Installing from the registry</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="registry-metadata.html">Registry metadata (layers, bundles, previews)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="filters.html">Registry filters</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="continuous-integration.html">CI and scheduled jobs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Design</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="design/trust-and-quality-spec.html">Trust and quality spec</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="design/antorareg-cli-spec.html">antorareg CLI spec</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="design/antora4-plugin-commands-spec.html">antora-solid command routing spec</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Antora Extensions Registry</span>
+    <span class="version"></span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="index.html">Antora Extensions Registry</a></div>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Antora Extensions Registry</a></li>
+    <li><a href="continuous-integration.html">CI and scheduled jobs</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///workspace/docs/modules/ROOT/pages/continuous-integration.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Continuous integration and scheduled jobs</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This repository uses GitHub Actions for deploys, catalog maintenance, encoding checks, and a daily home-page bake. Workflow files live under <code>.github/workflows/</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_deploy_to_netlify_netlify_deploy_yml"><a class="anchor" href="#_deploy_to_netlify_netlify_deploy_yml"></a>Deploy to Netlify (<code>netlify-deploy.yml</code>)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Triggers:</strong> push to <code>main</code>, pull requests targeting <code>main</code>, and <code>workflow_dispatch</code>.</p>
+</div>
+<div class="paragraph">
+<p>On every run the job checks out the repo, installs dependencies with pnpm 9 on Node.js 22, and builds a catalog snapshot (<code>pnpm catalog:snapshot</code>) using <code>GITHUB_TOKEN</code>.</p>
+</div>
+<div class="paragraph">
+<p>On pushes to <code>main</code> (not on PRs from forks), it also runs <code>drizzle-kit push</code> against Turso/LibSQL using <code>DB_URL</code> and <code>DB_AUTH_TOKEN</code>, then builds the SolidStart site and deploys to Netlify with <code>netlify-cli</code>.</p>
+</div>
+<div class="paragraph">
+<p>Required repository secrets for production deploy:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>NETLIFY_AUTH_TOKEN</code>, <code>NETLIFY_SITE_ID</code></p>
+</li>
+<li>
+<p><code>BETTER_AUTH_SECRET</code>, <code>DB_URL</code>, <code>DB_AUTH_TOKEN</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Optional variable: <code>BETTER_AUTH_URL</code> (defaults to <code><a href="https://registry.antora-supplemental.org" class="bare">https://registry.antora-supplemental.org</a></code>).</p>
+</div>
+<div class="paragraph">
+<p>Pull requests from the same repository build but only upload a Netlify preview when secrets are present; fork PRs skip deploy upload.</p>
+</div>
+<div class="paragraph">
+<p>Pinned actions (as of 2026-11-01): <code>actions/checkout@v7</code>, <code>pnpm/action-setup@v6</code>, <code>actions/setup-node@v7</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_sync_catalog_to_database_catalog_sync_yml"><a class="anchor" href="#_sync_catalog_to_database_catalog_sync_yml"></a>Sync catalog to database (<code>catalog-sync.yml</code>)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Triggers:</strong> daily at 09:00 UTC, <code>workflow_dispatch</code>, and <code>repository_dispatch</code> types <code>catalog-sync</code> and <code>link-cache-invalidate</code>.</p>
+</div>
+<div class="paragraph">
+<p>After checkout and install, the job applies the Drizzle schema (<code>drizzle-kit push --force</code>) and runs <code>pnpm catalog:sync</code>, which fetches GitHub/GitLab topics, enriches entries, writes Turso tables, and optionally purges Netlify browse cache tags when Netlify secrets are set.</p>
+</div>
+<div class="paragraph">
+<p>Required secrets: <code>DB_URL</code>, <code>DB_AUTH_TOKEN</code>. <code>GITHUB_TOKEN</code> is provided by Actions. Optional: <code>GITLAB_TOKEN</code>, <code>NETLIFY_AUTH_TOKEN</code>, <code>NETLIFY_SITE_ID</code>.</p>
+</div>
+<div class="paragraph">
+<p>The home page is <strong>not</strong> refreshed by this job; see nightly bake below.</p>
+</div>
+<div class="paragraph">
+<p>Pinned actions match the deploy workflow (<code>checkout@v7</code>, <code>pnpm/action-setup@v6</code>, <code>setup-node@v7</code>). Dependabot PR #1 (2026-11-01) aligned catalog sync with deploy; details: <a href="https://github.com/antora-supplemental/antora-extensions-registry/blob/main/changelog-details/history/2026-11-01-catalog-sync-github-actions-bump.adoc" target="_blank" rel="noopener">changelog entry</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_nightly_home_page_bake_nightly_bake_yml"><a class="anchor" href="#_nightly_home_page_bake_nightly_bake_yml"></a>Nightly home page bake (<code>nightly-bake.yml</code>)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Triggers:</strong> daily at 10:00 UTC (one hour after catalog sync) and <code>workflow_dispatch</code>.</p>
+</div>
+<div class="paragraph">
+<p>This workflow does not build in GitHub. It calls the Netlify builds API to trigger a production deploy, waits for completion, then requests <code><a href="https://registry.antora-supplemental.org/" class="bare">https://registry.antora-supplemental.org/</a></code> so Featured / Featured Themes cards are baked from the database and cached until the next bake.</p>
+</div>
+<div class="paragraph">
+<p>Requires <code>NETLIFY_AUTH_TOKEN</code> and <code>NETLIFY_SITE_ID</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_encoding_guard_encoding_guard_yml"><a class="anchor" href="#_encoding_guard_encoding_guard_yml"></a>Encoding guard (<code>encoding-guard.yml</code>)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Triggers:</strong> push to <code>main</code> and all pull requests.</p>
+</div>
+<div class="paragraph">
+<p>Reuses the shared workflow from <code>dev-centr/agent-rules</code> to fail CI when tracked text files contain double-encoded UTF-8 (mojibake). See <code>.encoding-allow</code> and inline <code>mojibake-guard: allow</code> markers for intentional exceptions.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_local_parity"><a class="anchor" href="#_local_parity"></a>Local parity</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Developers run the same catalog commands locally:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">pnpm catalog:snapshot   # build-time JSON snapshot (deploy workflow)
+pnpm catalog:sync       # full DB sync (catalog-sync workflow)
+pnpm docs:build         # Antora component to public/docs/</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Local docs search uses <code>@antora/lunr-extension</code> via <code>antora-playbook.yml</code> in this repo.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_troubleshooting"><a class="anchor" href="#_troubleshooting"></a>Troubleshooting</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Symptom</th>
+<th class="tableblock halign-left valign-top">Likely cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Deploy workflow succeeds but site unchanged</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Missing Netlify secrets (workflow may skip upload) or deploy only runs on <code>main</code> pushes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Catalog sync fails on schema step</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Invalid or expired <code>DB_AUTH_TOKEN</code>, or <code>DB_URL</code> not pointing at the Turso database</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Browse pages stale after sync</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Netlify purge secrets not set; home page stale until nightly bake or manual Netlify deploy</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PR fails encoding guard</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Save files as UTF-8; fix mojibake sequences or add an allowed path per repo policy</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script id="site-script" src="../_/js/site.js" data-ui-root-path="../_"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+<script src="../_/js/vendor/lunr.js"></script>
+<script src="../_/js/search-ui.js" id="search-ui-script" data-site-root-path=".." data-snippet-length="100" data-stylesheet="../_/css/search.css"></script>
+<script async src="../search-index.js"></script>
+<script src="../_/js/site-dark-mode.js"></script>
+  </body>
+</html>

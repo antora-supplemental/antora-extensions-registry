@@ -3,6 +3,7 @@
 * xref:contributing.adoc[Contributing]
 * xref:registry-metadata.adoc[Registry metadata (layers, bundles, previews)]
 * xref:filters.adoc[Registry filters]
+* xref:continuous-integration.adoc[CI and scheduled jobs]
 * Design
 ** xref:design/trust-and-quality-spec.adoc[Trust and quality spec]
 ** xref:design/antorareg-cli-spec.adoc[antorareg CLI spec]

@@ -1,0 +1,43 @@
+= Catalog sync workflow: GitHub Actions pin bump
+:revdate: 2026-11-01
+
+== Summary
+
+Dependabot raised the GitHub Actions pins in `.github/workflows/catalog-sync.yml` so they match the deploy workflow:
+
+[cols="2,1,1"]
+|===
+| Action | Before | After
+
+| `actions/checkout`
+| v4
+| v7
+
+| `pnpm/action-setup`
+| v4
+| v6
+
+| `actions/setup-node`
+| v4
+| v7
+|===
+
+`.github/workflows/netlify-deploy.yml` already used these versions on `main`; only the daily catalog sync job was behind.
+
+== Behavior
+
+No change to when the workflow runs or what it does:
+
+* Schedule: 09:00 UTC daily (`cron: "0 9 * * *"`)
+* Manual: Actions tab → *Sync catalog to database* → *Run workflow*
+* Repository dispatch: `catalog-sync` or `link-cache-invalidate`
+
+Steps after checkout remain: `pnpm install --frozen-lockfile`, `drizzle-kit push`, `pnpm catalog:sync` with `DB_URL`, `DB_AUTH_TOKEN`, and optional `GITLAB_TOKEN`, `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`.
+
+== Operator notes
+
+* Failures after merge are usually missing `DB_URL` / `DB_AUTH_TOKEN` secrets or Turso connectivity, not the action major versions.
+* To re-run without waiting for cron, use *workflow_dispatch* from the Actions tab.
+* Browse-page CDN purge after sync still requires Netlify secrets when configured.
+
+See xref:continuous-integration.adoc[] for all registry GitHub Actions workflows.
