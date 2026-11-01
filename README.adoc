@@ -13,6 +13,11 @@ ifdef::env-github[]
 <a href="https://github.com/antora-supplemental/antora-extensions-registry/stargazers"><img src="https://img.shields.io/github/stars/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge" alt="Stars"></a>
 <a href="https://github.com/antora-supplemental/antora-extensions-registry/issues"><img src="https://img.shields.io/github/issues/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge" alt="Issues"></a>
 <br />
+<a href="https://docs.antora-supplemental.org/registry/"><img src="https://img.shields.io/badge/Docs-Antora%20Supplemental-FF5F00?style=for-the-badge" alt="Docs | Antora Supplemental"></a>
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/netlify-deploy.yml"><img src="https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/netlify-deploy.yml/badge.svg" alt="Deploy to Netlify"></a>
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/catalog-sync.yml"><img src="https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/catalog-sync.yml/badge.svg" alt="Sync catalog"></a>
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/encoding-guard.yml"><img src="https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/encoding-guard.yml/badge.svg" alt="Encoding guard"></a>
+<br />
 <h3 align="center">Antora Extensions Registry</h3>
 <p align="center">
 Antora ecosystem registry — extensions, themes, UI modules.<br />
@@ -35,6 +40,11 @@ ifdef::env-github[]
 <a href="https://github.com/antora-supplemental/antora-extensions-registry/stargazers"><img src="https://img.shields.io/github/stars/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge" alt="Stars"></a>
 <a href="https://github.com/antora-supplemental/antora-extensions-registry/issues"><img src="https://img.shields.io/github/issues/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge" alt="Issues"></a>
 <br />
+<a href="https://docs.antora-supplemental.org/registry/"><img src="https://img.shields.io/badge/Docs-Antora%20Supplemental-FF5F00?style=for-the-badge" alt="Docs | Antora Supplemental"></a>
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/netlify-deploy.yml"><img src="https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/netlify-deploy.yml/badge.svg" alt="Deploy to Netlify"></a>
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/catalog-sync.yml"><img src="https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/catalog-sync.yml/badge.svg" alt="Sync catalog"></a>
+<a href="https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/encoding-guard.yml"><img src="https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/encoding-guard.yml/badge.svg" alt="Encoding guard"></a>
+<br />
 <h3 align="center">Antora Extensions Registry</h3>
 <p align="center">
 Antora ecosystem registry — extensions, themes, UI modules.<br />
@@ -51,6 +61,10 @@ image:https://img.shields.io/github/contributors/antora-supplemental/antora-exte
 image:https://img.shields.io/github/forks/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Forks,link=https://github.com/antora-supplemental/antora-extensions-registry/network/members]
 image:https://img.shields.io/github/stars/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Stars,link=https://github.com/antora-supplemental/antora-extensions-registry/stargazers]
 image:https://img.shields.io/github/issues/antora-supplemental/antora-extensions-registry.svg?style=for-the-badge[Issues,link=https://github.com/antora-supplemental/antora-extensions-registry/issues]
+image:https://img.shields.io/badge/Docs-Antora%20Supplemental-FF5F00?style=for-the-badge[Docs | Antora Supplemental,link=https://docs.antora-supplemental.org/registry/]
+image:https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/netlify-deploy.yml/badge.svg[Deploy to Netlify,link=https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/netlify-deploy.yml]
+image:https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/catalog-sync.yml/badge.svg[Sync catalog,link=https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/catalog-sync.yml]
+image:https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/encoding-guard.yml/badge.svg[Encoding guard,link=https://github.com/antora-supplemental/antora-extensions-registry/actions/workflows/encoding-guard.yml]
 
 = Antora Extensions Registry
 
@@ -64,7 +78,7 @@ endif::[]
 
 Community catalog (public brand: *Registry*) for https://antora.org[Antora] extensions, UI themes/bundles, and related ecosystem packages.
 
-*Live site:* pending — intended brand URL is `registry.antora-supplemental.org` (see `DOMAIN.adoc`).
+*Live site:* https://registry.antora-supplemental.org[registry.antora-supplemental.org] (see `DOMAIN.adoc` for hostname notes).
 
 Themes are *not* Antora extensions (`ui.bundle` vs `antora.extensions`); both are first-class categories on this site.
 
@@ -89,7 +103,7 @@ This repository publishes two kinds of documentation:
 | https://docs.antora-supplemental.org/registry/[Registry docs] in the https://docs.antora-supplemental.org/[Antora Supplemental docs hub] — contributing guides, metadata formats, and theme submission rules
 
 | Site operators and contributors working in this repo
-| The sections below (development, deployment, environment)
+| link:https://docs.antora-supplemental.org/registry/continuous-integration.html[CI and scheduled jobs] in the published docs, plus the sections below (development, deployment, environment)
 |===
 
 The `docs/` directory in this repository is the Antora component source consumed by both the local playbook (`antora-playbook.yml`, output under `public/docs/`) and the supplemental docs hub playbook.
@@ -155,7 +169,7 @@ Local development continues to use `DB_URL=file:local.db` without a token.
 
 == Deployment (Netlify)
 
-Production deploys run through GitHub Actions (`.github/workflows/netlify-deploy.yml`) to Netlify.
+Production deploys run through GitHub Actions (`.github/workflows/netlify-deploy.yml`) to Netlify. The catalog database syncs daily via `.github/workflows/catalog-sync.yml` (09:00 UTC); the home page is re-baked via `.github/workflows/nightly-bake.yml` (10:00 UTC). See link:https://docs.antora-supplemental.org/registry/continuous-integration.html[CI and scheduled jobs] for triggers, secrets, and troubleshooting.
 
 Repository secrets required:
 
