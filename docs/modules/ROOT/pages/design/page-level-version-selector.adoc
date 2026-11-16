@@ -1,0 +1,83 @@
+= RFC 0001: Page-level version selector
+
+[NOTE]
+====
+Written against the Antora 3.2.0-era tree on dev-centr/antora branch `feature/page-level-version-selector` (commit 4319072e). The encoding-guard commit on that branch is not copied; the encoding guard already lives in agent-rules. This is a design record. Do not keep developing a full Antora fork.
+====
+
+== Status
+
+Draft (DevCentr fork; upstream issue intentionally deferred)
+
+== Context
+
+Antora versions documentation at the **component version** boundary (`antora.yml` `version` key). The reference UI exposes one version picker per component; switching versions rewrites every page URL in that component.
+
+Hub-style sites (for example docs.devcentr.org `DevCentr`) bundle many independently versioned features—UniConfig v0.1, Dependency Modeler drafts, Secrets Manager milestones—inside one component. Authors currently either:
+
+* split each feature into its own component (heavy playbook and nav cost), or
+* mention version only in prose with no selector or stable per-version URL.
+
+`@antora-supplemental/unversioned-component-urls` adds a **component-root** version chooser (`/component/`). Its README lists **page-level** choosers as future work.
+
+DevCentr spec: https://docs.devcentr.org/DevCentr/latest/specifications/features/page-level-version-selector.html (when published)
+
+== Proposal
+
+Introduce **page version tracks**: a logical doc product (one page or nav subtree) with its own ordered versions inside a single component version.
+
+=== Author metadata (spike)
+
+AsciiDoc page attributes:
+
+[source,asciidoc]
+----
+= UniConfig Config Panel
+:page-version-track: uniconfig-spec
+:page-version-track-version: 0.1
+:page-version-track-display: 0.1
+----
+
+Playbook extension config can alternatively declare tracks (for generated or fetched pages).
+
+=== Reader UX
+
+* When the active page belongs to a track with 2+ versions, show a **page version selector** (separate from the component version menu).
+* Bare page URL (no track version segment) resolves per playbook policy: `selector` (list versions) or `alias` (latest track version).
+* Xrefs between pages in the same track prefer the same track version.
+
+=== URL sketch
+
+Preferred (folder/indexify-friendly):
+
+`/DevCentr/latest/specifications/components/uniconfig/` → selector or alias
+
+`/DevCentr/latest/specifications/components/uniconfig/0.1/` → versioned page
+
+Exact segment placement is an open question; the spike extension uses synthetic pages under a `versions/<track-version>/` module path until core owns routing.
+
+== Spike (this fork)
+
+* Example extension: `docs/modules/ROOT/examples/page-level-version-selector/extension.js`
+* Registers on `contentClassified`, scans converted pages for `page-version-track`, groups by track id, publishes versionless selector pages and optional aliases.
+* Does **not** yet modify the reference UI partial (`page-versions.hbs`); UI work belongs in valentus-theme / supplemental until core absorption.
+
+== Core changes (future)
+
+If absorbed into Antora:
+
+* `ContentCatalog` API for page-scoped version facets (parallel to component versions).
+* Playbook keys: `urls.page_version_selector`, track declarations in component descriptor.
+* `page-composer` / `site-mapper` include track version in publishable URL when present.
+* Reference UI: second selector bound to `page.versions` model.
+
+== Non-goals
+
+* Section-level versioning inside one HTML page.
+* Replacing component versioning for standalone product manuals.
+
+== References
+
+* Component version descriptor: https://docs.antora.org/antora/latest/component-version-descriptor/
+* Extension use case (component alias), left in the Antora repository and not copied here: `docs/modules/extend/examples/alias-component-to-latest-version-extension.js`
+* DevCentr extension package: https://github.com/antora-supplemental/antora-unversioned-component-urls
